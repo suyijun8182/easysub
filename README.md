@@ -1,4 +1,8 @@
 # 省心订阅 EasySub
+不删档测试地址
+https://easysub.vviip.dpdns.org:8443/
+1.测试帐号  guest   guest123
+2.可自己注册帐号  需要管理员审核 请TG提醒管理
 
 <div align="center">
 
