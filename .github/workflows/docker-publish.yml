@@ -9,6 +9,11 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    # 默认 GITHUB_TOKEN 没有 packages 写权限，推送到 GHCR 会被拒（denied），
+    # 导致 Build and push 步骤失败。这里显式授予 packages:write。
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
