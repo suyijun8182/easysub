@@ -23,7 +23,7 @@ const zh = {
     noWebhookUrl: '尚未配置任何 Webhook URL，点右侧添加。',
     whSecret: '数字签名密钥 (SECRET)', whSecretHint: '若配置，将通过请求头 X-EasySub-Signature 提供 payload 验证。',
     whHeaders: '自定义请求头 (HEADERS)', whTemplate: '文本模板 (TEXT TEMPLATE)',
-    whTemplateHint: '支持占位符：{{text}}、{{subject}}、{{event}}、{{timestamp}}。留空则发送原始文本。',
+    whTemplateHint: '支持占位符 text / subject / event / timestamp（各用双花括号包裹，见下方输入框示例）。留空则发送原始文本。',
     whTimeout: '请求超时 (MS)', whRetries: '最大重试次数'
   },
   notify: { title: '通知中心', runScan: '立即扫描提醒', empty: '暂无通知记录', sent: '已发送', failed: '失败', daysBefore: '提前天数' },
@@ -139,7 +139,7 @@ const en = {
     noWebhookUrl: 'No Webhook URL yet — click Add on the right.',
     whSecret: 'Signing secret', whSecretHint: 'If set, payload is signed via the X-EasySub-Signature header.',
     whHeaders: 'Custom headers', whTemplate: 'Text template',
-    whTemplateHint: 'Placeholders: {{text}}, {{subject}}, {{event}}, {{timestamp}}. Empty = raw text.',
+    whTemplateHint: 'Placeholders: text / subject / event / timestamp (wrap each in double curly braces, see the input example). Empty = raw text.',
     whTimeout: 'Timeout (ms)', whRetries: 'Max retries'
   },
   notify: { title: 'Notification Center', runScan: 'Run scan now', empty: 'No notifications yet', sent: 'Sent', failed: 'Failed', daysBefore: 'Days before' },
@@ -255,7 +255,7 @@ const ru = {
     noWebhookUrl: 'Нет URL Webhook — нажмите «Добавить».',
     whSecret: 'Ключ подписи', whSecretHint: 'Если задан, payload подписывается заголовком X-EasySub-Signature.',
     whHeaders: 'Заголовки', whTemplate: 'Шаблон текста',
-    whTemplateHint: 'Плейсхолдеры: {{text}}, {{subject}}, {{event}}, {{timestamp}}. Пусто = исходный текст.',
+    whTemplateHint: 'Плейсхолдеры: text / subject / event / timestamp (в двойных фигурных скобках, см. пример в поле). Пусто = исходный текст.',
     whTimeout: 'Таймаут (мс)', whRetries: 'Повторы'
   },
   notify: { title: 'Центр уведомлений', runScan: 'Запустить проверку', empty: 'Нет уведомлений', sent: 'Отправлено', failed: 'Ошибка', daysBefore: 'За дней' },

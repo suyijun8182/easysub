@@ -1,8 +1,8 @@
 # EasySub · 省心订阅
 
-Self-hosted subscription / renewal manager with **Telegram reminders** so you never let a subscription (or a SIM-keepalive plan) expire.
+Self-hosted subscription / renewal manager with **multi-channel reminders** (Telegram / Feishu / QQ / Bark / Email / Pushplus / Webhook) so you never let a subscription — or a SIM keep-alive plan — expire.
 
-自托管的订阅 / 续费 / 保号管理系统，通过 **Telegram** 提醒续费，防止忘记导致过期。
+自托管的订阅 / 续费 / 保号管理系统，通过 **多渠道通知**（Telegram / 飞书 / QQ / Bark / Email / Pushplus / Webhook）提醒续费，防止忘记导致过期。
 
 - **Source / 源码**: https://github.com/suyijun8182/easysub
 - **Tags**: `latest`, `v*` (per release) — multi-arch `linux/amd64` + `linux/arm64`
