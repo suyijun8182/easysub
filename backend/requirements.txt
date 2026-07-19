@@ -13,3 +13,5 @@ apscheduler==3.11.0
 email-validator==2.2.0
 pymysql==1.1.1
 cryptography==44.0.0
+pyotp==2.9.0
+qrcode[pil]==8.0

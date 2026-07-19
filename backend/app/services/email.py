@@ -14,6 +14,25 @@ def smtp_configured() -> bool:
     return bool(settings.smtp_host and settings.smtp_from)
 
 
+def _send(to_email: str, subject: str, body: str) -> None:
+    if not smtp_configured():
+        raise RuntimeError("未配置 SMTP")
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = settings.smtp_from
+    msg["To"] = to_email
+    msg.set_content(body)
+    _deliver(msg)
+
+
+def send_reset(to_email: str, code: str) -> None:
+    _send(
+        to_email, "省心订阅 EasySub — 密码重置码",
+        f"你好，\n\n你的密码重置码是：{code}\n\n"
+        f"该验证码 15 分钟内有效。如果不是你本人操作，请忽略此邮件并注意账号安全。\n\n— 省心订阅 EasySub",
+    )
+
+
 def send_code(to_email: str, code: str) -> None:
     if not smtp_configured():
         raise RuntimeError("未配置 SMTP")
@@ -25,7 +44,10 @@ def send_code(to_email: str, code: str) -> None:
         f"你好，\n\n你的注册验证码是：{code}\n\n"
         f"该验证码 10 分钟内有效。如果不是你本人操作，请忽略此邮件。\n\n— 省心订阅 EasySub"
     )
+    _deliver(msg)
 
+
+def _deliver(msg: EmailMessage) -> None:
     if settings.smtp_tls:
         context = ssl.create_default_context()
         with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=20) as s:

@@ -147,6 +147,46 @@
       <p v-else-if="autobk" class="muted" style="font-size:13px">{{ t('autobk.none') }}</p>
     </div>
 
+    <!-- 安全：两步验证 + API Token -->
+    <div class="card sect">
+      <h3>🔒 {{ t('sec.title') }}</h3>
+      <!-- 2FA -->
+      <div class="sec-row">
+        <div><b>{{ t('sec.twofa') }}</b>
+          <span class="muted" style="font-size:12px"> · {{ auth.user?.totp_enabled ? t('sec.on') : t('sec.off') }}</span></div>
+        <button v-if="!auth.user?.totp_enabled && !twofa.qr" class="btn ghost sm" @click="twofaSetup">{{ t('sec.enable') }}</button>
+        <button v-else-if="auth.user?.totp_enabled" class="btn ghost sm" @click="twofaDisable">{{ t('sec.disable') }}</button>
+      </div>
+      <div v-if="twofa.qr && !auth.user?.totp_enabled" class="twofa-box">
+        <img :src="twofa.qr" class="qr" />
+        <div class="twofa-r">
+          <p class="muted" style="font-size:13px;margin:0 0 6px">{{ t('sec.scanTip') }}</p>
+          <code class="secret">{{ twofa.secret }}</code>
+          <div class="row" style="margin-top:8px">
+            <input v-model="twofa.code" :placeholder="t('auth.otpPh')" maxlength="6" style="width:130px" />
+            <button class="btn sm" @click="twofaEnable">{{ t('sec.confirmEnable') }}</button>
+          </div>
+        </div>
+      </div>
+      <p v-if="secMsg" :class="secOk ? 'ok' : 'err'">{{ secMsg }}</p>
+
+      <hr />
+      <!-- API Tokens -->
+      <div class="sec-row">
+        <b>🔑 {{ t('sec.apiTokens') }}</b>
+        <div class="row" style="gap:6px">
+          <input v-model="newTokenName" :placeholder="t('sec.tokenName')" style="width:130px" />
+          <button class="btn ghost sm" @click="createToken">＋</button>
+        </div>
+      </div>
+      <p v-if="createdToken" class="ok" style="word-break:break-all">{{ t('sec.tokenOnce') }}<br /><code>{{ createdToken }}</code></p>
+      <ul v-if="tokens.length" class="bk-list">
+        <li v-for="tk in tokens" :key="tk.id"><b>{{ tk.name }}</b>
+          <span class="muted">{{ tk.masked }} · {{ tk.last_used_at ? fmtTime(tk.last_used_at) : t('sec.neverUsed') }}
+            <a href="#" @click.prevent="revokeToken(tk.id)" style="color:var(--danger);margin-left:8px">✕</a></span></li>
+      </ul>
+    </div>
+
     <!-- 系统信息 -->
     <div class="card sect">
       <h3>ℹ️ {{ t('sys.title') }}</h3>
@@ -208,6 +248,44 @@ const prefs = reactive({
   digest_enabled: !!ns.digest_enabled,
   digest_weekday: ns.digest_weekday ?? 0
 })
+const twofa = reactive({ qr: '', secret: '', code: '' })
+const secMsg = ref('')
+const secOk = ref(false)
+const tokens = ref([])
+const newTokenName = ref('')
+const createdToken = ref('')
+
+async function twofaSetup() {
+  secMsg.value = ''
+  try { const { data } = await api.post('/api/me/2fa/setup'); twofa.qr = data.qr; twofa.secret = data.secret }
+  catch (e) { secOk.value = false; secMsg.value = e.response?.data?.detail || 'Error' }
+}
+async function twofaEnable() {
+  try {
+    await api.post('/api/me/2fa/enable', { code: twofa.code })
+    twofa.qr = ''; twofa.secret = ''; twofa.code = ''
+    await auth.fetchMe(); secOk.value = true; secMsg.value = t('sec.enabledOk')
+  } catch (e) { secOk.value = false; secMsg.value = e.response?.data?.detail || 'Error' }
+}
+async function twofaDisable() {
+  const pw = window.prompt(t('sec.enterPwd'))
+  if (!pw) return
+  try { await api.post('/api/me/2fa/disable', { password: pw }); await auth.fetchMe(); secOk.value = true; secMsg.value = t('sec.disabledOk') }
+  catch (e) { secOk.value = false; secMsg.value = e.response?.data?.detail || 'Error' }
+}
+async function loadTokens() { try { tokens.value = (await api.get('/api/me/tokens')).data } catch { /* ignore */ } }
+async function createToken() {
+  if (!newTokenName.value.trim()) return
+  try {
+    const { data } = await api.post('/api/me/tokens', { name: newTokenName.value.trim() })
+    createdToken.value = data.token; newTokenName.value = ''; loadTokens()
+  } catch (e) { secOk.value = false; secMsg.value = e.response?.data?.detail || 'Error' }
+}
+async function revokeToken(id) {
+  if (!window.confirm(t('sec.revokeConfirm'))) return
+  try { await api.delete(`/api/me/tokens/${id}`); loadTokens() } catch { /* ignore */ }
+}
+
 const prefsMsg = ref('')
 const weekdays = computed(() => [
   t('wk.mon'), t('wk.tue'), t('wk.wed'), t('wk.thu'), t('wk.fri'), t('wk.sat'), t('wk.sun')
@@ -383,6 +461,7 @@ onMounted(async () => {
   currencies.value = (await api.get('/api/currencies')).data
   sys.value = (await api.get('/api/system/info')).data
   loadRates()
+  loadTokens()
   if (auth.user?.is_admin) loadAutoBackups()
 })
 </script>
@@ -395,6 +474,11 @@ h1 { margin-top: 0; }
 .bk-list li { display: flex; justify-content: space-between; gap: 12px; font-size: 13px;
   padding: 8px 10px; background: var(--surface-2); border-radius: 8px; }
 .bk-list .muted { font-size: 12px; }
+.sec-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 8px 0; }
+.twofa-box { display: flex; gap: 16px; align-items: flex-start; margin: 10px 0; flex-wrap: wrap; }
+.twofa-box .qr { width: 150px; height: 150px; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+.twofa-r { flex: 1; min-width: 200px; }
+.secret { display: inline-block; background: var(--surface-2); padding: 4px 8px; border-radius: 6px; font-size: 13px; word-break: break-all; }
 .two { grid-template-columns: 1fr 1fr; margin-bottom: 16px; }
 .sect { margin-bottom: 16px; }
 .sect h3 { margin-top: 0; }

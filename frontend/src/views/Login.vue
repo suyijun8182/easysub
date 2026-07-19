@@ -23,11 +23,42 @@
         <label>{{ t('auth.password') }}</label>
         <input v-model="password" type="password" @keyup.enter="submit" />
 
+        <template v-if="need2fa">
+          <label>{{ t('auth.otp') }}</label>
+          <input v-model="otp" :placeholder="t('auth.otpPh')" maxlength="6" @keyup.enter="submit" />
+        </template>
+
         <p v-if="error" class="err">{{ error }}</p>
         <p v-if="info" class="ok">{{ info }}</p>
         <button class="btn" style="width:100%;margin-top:16px" :disabled="busy" @click="submit">
           {{ mode === 'login' ? t('auth.loginBtn') : t('auth.registerBtn') }}
         </button>
+        <a v-if="mode === 'login'" href="#" class="back" @click.prevent="step = 'forgot'">{{ t('auth.forgot') }}</a>
+      </template>
+
+      <!-- 忘记密码：发码 -->
+      <template v-else-if="step === 'forgot'">
+        <h3 class="step-t">🔑 {{ t('auth.forgotTitle') }}</h3>
+        <p class="muted hint">{{ t('auth.forgotTip') }}</p>
+        <label>{{ t('auth.email') }}</label>
+        <input v-model="email" type="email" @keyup.enter="doForgot" />
+        <p v-if="error" class="err">{{ error }}</p>
+        <p v-if="info" class="ok">{{ info }}</p>
+        <button class="btn" style="width:100%;margin-top:16px" :disabled="busy" @click="doForgot">{{ t('auth.sendCode') }}</button>
+        <a href="#" class="back" @click.prevent="backToLogin">{{ t('auth.backToLogin') }}</a>
+      </template>
+
+      <!-- 忘记密码：重置 -->
+      <template v-else-if="step === 'reset'">
+        <h3 class="step-t">🔑 {{ t('auth.resetTitle') }}</h3>
+        <label>{{ t('auth.code') }}</label>
+        <input v-model="code" :placeholder="t('auth.codePh')" maxlength="6" />
+        <label>{{ t('auth.newPassword') }}</label>
+        <input v-model="password" type="password" @keyup.enter="doReset" />
+        <p v-if="error" class="err">{{ error }}</p>
+        <p v-if="info" class="ok">{{ info }}</p>
+        <button class="btn" style="width:100%;margin-top:16px" :disabled="busy" @click="doReset">{{ t('auth.resetBtn') }}</button>
+        <a href="#" class="back" @click.prevent="backToLogin">{{ t('auth.backToLogin') }}</a>
       </template>
 
       <!-- 邮箱验证码 -->
@@ -71,12 +102,14 @@ const { t, locale } = useI18n()
 const router = useRouter()
 const auth = useAuth()
 
-const step = ref('form')      // form | verify | pending
+const step = ref('form')      // form | verify | pending | forgot | reset
 const mode = ref('login')
 const username = ref('')
 const email = ref('')
 const password = ref('')
 const code = ref('')
+const otp = ref('')
+const need2fa = ref(false)
 const error = ref('')
 const info = ref('')
 const busy = ref(false)
@@ -88,7 +121,23 @@ function setLang(l) {
 
 function backToLogin() {
   step.value = 'form'; mode.value = 'login'
-  error.value = ''; code.value = ''
+  error.value = ''; info.value = ''; code.value = ''; otp.value = ''; need2fa.value = false
+}
+
+async function doForgot() {
+  error.value = ''; info.value = ''; busy.value = true
+  try {
+    const { data } = await auth.forgot(email.value)
+    info.value = data.message
+    setTimeout(() => { step.value = 'reset'; info.value = '' }, 1200)
+  } catch (e) { error.value = e.response?.data?.detail || 'Error' } finally { busy.value = false }
+}
+async function doReset() {
+  error.value = ''; busy.value = true
+  try {
+    await auth.reset(email.value, code.value, password.value)
+    info.value = t('auth.resetOk'); backToLogin(); info.value = t('auth.resetOk')
+  } catch (e) { error.value = e.response?.data?.detail || 'Error' } finally { busy.value = false }
 }
 
 async function submit() {
@@ -96,7 +145,7 @@ async function submit() {
   busy.value = true
   try {
     if (mode.value === 'login') {
-      await auth.login(username.value, password.value)
+      await auth.login(username.value, password.value, otp.value)
       router.push('/dashboard')
     } else {
       const res = await auth.register(username.value, email.value, password.value)
@@ -113,7 +162,13 @@ async function submit() {
       }
     }
   } catch (e) {
-    error.value = e.response?.data?.detail || t('auth.loginFail')
+    // 需要两步验证：显示 OTP 输入
+    if (e.response?.status === 401 && (e.response?.headers?.['x-2fa-required'] || /两步|2fa|OTP/i.test(e.response?.data?.detail || ''))) {
+      need2fa.value = true
+      error.value = otp.value ? (e.response?.data?.detail || '') : ''
+    } else {
+      error.value = e.response?.data?.detail || t('auth.loginFail')
+    }
   } finally {
     busy.value = false
   }

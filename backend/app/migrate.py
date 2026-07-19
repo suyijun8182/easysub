@@ -30,6 +30,8 @@ _COLUMNS = [
     ("subscriptions", "cancel_by", "DATE NULL"),
     ("subscriptions", "card_last4", "VARCHAR(8) NULL"),
     ("subscriptions", "card_expiry", "VARCHAR(8) NULL"),
+    ("users", "totp_secret", "VARCHAR(64) NULL"),
+    ("users", "totp_enabled", "TINYINT(1) NOT NULL DEFAULT 0"),
 ]
 
 

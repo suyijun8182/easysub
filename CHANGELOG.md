@@ -9,8 +9,22 @@
 ## [Unreleased]
 
 ### Added
-- 路线图（继续分批）：Telegram 已续费按钮、忘记密码/2FA/API Token/敏感加密、
-  报表导出、PWA/Web Push、更多语言、Home Assistant 集成。
+- 路线图（继续分批）：Telegram 已续费按钮、报表导出 CSV、PWA/Web Push、
+  更多语言、Home Assistant 集成。
+
+---
+
+## [1.8.0]
+
+### Added
+- **忘记密码**：登录页可通过邮箱重置码找回密码（需管理员配置 SMTP）。
+- **两步验证 (2FA / TOTP)**：设置页扫码开启，登录需输入验证器 6 位码。
+- **API Token**：设置页创建/吊销，供脚本以 `Authorization: Bearer <token>` 访问 API。
+- **登录失败限流**：短时间多次失败自动锁定，防暴力破解。
+
+### Security
+- **敏感信息加密存储**：各通知渠道的 Token/密钥在数据库中加密保存（密钥由
+  JWT_SECRET 派生），读取时解密；历史明文自动兼容，升级不丢配置。
 
 ---
 

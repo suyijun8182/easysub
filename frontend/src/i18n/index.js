@@ -52,6 +52,8 @@ const zh = {
     loginFail: '用户名或密码错误', welcome: '欢迎回来',
     verifyTitle: '邮箱验证', verifyTip: '验证码已发送至 {email}，请查收并填写（10 分钟内有效）',
     code: '验证码', codePh: '6 位数字', verifyBtn: '验证邮箱', backToLogin: '返回登录',
+    otp: '两步验证码', otpPh: '验证器 6 位码', forgot: '忘记密码？', forgotTitle: '找回密码', forgotTip: '输入注册邮箱，我们会发送重置码（需管理员已配置 SMTP）。',
+    sendCode: '发送重置码', resetTitle: '重置密码', newPassword: '新密码', resetBtn: '重置并登录', resetOk: '密码已重置，请登录',
     pendingTitle: '等待审核', pendingMsg: '注册成功，正在等待管理员审核通过后即可登录。',
     registerOk: '注册成功，请登录'
   },
@@ -137,6 +139,13 @@ const zh = {
     digest: '每周汇总推送', over: '已超预算', budgetLeft: '预算剩余'
   },
   wk: { mon: '周一', tue: '周二', wed: '周三', thu: '周四', fri: '周五', sat: '周六', sun: '周日' },
+  sec: {
+    title: '安全', twofa: '两步验证 (2FA)', on: '已开启', off: '未开启', enable: '开启', disable: '关闭',
+    confirmEnable: '确认开启', scanTip: '用 Google Authenticator / 1Password 等扫码，或手动输入密钥：',
+    enabledOk: '两步验证已开启', disabledOk: '两步验证已关闭', enterPwd: '请输入登录密码以关闭两步验证',
+    apiTokens: 'API Token', tokenName: 'Token 名称', tokenOnce: '请立即复制并妥善保管，仅显示一次：',
+    neverUsed: '未使用', revokeConfirm: '确定吊销该 Token？使用它的脚本将立即失效。'
+  },
   common: { loading: '加载中...', save: '保存', actions: '操作', status: '状态', date: '日期', confirm: '确认', cancel: '取消', close: '关闭' }
 }
 
@@ -192,6 +201,8 @@ const en = {
     loginFail: 'Wrong username or password', welcome: 'Welcome back',
     verifyTitle: 'Verify email', verifyTip: 'A code was sent to {email}. Enter it below (valid 10 min).',
     code: 'Code', codePh: '6 digits', verifyBtn: 'Verify', backToLogin: 'Back to login',
+    otp: '2FA code', otpPh: '6-digit code', forgot: 'Forgot password?', forgotTitle: 'Reset password', forgotTip: 'Enter your email; we\'ll send a reset code (requires admin SMTP).',
+    sendCode: 'Send reset code', resetTitle: 'Reset password', newPassword: 'New password', resetBtn: 'Reset & log in', resetOk: 'Password reset, please log in',
     pendingTitle: 'Awaiting approval', pendingMsg: 'Registered. Waiting for an admin to approve your account.',
     registerOk: 'Registered, please sign in'
   },
@@ -277,6 +288,13 @@ const en = {
     digest: 'Weekly digest', over: 'Over budget', budgetLeft: 'Budget left'
   },
   wk: { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat', sun: 'Sun' },
+  sec: {
+    title: 'Security', twofa: 'Two-factor (2FA)', on: 'enabled', off: 'off', enable: 'Enable', disable: 'Disable',
+    confirmEnable: 'Confirm', scanTip: 'Scan with Google Authenticator / 1Password, or enter the key manually:',
+    enabledOk: '2FA enabled', disabledOk: '2FA disabled', enterPwd: 'Enter your password to disable 2FA',
+    apiTokens: 'API Tokens', tokenName: 'Token name', tokenOnce: 'Copy and store it now — shown only once:',
+    neverUsed: 'never used', revokeConfirm: 'Revoke this token? Scripts using it will stop working.'
+  },
   common: { loading: 'Loading...', save: 'Save', actions: 'Actions', status: 'Status', date: 'Date', confirm: 'Confirm', cancel: 'Cancel', close: 'Close' }
 }
 
@@ -332,6 +350,8 @@ const ru = {
     loginFail: 'Неверный логин или пароль', welcome: 'С возвращением',
     verifyTitle: 'Подтверждение почты', verifyTip: 'Код отправлен на {email}. Введите его ниже (действует 10 мин).',
     code: 'Код', codePh: '6 цифр', verifyBtn: 'Подтвердить', backToLogin: 'Назад ко входу',
+    otp: 'Код 2FA', otpPh: '6-значный код', forgot: 'Забыли пароль?', forgotTitle: 'Сброс пароля', forgotTip: 'Введите email; отправим код сброса (нужен SMTP у админа).',
+    sendCode: 'Отправить код', resetTitle: 'Сброс пароля', newPassword: 'Новый пароль', resetBtn: 'Сбросить и войти', resetOk: 'Пароль сброшен, войдите',
     pendingTitle: 'Ожидание одобрения', pendingMsg: 'Регистрация завершена. Ожидайте одобрения администратора.',
     registerOk: 'Регистрация завершена, войдите'
   },
@@ -417,6 +437,13 @@ const ru = {
     digest: 'Еженедельная сводка', over: 'Превышен бюджет', budgetLeft: 'Остаток бюджета'
   },
   wk: { mon: 'Пн', tue: 'Вт', wed: 'Ср', thu: 'Чт', fri: 'Пт', sat: 'Сб', sun: 'Вс' },
+  sec: {
+    title: 'Безопасность', twofa: 'Двухфакторная (2FA)', on: 'вкл', off: 'выкл', enable: 'Включить', disable: 'Выключить',
+    confirmEnable: 'Подтвердить', scanTip: 'Отсканируйте в Google Authenticator / 1Password или введите ключ вручную:',
+    enabledOk: '2FA включена', disabledOk: '2FA выключена', enterPwd: 'Введите пароль, чтобы выключить 2FA',
+    apiTokens: 'API-токены', tokenName: 'Имя токена', tokenOnce: 'Скопируйте сейчас — показывается один раз:',
+    neverUsed: 'не использован', revokeConfirm: 'Отозвать токен? Скрипты перестанут работать.'
+  },
   common: { loading: 'Загрузка...', save: 'Сохранить', actions: 'Действия', status: 'Статус', date: 'Дата', confirm: 'Подтвердить', cancel: 'Отмена', close: 'Закрыть' }
 }
 

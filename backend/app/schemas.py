@@ -45,6 +45,7 @@ class UserOut(BaseModel):
     telegram_proxy: str | None
     monthly_budget: float | None = None
     notify_settings: dict | None = None
+    totp_enabled: bool = False
 
 
 class UserUpdate(BaseModel):

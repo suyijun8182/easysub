@@ -25,7 +25,15 @@ from email.message import EmailMessage
 
 import httpx
 
+from app import crypto
 from app.services import telegram
+
+# 各渠道需加密存储的敏感字段
+_SECRET_FIELDS = {
+    "telegram": ["bot_token"], "feishu": ["app_secret"], "qq": ["app_secret"],
+    "email": ["password"], "pushplus": ["token"], "serverchan": ["sendkey"],
+    "dingtalk": ["secret"], "ntfy": ["token"], "gotify": ["token"], "webhook": ["secret"],
+}
 
 # ---- 渠道默认配置 ---------------------------------------------------------- #
 _DEFAULTS = {
@@ -61,6 +69,11 @@ def load_config(user) -> dict:
     for key, sub in saved.items():
         if key in cfg and isinstance(sub, dict):
             cfg[key].update({k: v for k, v in sub.items() if k in cfg[key]})
+    # 解密敏感字段（历史明文原样返回）
+    for ch, fields in _SECRET_FIELDS.items():
+        for f in fields:
+            if cfg.get(ch, {}).get(f):
+                cfg[ch][f] = crypto.decrypt(cfg[ch][f])
     # 兼容旧版：telegram 尚未存入 notify_config 时用旧列回填
     if not (isinstance(saved, dict) and saved.get("telegram")):
         cfg["telegram"].update({
@@ -80,8 +93,7 @@ def apply_config(user, incoming: dict) -> dict:
     for key, sub in (incoming or {}).items():
         if key in cfg and isinstance(sub, dict):
             cfg[key].update({k: v for k, v in sub.items() if k in cfg[key]})
-    user.notify_config = cfg
-    # 同步 telegram 到旧列，保证调度器旧路径、备份导出等继续可用
+    # 同步 telegram 到旧列（保持明文，验证机器人/测试等旧路径直接可用）
     tg = cfg["telegram"]
     user.telegram_enabled = bool(tg.get("enabled"))
     user.telegram_bot_token = tg.get("bot_token") or None
@@ -89,6 +101,13 @@ def apply_config(user, incoming: dict) -> dict:
     user.telegram_admin_id = tg.get("admin_id") or None
     user.telegram_api_base = tg.get("api_base") or None
     user.telegram_proxy = tg.get("proxy") or None
+    # 敏感字段加密后再写入 notify_config
+    stored = copy.deepcopy(cfg)
+    for ch, fields in _SECRET_FIELDS.items():
+        for f in fields:
+            if stored.get(ch, {}).get(f):
+                stored[ch][f] = crypto.encrypt(stored[ch][f])
+    user.notify_config = stored
     return cfg
 
 
