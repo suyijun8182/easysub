@@ -8,9 +8,20 @@
 
 ## [Unreleased]
 
+### 计划中（需外部基建/专项推进，暂缓）
+- Telegram 消息内「已续费」按钮（需公网 HTTPS 回调或长轮询）。
+- Web Push 推送（需 VAPID 密钥与订阅管理；当前已有 ntfy/Gotify/Telegram 等推送替代）。
+- 日/韩/西/德 界面语言（需完整翻译校对，避免半成品）。
+
+---
+
+## [1.9.0]
+
 ### Added
-- 路线图（继续分批）：Telegram 已续费按钮、报表导出 CSV、PWA/Web Push、
-  更多语言、Home Assistant 集成。
+- **报表导出 CSV**：报表页一键导出各订阅折算月度/年度成本（基准货币）。
+- **PWA 可安装**：新增 manifest 与 Service Worker，可添加到手机主屏、离线打开外壳。
+- **Home Assistant / API 集成**：新增 `GET /api/integrations/summary`，用 API Token
+  轮询即可拿到即将续费与统计，接入 HA 传感器/自动化。
 
 ---
 

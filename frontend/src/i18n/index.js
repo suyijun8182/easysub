@@ -95,7 +95,7 @@ const zh = {
     title: '报表分析', overview: '总览', insights: '支出洞察', categoryDetail: '分类明细', recentPayments: '近期付款',
     ranking: '支出排行', oneTime: '永久购买', upcoming: '即将续费', expired: '已过期',
     category: '分类', monthly: '月支出', percent: '占比', total: '月支出合计', empty: '暂无数据',
-    monthlyTotal: '每月合计', yearlyTotal: '每年合计', byCategory: '分类支出占比', spendTrend: '支出概览',
+    exportCsv: '导出 CSV', monthlyTotal: '每月合计', yearlyTotal: '每年合计', byCategory: '分类支出占比', spendTrend: '支出概览',
     recurringSubs: '循环订阅', permanentBuy: '永久购买', count: '数量', amount: '金额', date: '日期', type: '类型',
     permanentTotal: '永久购买总额', recurringMonthly: '循环订阅月支出', noData: '暂无可视化数据'
   },
@@ -244,7 +244,7 @@ const en = {
     title: 'Reports', overview: 'Overview', insights: 'Insights', categoryDetail: 'Category detail', recentPayments: 'Recent payments',
     ranking: 'Ranking', oneTime: 'Permanent', upcoming: 'Upcoming', expired: 'Expired',
     category: 'Category', monthly: 'Monthly', percent: 'Share', total: 'Monthly total', empty: 'No data',
-    monthlyTotal: 'Monthly total', yearlyTotal: 'Yearly total', byCategory: 'Spend by category', spendTrend: 'Spend overview',
+    exportCsv: 'Export CSV', monthlyTotal: 'Monthly total', yearlyTotal: 'Yearly total', byCategory: 'Spend by category', spendTrend: 'Spend overview',
     recurringSubs: 'Recurring', permanentBuy: 'Permanent', count: 'Count', amount: 'Amount', date: 'Date', type: 'Type',
     permanentTotal: 'Permanent total', recurringMonthly: 'Recurring monthly', noData: 'No chart data'
   },
@@ -393,7 +393,7 @@ const ru = {
     title: 'Отчёты', overview: 'Обзор', insights: 'Аналитика', categoryDetail: 'По категориям', recentPayments: 'Платежи',
     ranking: 'Рейтинг', oneTime: 'Покупки', upcoming: 'Скоро', expired: 'Истёкшие',
     category: 'Категория', monthly: 'В месяц', percent: 'Доля', total: 'Итого в месяц', empty: 'Нет данных',
-    monthlyTotal: 'Итого в месяц', yearlyTotal: 'Итого в год', byCategory: 'Расходы по категориям', spendTrend: 'Обзор расходов',
+    exportCsv: 'Экспорт CSV', monthlyTotal: 'Итого в месяц', yearlyTotal: 'Итого в год', byCategory: 'Расходы по категориям', spendTrend: 'Обзор расходов',
     recurringSubs: 'Регулярные', permanentBuy: 'Покупки', count: 'Кол-во', amount: 'Сумма', date: 'Дата', type: 'Тип',
     permanentTotal: 'Сумма покупок', recurringMonthly: 'Регулярные в месяц', noData: 'Нет данных для графика'
   },

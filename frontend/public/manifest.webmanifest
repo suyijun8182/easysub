@@ -1,0 +1,14 @@
+{
+  "name": "省心订阅 EasySub",
+  "short_name": "EasySub",
+  "description": "自托管的订阅 / 续费 / 保号管理系统",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f1220",
+  "theme_color": "#5b5bd6",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

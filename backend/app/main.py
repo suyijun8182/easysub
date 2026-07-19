@@ -18,6 +18,7 @@ from app.routers import (
     currencies,
     dashboard,
     icons,
+    integrations,
     logs,
     notifications,
     payment_methods,
@@ -81,6 +82,7 @@ for r in (
     system.router,
     backup.router,
     calendar.router,
+    integrations.router,
 ):
     app.include_router(r)
 

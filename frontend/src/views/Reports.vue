@@ -1,6 +1,9 @@
 <template>
   <div>
-    <h1>{{ t('reports.title') }}</h1>
+    <div class="rep-head">
+      <h1>{{ t('reports.title') }}</h1>
+      <button class="btn ghost sm" @click="exportCsv">⬇️ {{ t('reports.exportCsv') }}</button>
+    </div>
     <div class="seg">
       <button v-for="tab in tabs" :key="tab" :class="{ on: active === tab }" @click="active = tab">
         {{ t('reports.' + tab) }}
@@ -260,6 +263,17 @@ function loadActive() {
   else loadPayments()
 }
 
+async function exportCsv() {
+  try {
+    const { data } = await api.get('/api/reports/export.csv', { responseType: 'text' })
+    const blob = new Blob([data], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url; a.download = 'easysub-report.csv'
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url)
+  } catch { /* ignore */ }
+}
+
 watch(active, loadActive)
 onMounted(async () => {
   cats.value = (await api.get('/api/categories').catch(() => ({ data: [] }))).data || []
@@ -268,6 +282,9 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.rep-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.rep-head h1 { margin: 0; }
+.btn.sm { width: auto; padding: 7px 12px; font-size: 13px; }
 h1 { margin-top: 0; }
 .seg { display: inline-flex; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--border);
   border-radius: 8px; padding: 4px; margin-bottom: 14px; }

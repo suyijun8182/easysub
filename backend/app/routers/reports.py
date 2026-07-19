@@ -1,6 +1,9 @@
+import csv
+import io
 from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import PlainTextResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -46,6 +49,28 @@ def insights(user: User = Depends(get_current_user), db: Session = Depends(get_d
         reverse=True,
     )
     return {"base_currency": base, "monthly_total": round(total, 2), "breakdown": breakdown}
+
+
+@router.get("/export.csv")
+def export_report_csv(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """导出报表 CSV：每个订阅的折算月度/年度成本（基准货币）+ 分类/状态。"""
+    base = user.base_currency
+    subs = db.scalars(select(Subscription).where(Subscription.user_id == user.id)).all()
+    cats = {c.id: c.name for c in db.scalars(select(Category)).all()}
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(["name", "category", "billing_type", "amount", "currency",
+                f"monthly_{base}", f"yearly_{base}", "next_renewal_date", "active"])
+    for s in subs:
+        monthly = _monthly_cost(db, s, base) if s.billing_type == "recurring" else 0.0
+        w.writerow([
+            s.name, cats.get(s.category_id, ""), s.billing_type, s.amount, s.currency,
+            round(monthly, 2), round(monthly * 12, 2),
+            s.next_renewal_date.isoformat() if s.next_renewal_date else "",
+            "1" if s.is_active else "0",
+        ])
+    return PlainTextResponse("﻿" + buf.getvalue(), media_type="text/csv; charset=utf-8",
+                             headers={"Content-Disposition": "attachment; filename=easysub-report.csv"})
 
 
 @router.get("/ranking", response_model=list[SubscriptionOut])
