@@ -12,7 +12,7 @@ from app.models import Subscription, User
 
 router = APIRouter(prefix="/api/system", tags=["system"])
 
-APP_VERSION = "1.5.2"
+APP_VERSION = "1.6.0"
 
 
 @router.get("/info")

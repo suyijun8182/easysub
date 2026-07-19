@@ -188,7 +188,22 @@ def start_scheduler() -> None:
         id="daily_rate_refresh",
         replace_existing=True,
     )
+    # 每天凌晨 3:30 自动整站备份到本地磁盘
+    _scheduler.add_job(
+        _auto_backup_job,
+        CronTrigger(hour=3, minute=30),
+        id="daily_auto_backup",
+        replace_existing=True,
+    )
     _scheduler.start()
+
+
+def _auto_backup_job() -> None:
+    from app.services import autobackup  # 延迟导入避免循环依赖
+    try:
+        autobackup.run_auto_backup()
+    except Exception:  # noqa: BLE001
+        pass
 
 
 def _refresh_rates_job() -> None:

@@ -23,6 +23,7 @@ _COLUMNS = [
     ("users", "telegram_api_base", "VARCHAR(255) NULL"),
     ("users", "telegram_proxy", "VARCHAR(255) NULL"),
     ("users", "notify_config", "JSON NULL"),
+    ("users", "calendar_token", "VARCHAR(64) NULL"),
 ]
 
 

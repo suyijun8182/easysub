@@ -13,6 +13,7 @@ from app.routers import (
     auth,
     backup,
     bundles,
+    calendar,
     categories,
     currencies,
     dashboard,
@@ -79,6 +80,7 @@ for r in (
     logs.router,
     system.router,
     backup.router,
+    calendar.router,
 ):
     app.include_router(r)
 

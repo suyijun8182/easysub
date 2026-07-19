@@ -11,6 +11,7 @@
         <button :class="{ on: filter === 'recurring' }" @click="setFilter('recurring')">{{ t('sub.filterRecurring') }}</button>
         <button :class="{ on: filter === 'one_time' }" @click="setFilter('one_time')">{{ t('sub.filterOneTime') }}</button>
       </div>
+      <input v-model="search" class="search-box" :placeholder="'🔍 ' + t('sub.searchPh')" />
       <span class="muted drag-hint">⠿ {{ t('sub.dragHint') }}</span>
     </div>
 
@@ -523,15 +524,19 @@ function rebuild() {
   catOrder.value = order
 }
 
-const grouped = computed(() =>
-  catOrder.value
+const search = ref('')
+const grouped = computed(() => {
+  const q = search.value.trim().toLowerCase()
+  const match = (s) => !q || [s.name, s.plan, s.remark, s.url].some((v) => (v || '').toLowerCase().includes(q))
+  return catOrder.value
     .filter((k) => orderMap[k] && orderMap[k].length)
     .map((k) => {
       const meta = catMeta(k)
-      const items = orderMap[k].map((id) => subs.value.find((s) => s.id === id)).filter(Boolean)
+      const items = orderMap[k].map((id) => subs.value.find((s) => s.id === id)).filter(Boolean).filter(match)
       return { key: k, icon: meta.icon, name: meta.name, items }
     })
-)
+    .filter((g) => g.items.length)  // 搜索时隐藏空分类
+})
 
 // 拖拽状态
 let dragCatKey = null
@@ -764,6 +769,8 @@ h1 { margin-top: 0; }
   cursor: pointer; color: var(--text-soft); }
 .seg button.on { background: var(--primary); color: #fff; }
 .drag-hint { font-size: 12px; }
+.search-box { flex: 1; min-width: 160px; max-width: 320px; padding: 7px 12px; font-size: 13px;
+  border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); }
 .err { color: var(--danger); font-size: 13px; }
 .ico { width: 18px; height: 18px; vertical-align: middle; border-radius: 4px; }
 .auto-tip { color: var(--primary); font-size: 11px; }

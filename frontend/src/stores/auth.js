@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import api from '../api'
+import { applyTheme } from '../theme'
 
 export const useAuth = defineStore('auth', {
   state: () => ({ user: null }),
@@ -27,13 +28,13 @@ export const useAuth = defineStore('auth', {
       const { data } = await api.get('/api/auth/me')
       this.user = data
       localStorage.setItem('locale', data.locale || 'zh')
-      document.documentElement.setAttribute('data-theme', data.theme || 'light')
+      applyTheme(data.theme || 'light')
       return data
     },
     async updateMe(patch) {
       const { data } = await api.patch('/api/me', patch)
       this.user = data
-      if (patch.theme) document.documentElement.setAttribute('data-theme', patch.theme)
+      if (patch.theme) applyTheme(patch.theme)
       return data
     },
     logout() {

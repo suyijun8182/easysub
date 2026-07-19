@@ -113,6 +113,14 @@ const zh = {
     replaceConfirm: '将先清空每个用户的全部订阅，再从整站备份导入。确定继续？',
     exportOk: '整站备份已下载（{n} 个用户）', importOk: '已恢复 {users} 个用户（新建 {created} 个），共导入 {n} 个订阅'
   },
+  cal: {
+    title: '日历订阅', tip: '把续费日订阅到 Apple / Google / Outlook 日历，续费日自动进日历并原生提醒。链接为你的私有地址，请勿外泄。',
+    get: '获取订阅链接', copy: '复制', reset: '重置链接', copied: '已复制到剪贴板', resetOk: '链接已重置（旧链接失效）'
+  },
+  autobk: {
+    title: '本地自动备份', tip: '系统每天凌晨自动把整站数据导出到服务器 data/backups 目录，多一层保险。',
+    run: '立即备份一次', keep: '保留最近 {n} 份', none: '暂无自动备份文件'
+  },
   common: { loading: '加载中...', save: '保存', actions: '操作', status: '状态', date: '日期', confirm: '确认', cancel: '取消', close: '关闭' }
 }
 
@@ -229,6 +237,14 @@ const en = {
     replaceConfirm: 'This clears every user\'s subscriptions before importing from the full backup. Continue?',
     exportOk: 'Full backup downloaded ({n} users)', importOk: 'Restored {users} users ({created} created), imported {n} subscriptions'
   },
+  cal: {
+    title: 'Calendar subscription', tip: 'Subscribe renewal dates in Apple / Google / Outlook Calendar with native reminders. This is your private URL — keep it secret.',
+    get: 'Get subscribe URL', copy: 'Copy', reset: 'Reset URL', copied: 'Copied to clipboard', resetOk: 'URL reset (old one revoked)'
+  },
+  autobk: {
+    title: 'Local auto-backup', tip: 'The server exports a full-site snapshot to data/backups every night — an extra safety net.',
+    run: 'Back up now', keep: 'Keeps last {n}', none: 'No auto-backup files yet'
+  },
   common: { loading: 'Loading...', save: 'Save', actions: 'Actions', status: 'Status', date: 'Date', confirm: 'Confirm', cancel: 'Cancel', close: 'Close' }
 }
 
@@ -344,6 +360,14 @@ const ru = {
     importConfirm: 'Будут восстановлены данные всех участников из полной копии (отсутствующие аккаунты создаются заново). Продолжить?',
     replaceConfirm: 'Подписки каждого пользователя будут удалены перед импортом из полной копии. Продолжить?',
     exportOk: 'Полная копия скачана (пользователей: {n})', importOk: 'Восстановлено пользователей: {users} (создано: {created}), импортировано подписок: {n}'
+  },
+  cal: {
+    title: 'Подписка на календарь', tip: 'Подпишитесь на даты продления в Apple / Google / Outlook Calendar с напоминаниями. Это ваша личная ссылка — не разглашайте.',
+    get: 'Получить ссылку', copy: 'Копировать', reset: 'Сбросить', copied: 'Скопировано', resetOk: 'Ссылка сброшена (старая недействительна)'
+  },
+  autobk: {
+    title: 'Локальное авто-резервирование', tip: 'Сервер каждую ночь экспортирует снимок всех данных в data/backups — дополнительная страховка.',
+    run: 'Сделать резерв', keep: 'Хранит последние {n}', none: 'Файлов авто-бэкапа пока нет'
   },
   common: { loading: 'Загрузка...', save: 'Сохранить', actions: 'Действия', status: 'Статус', date: 'Дата', confirm: 'Подтвердить', cancel: 'Отмена', close: 'Закрыть' }
 }

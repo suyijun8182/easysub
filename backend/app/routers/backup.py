@@ -313,18 +313,14 @@ def _user_meta(u: User) -> dict:
     }
 
 
-@router.get("/export-all")
-def export_all(admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
-    """管理员：导出全部成员的账户与数据（整站备份）。"""
+def build_full_backup(db: Session) -> dict:
+    """构建整站备份数据（全部成员账户与数据）。供导出接口与定时自动备份共用。"""
     users = db.scalars(select(User).order_by(User.id)).all()
     payload_users = []
     for u in users:
         block = _collect_entities(db, u)
         block["user"] = _user_meta(u)
         payload_users.append(block)
-    activity.log(
-        "backup.export_all", f"管理员导出整站备份（{len(payload_users)} 个用户）", user=admin
-    )
     return {
         "export_version": EXPORT_VERSION,
         "app": "EasySub",
@@ -332,6 +328,32 @@ def export_all(admin: User = Depends(get_admin_user), db: Session = Depends(get_
         "exported_at": datetime.utcnow().isoformat(timespec="seconds"),
         "users": payload_users,
     }
+
+
+@router.get("/export-all")
+def export_all(admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+    """管理员：导出全部成员的账户与数据（整站备份）。"""
+    payload = build_full_backup(db)
+    activity.log(
+        "backup.export_all", f"管理员导出整站备份（{len(payload['users'])} 个用户）", user=admin
+    )
+    return payload
+
+
+@router.get("/auto")
+def list_auto_backups(admin: User = Depends(get_admin_user)):
+    """管理员：查看服务器本地的每日自动备份文件列表。"""
+    from app.services import autobackup  # 延迟导入避免循环
+    return {"dir": autobackup.BACKUP_DIR, "keep": autobackup.KEEP, "files": autobackup.list_backups()}
+
+
+@router.post("/auto/run")
+def run_auto_backup_now(admin: User = Depends(get_admin_user)):
+    """管理员：立即执行一次本地自动备份。"""
+    from app.services import autobackup
+    result = autobackup.run_auto_backup()
+    activity.log("backup.auto_run", f"手动触发本地自动备份：{result}", user=admin)
+    return result
 
 
 class ImportAllIn(BaseModel):

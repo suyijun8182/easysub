@@ -52,6 +52,9 @@ class User(Base):
     # 多渠道通知配置（飞书 / QQ / Bark / Email / Pushplus / Webhook + Telegram）
     notify_config: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
+    # 日历订阅（.ics）令牌：用于生成可在 Apple/Google 日历订阅的私有链接
+    calendar_token: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     subscriptions: Mapped[list["Subscription"]] = relationship(

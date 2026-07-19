@@ -79,6 +79,19 @@
       <p v-if="backupMsg" :class="backupOk ? 'ok' : 'err'">{{ backupMsg }}</p>
     </div>
 
+    <!-- 日历订阅 (.ics) -->
+    <div class="card sect">
+      <h3>📅 {{ t('cal.title') }}</h3>
+      <p class="muted" style="font-size:13px;margin-top:0">{{ t('cal.tip') }}</p>
+      <div class="row" style="align-items:center;gap:10px">
+        <button class="btn ghost" @click="loadCalUrl">🔗 {{ t('cal.get') }}</button>
+        <button v-if="calUrl" class="btn ghost" @click="copyCal">📋 {{ t('cal.copy') }}</button>
+        <button v-if="calUrl" class="btn ghost" @click="resetCal">♻️ {{ t('cal.reset') }}</button>
+      </div>
+      <input v-if="calUrl" :value="calUrl" readonly class="cal-url" @focus="$event.target.select()" />
+      <p v-if="calMsg" class="ok">{{ calMsg }}</p>
+    </div>
+
     <!-- 管理员：整站备份与恢复 -->
     <div class="card sect" v-if="auth.user?.is_admin">
       <h3>🗄️ {{ t('backupAll.title') }}</h3>
@@ -91,6 +104,19 @@
         <label class="switch"><input type="checkbox" v-model="importAllReplace" /> <span>{{ t('backupAll.replace') }}</span></label>
       </div>
       <p v-if="backupAllMsg" :class="backupAllOk ? 'ok' : 'err'">{{ backupAllMsg }}</p>
+
+      <hr />
+      <h4 style="margin:0 0 6px">🗓️ {{ t('autobk.title') }}</h4>
+      <p class="muted" style="font-size:13px;margin-top:0">{{ t('autobk.tip') }}</p>
+      <div class="row" style="align-items:center;gap:10px">
+        <button class="btn ghost" @click="runAutoBackup">▶️ {{ t('autobk.run') }}</button>
+        <span class="muted" style="font-size:12px" v-if="autobk">{{ t('autobk.keep', { n: autobk.keep }) }}</span>
+      </div>
+      <ul v-if="autobk && autobk.files.length" class="bk-list">
+        <li v-for="f in autobk.files" :key="f.name"><b>{{ f.name }}</b>
+          <span class="muted">{{ (f.size / 1024).toFixed(1) }} KB · {{ fmtTime(f.modified) }}</span></li>
+      </ul>
+      <p v-else-if="autobk" class="muted" style="font-size:13px">{{ t('autobk.none') }}</p>
     </div>
 
     <!-- 系统信息 -->
@@ -126,7 +152,8 @@ const themes = [
   { v: 'dark', k: 'Dark', c: '#181d2e' },
   { v: 'ocean', k: 'Ocean', c: '#06b6d4' },
   { v: 'forest', k: 'Forest', c: '#16a34a' },
-  { v: 'purple', k: 'Purple', c: '#9333ea' }
+  { v: 'purple', k: 'Purple', c: '#9333ea' },
+  { v: 'auto', k: 'Auto', c: 'linear-gradient(135deg,#ffffff 50%,#181d2e 50%)' }
 ]
 
 const theme = ref(auth.user?.theme || 'light')
@@ -140,6 +167,10 @@ const pwd = reactive({ old_password: '', new_password: '' })
 const accMsg = ref('')
 const accOk = ref(false)
 const sys = ref(null)
+
+const calUrl = ref('')
+const calMsg = ref('')
+const autobk = ref(null)
 
 const backupMsg = ref('')
 const backupOk = ref(false)
@@ -275,15 +306,43 @@ async function refreshRates() {
   } catch (e) { rateMsg.value = e.response?.data?.detail || 'Error' }
 }
 
+async function loadCalUrl(reset = false) {
+  calMsg.value = ''
+  try {
+    const { data } = await api.get('/api/calendar/token', { params: reset === true ? { reset: true } : {} })
+    calUrl.value = window.location.origin + data.path
+  } catch (e) { calMsg.value = e.response?.data?.detail || 'Error' }
+}
+function resetCal() { loadCalUrl(true).then(() => { calMsg.value = t('cal.resetOk') }) }
+async function copyCal() {
+  try { await navigator.clipboard.writeText(calUrl.value); calMsg.value = t('cal.copied') }
+  catch { calMsg.value = calUrl.value }
+}
+
+async function loadAutoBackups() {
+  try { autobk.value = (await api.get('/api/backup/auto')).data } catch { /* 非管理员忽略 */ }
+}
+async function runAutoBackup() {
+  try { await api.post('/api/backup/auto/run'); await loadAutoBackups() }
+  catch (e) { calMsg.value = e.response?.data?.detail || 'Error' }
+}
+
 onMounted(async () => {
   currencies.value = (await api.get('/api/currencies')).data
   sys.value = (await api.get('/api/system/info')).data
   loadRates()
+  if (auth.user?.is_admin) loadAutoBackups()
 })
 </script>
 
 <style scoped>
 h1 { margin-top: 0; }
+.cal-url { width: 100%; margin-top: 10px; font-family: monospace; font-size: 12px; padding: 8px 10px;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); color: var(--text); }
+.bk-list { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 6px; }
+.bk-list li { display: flex; justify-content: space-between; gap: 12px; font-size: 13px;
+  padding: 8px 10px; background: var(--surface-2); border-radius: 8px; }
+.bk-list .muted { font-size: 12px; }
 .two { grid-template-columns: 1fr 1fr; margin-bottom: 16px; }
 .sect { margin-bottom: 16px; }
 .sect h3 { margin-top: 0; }
