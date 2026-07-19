@@ -62,16 +62,8 @@
       <p v-else class="muted">{{ t('settings.noRates') }}</p>
     </div>
 
-    <!-- 通知渠道（已迁移到独立页面） -->
-    <router-link to="/notify-settings" class="card sect notify-link">
-      <div>
-        <h3>🔔 {{ t('settings.telegram') }} / {{ t('nav.notifyConfig') }}</h3>
-        <p class="muted" style="font-size:13px;margin:4px 0 0">
-          Telegram / 飞书 / QQ / Bark / Email / Pushplus / Webhook —— {{ t('nav.notifyConfig') }} →
-        </p>
-      </div>
-      <span class="arrow">›</span>
-    </router-link>
+    <!-- 通知渠道配置（内嵌在设置页） -->
+    <NotifyChannels />
 
     <!-- 数据备份与恢复 -->
     <div class="card sect">
@@ -124,6 +116,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '../api'
 import { useAuth } from '../stores/auth'
+import NotifyChannels from '../components/NotifyChannels.vue'
 
 const { t, locale } = useI18n()
 const auth = useAuth()
@@ -291,11 +284,6 @@ onMounted(async () => {
 
 <style scoped>
 h1 { margin-top: 0; }
-.notify-link { display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  text-decoration: none; color: inherit; transition: border-color .15s ease, transform .15s ease; }
-.notify-link:hover { border-color: var(--primary); transform: translateY(-1px); }
-.notify-link h3 { margin: 0; }
-.notify-link .arrow { font-size: 22px; color: var(--text-soft); }
 .two { grid-template-columns: 1fr 1fr; margin-bottom: 16px; }
 .sect { margin-bottom: 16px; }
 .sect h3 { margin-top: 0; }

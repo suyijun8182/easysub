@@ -12,7 +12,7 @@
 
 ### 报告 Bug
 
-在 [Issues](https://github.com/你的用户名/easysub/issues) 中创建新 Issue。
+在 [Issues](https://github.com/suyijun8182/easysub/issues) 中创建新 Issue。
 
 **请包含**：
 - 清晰的标题
@@ -24,7 +24,7 @@
 
 ### 建议功能
 
-在 [Issues](https://github.com/你的用户名/easysub/issues) 中创建 Feature Request。
+在 [Issues](https://github.com/suyijun8182/easysub/issues) 中创建 Feature Request。
 
 **请说明**：
 - 功能的用途
@@ -35,7 +35,7 @@
 
 1. **Fork 项目**
    ```bash
-   git clone https://github.com/你的用户名/easysub.git
+   git clone https://github.com/suyijun8182/easysub.git
    ```
 
 2. **创建功能分支**
@@ -214,7 +214,7 @@ npm test
 
 文档和示例与代码一样重要。如果你发现文档有误或不清楚：
 
-1. 在 [Issues](https://github.com/你的用户名/easysub/issues) 中报告
+1. 在 [Issues](https://github.com/suyijun8182/easysub/issues) 中报告
 2. 或直接提交改进的 PR
 
 **文档文件位置**：
@@ -228,9 +228,9 @@ npm test
 
 帮助我们支持更多语言：
 
-1. 在 `frontend/src/i18n/locales/` 中创建新的 JSON 文件
-2. 翻译所有字符串
-3. 在 `frontend/src/i18n/index.js` 中注册语言
+1. 在 `frontend/src/i18n/index.js` 中新增一个语言对象（参照现有的 `zh` / `en` / `ru`）
+2. 翻译所有字符串键
+3. 在 `messages` 中注册该语言并加入语言切换项
 4. 提交 PR
 
 ---

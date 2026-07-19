@@ -144,8 +144,8 @@ class Subscription(Base):
     # 家庭共享成员（JSON 数组，如 ["爸爸","妈妈"]）
     family_members: Mapped[list | None] = mapped_column(JSON, nullable=True)
 
-    # 提醒：提前 N 天（逗号分隔，如 "7,1"）
-    remind_days_before: Mapped[str] = mapped_column(String(64), default="7,1")
+    # 提醒：提前 N 天（逗号分隔）。默认倒数 7 天起每天提醒，用户可自定义。
+    remind_days_before: Mapped[str] = mapped_column(String(64), default="7,6,5,4,3,2,1")
 
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 

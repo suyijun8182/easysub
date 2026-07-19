@@ -1,28 +1,24 @@
 <template>
-  <div>
-    <div class="head card">
-      <div class="head-l">
-        <span class="head-ico" v-html="icon('notifyCfg')"></span>
-        <div>
-          <h1>{{ t('notifyCfg.title') }}</h1>
-          <p class="muted">Telegram / 飞书 / QQ / Bark / Email / Pushplus / Webhook</p>
-        </div>
+  <div class="card sect notify">
+    <div class="nc-head">
+      <div>
+        <h3>🔔 {{ t('notifyCfg.title') }}</h3>
+        <p class="muted" style="font-size:13px;margin:2px 0 0">Telegram / 飞书 / QQ / Bark / Email / Pushplus / Webhook</p>
       </div>
       <button class="btn" :disabled="saving" @click="save">💾 {{ t('notifyCfg.save') }}</button>
     </div>
 
-    <div class="tabs card">
-      <button v-for="tb in tabs" :key="tb.key" class="tab" :class="{ on: tab === tb.key }"
-        @click="tab = tb.key">{{ tb.label }}<span v-if="cfg[tb.key]?.enabled" class="on-dot"></span></button>
+    <div class="tabs">
+      <button v-for="tb in tabs" :key="tb.key" class="tab" :class="{ on: tab === tb.key }" @click="tab = tb.key">
+        {{ tb.label }}<span v-if="cfg[tb.key] && cfg[tb.key].enabled" class="on-dot"></span>
+      </button>
     </div>
 
-    <div v-if="loaded" class="card panel">
-      <!-- 每个渠道通用头部：启用开关 + 测试 -->
+    <div v-if="loaded" class="panel">
       <div class="ch-head">
-        <h3>{{ enableLabel }}</h3>
+        <h4>{{ enableLabel }}</h4>
         <div class="ch-actions">
-          <button v-if="tab !== 'telegram'" class="btn ghost sm" :disabled="testing" @click="test(tab)">
-            🔔 {{ t('notifyCfg.test') }}</button>
+          <button class="btn ghost sm" :disabled="testing" @click="test(tab)">🔔 {{ t('notifyCfg.test') }}</button>
           <label class="switch"><input type="checkbox" v-model="cfg[tab].enabled" /><span class="track"></span></label>
         </div>
       </div>
@@ -34,14 +30,11 @@
           <div class="f"><label>CHAT ID</label><input v-model="cfg.telegram.chat_id" placeholder="-100xxxx / 数字" /></div>
           <div class="f"><label>ADMIN ID</label><input v-model="cfg.telegram.admin_id" /></div>
         </div>
-        <div class="f"><label>{{ t('notifyCfg.tgApiBase') }}</label>
-          <input v-model="cfg.telegram.api_base" placeholder="留空直连 api.telegram.org" /></div>
-        <div class="f"><label>{{ t('notifyCfg.httpProxy') }}</label>
-          <input v-model="cfg.telegram.proxy" placeholder="http://127.0.0.1:7890" /></div>
+        <div class="f"><label>{{ t('notifyCfg.tgApiBase') }}</label><input v-model="cfg.telegram.api_base" placeholder="api.telegram.org" /></div>
+        <div class="f"><label>{{ t('notifyCfg.httpProxy') }}</label><input v-model="cfg.telegram.proxy" placeholder="http://127.0.0.1:7890" /></div>
         <div class="row">
           <button class="btn ghost sm" @click="tgAction('me')">{{ t('settings.checkBot') }}</button>
           <button class="btn ghost sm" @click="tgAction('updates')">{{ t('settings.getUpdates') }}</button>
-          <button class="btn ghost sm" @click="test('telegram')">🔔 {{ t('notifyCfg.test') }}</button>
         </div>
       </div>
 
@@ -51,8 +44,7 @@
           <div class="f"><label>APP ID</label><input v-model="cfg.feishu.app_id" placeholder="cli_xxxx" /></div>
           <div class="f"><label>APP SECRET</label><input v-model="cfg.feishu.app_secret" type="password" /></div>
         </div>
-        <div class="f"><label>CHAT IDS</label>
-          <input v-model="cfg.feishu.chat_ids" placeholder="多个群组用英文逗号分隔" />
+        <div class="f"><label>CHAT IDS</label><input v-model="cfg.feishu.chat_ids" placeholder="oc_xxxx，多个逗号分隔" />
           <small class="muted">{{ t('notifyCfg.feishuHint') }}</small></div>
       </div>
 
@@ -63,10 +55,8 @@
           <div class="f"><label>APP SECRET</label><input v-model="cfg.qq.app_secret" type="password" /></div>
         </div>
         <div class="two">
-          <div class="f"><label>{{ t('notifyCfg.qqGroups') }}</label>
-            <input v-model="cfg.qq.group_ids" placeholder="群聊 OpenID，多个逗号分隔" /></div>
-          <div class="f"><label>{{ t('notifyCfg.qqUsers') }}</label>
-            <input v-model="cfg.qq.user_ids" placeholder="用户 OpenID，多个逗号分隔" /></div>
+          <div class="f"><label>{{ t('notifyCfg.qqGroups') }}</label><input v-model="cfg.qq.group_ids" placeholder="群聊 OpenID，多个逗号分隔" /></div>
+          <div class="f"><label>{{ t('notifyCfg.qqUsers') }}</label><input v-model="cfg.qq.user_ids" placeholder="用户 OpenID，多个逗号分隔" /></div>
         </div>
         <small class="muted">{{ t('notifyCfg.qqHint') }}</small>
       </div>
@@ -98,8 +88,7 @@
         <div class="three">
           <div class="f"><label>SMTP {{ t('notifyCfg.host') }}</label><input v-model="cfg.email.host" placeholder="smtp.example.com" /></div>
           <div class="f"><label>SMTP {{ t('notifyCfg.port') }}</label><input v-model.number="cfg.email.port" type="number" /></div>
-          <div class="f"><label>SSL/TLS</label>
-            <label class="switch mt"><input type="checkbox" v-model="cfg.email.ssl" /><span class="track"></span></label></div>
+          <div class="f sw"><label>SSL/TLS</label><label class="switch"><input type="checkbox" v-model="cfg.email.ssl" /><span class="track"></span></label></div>
         </div>
         <div class="two">
           <div class="f"><label>{{ t('notifyCfg.username') }}</label><input v-model="cfg.email.username" placeholder="邮箱账号" /></div>
@@ -133,20 +122,19 @@
             <button class="x" @click="cfg.webhook.urls.splice(i, 1)">✕</button>
           </div>
         </div>
-        <div class="f"><label>{{ t('notifyCfg.whSecret') }}</label>
-          <input v-model="cfg.webhook.secret" placeholder="HMAC-SHA256 签名密钥，选填" />
+        <div class="f"><label>{{ t('notifyCfg.whSecret') }}</label><input v-model="cfg.webhook.secret" placeholder="HMAC-SHA256 签名密钥，选填" />
           <small class="muted">{{ t('notifyCfg.whSecretHint') }}</small></div>
         <div class="f">
           <div class="f-h"><label>{{ t('notifyCfg.whHeaders') }}</label>
             <button class="btn ghost xs" @click="cfg.webhook.headers.push({ key: '', value: '' })">+ Header</button></div>
           <div v-for="(h, i) in cfg.webhook.headers" :key="i" class="list-row">
-            <input v-model="h.key" placeholder="Header 名，如 Authorization" style="flex:1" />
+            <input v-model="h.key" placeholder="Authorization" style="flex:1" />
             <input v-model="h.value" placeholder="值" style="flex:1.4" />
             <button class="x" @click="cfg.webhook.headers.splice(i, 1)">✕</button>
           </div>
         </div>
         <div class="f"><label>{{ t('notifyCfg.whTemplate') }}</label>
-          <textarea v-model="cfg.webhook.template" rows="2" placeholder="{{subject}} {{text}}"></textarea>
+          <textarea v-model="cfg.webhook.template" rows="2" :placeholder="tplPlaceholder"></textarea>
           <small class="muted">{{ t('notifyCfg.whTemplateHint') }}</small></div>
         <div class="two">
           <div class="f"><label>{{ t('notifyCfg.whTimeout') }}</label><input v-model.number="cfg.webhook.timeout_ms" type="number" /></div>
@@ -156,6 +144,7 @@
 
       <p v-if="msg" :class="ok ? 'ok' : 'err'">{{ msg }}</p>
     </div>
+    <p v-else class="muted">{{ t('common.loading') }}</p>
   </div>
 </template>
 
@@ -163,7 +152,6 @@
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '../api'
-import { icon } from '../icons'
 
 const { t } = useI18n()
 const tab = ref('telegram')
@@ -172,29 +160,48 @@ const saving = ref(false)
 const testing = ref(false)
 const msg = ref('')
 const ok = ref(false)
-const cfg = ref({})
+const cfg = ref(defaults())
+const tplPlaceholder = '{{subject}} {{text}}'
 
 const tabs = [
-  { key: 'telegram', label: 'Telegram Bot' },
-  { key: 'feishu', label: '飞书 Bot' },
-  { key: 'qq', label: 'QQ Bot' },
-  { key: 'bark', label: 'Bark' },
-  { key: 'email', label: 'Email' },
-  { key: 'pushplus', label: 'Pushplus' },
-  { key: 'webhook', label: 'Webhook' }
+  { key: 'telegram', label: 'Telegram Bot' }, { key: 'feishu', label: '飞书 Bot' },
+  { key: 'qq', label: 'QQ Bot' }, { key: 'bark', label: 'Bark' }, { key: 'email', label: 'Email' },
+  { key: 'pushplus', label: 'Pushplus' }, { key: 'webhook', label: 'Webhook' }
 ]
-
 const enableLabels = {
   telegram: '启用 Telegram 机器人', feishu: '启用飞书机器人', qq: '启用 QQ 机器人',
   bark: '启用 Bark 推送', email: '启用 Email 推送', pushplus: '启用 Pushplus 推送', webhook: '启用 Webhook 推送'
 }
 const enableLabel = computed(() => enableLabels[tab.value])
 
+// 客户端默认结构：与后端保持一致，防止某渠道/字段缺失导致模板访问 undefined（webhook 空白根因防御）
+function defaults() {
+  return {
+    telegram: { enabled: false, bot_token: '', chat_id: '', admin_id: '', api_base: '', proxy: '' },
+    feishu: { enabled: false, app_id: '', app_secret: '', chat_ids: '' },
+    qq: { enabled: false, app_id: '', app_secret: '', group_ids: '', user_ids: '' },
+    bark: { enabled: false, urls: [], group: '', level: 'active', icon: '' },
+    email: { enabled: false, host: '', port: 465, ssl: true, username: '', password: '', from: '', to: '' },
+    pushplus: { enabled: false, token: '', topic: '', channel: 'wechat' },
+    webhook: { enabled: false, urls: [], secret: '', headers: [], template: '', timeout_ms: 5000, max_retries: 3 }
+  }
+}
+
 function flash(good, text) { ok.value = good; msg.value = text; setTimeout(() => (msg.value = ''), 4000) }
 
 async function load() {
-  const { data } = await api.get('/api/notifications/config')
-  cfg.value = data.config
+  const base = defaults()
+  try {
+    const { data } = await api.get('/api/notifications/config')
+    const got = data.config || {}
+    for (const k of Object.keys(base)) {
+      if (got[k] && typeof got[k] === 'object') Object.assign(base[k], got[k])
+      // 数组字段确保是数组，避免 v-for over null
+      if (!Array.isArray(base[k].urls) && 'urls' in base[k]) base[k].urls = []
+      if (k === 'webhook' && !Array.isArray(base[k].headers)) base[k].headers = []
+    }
+  } catch { /* 用默认值 */ }
+  cfg.value = base
   loaded.value = true
 }
 
@@ -207,15 +214,13 @@ async function save() {
 }
 
 async function test(channel) {
-  testing.value = true
-  msg.value = ''
+  testing.value = true; msg.value = ''
   try {
     await api.post('/api/notifications/test', { channel, config: cfg.value[channel] })
     flash(true, t('notifyCfg.testOk'))
   } catch (e) { flash(false, e.response?.data?.detail || 'Error') } finally { testing.value = false }
 }
 
-// Telegram 专用：验证机器人 / 获取 Chat ID（需先保存，后端从已存配置读取）
 async function tgAction(kind) {
   msg.value = ''
   try {
@@ -236,49 +241,36 @@ onMounted(load)
 </script>
 
 <style scoped>
-h1 { margin: 0; font-size: 20px; }
-.head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
-.head-l { display: flex; align-items: center; gap: 12px; }
-.head-ico { width: 44px; height: 44px; border-radius: 12px; background: var(--primary-soft); color: var(--primary);
-  display: flex; align-items: center; justify-content: center; padding: 10px; }
-.head-l p { margin: 2px 0 0; font-size: 13px; }
-
-.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; padding: 8px; }
-.tab { border: none; background: transparent; padding: 8px 14px; border-radius: 10px; cursor: pointer;
-  font-size: 14px; color: var(--text-soft); display: inline-flex; align-items: center; gap: 6px; }
+.notify h3 { margin: 0; }
+.nc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.nc-head .btn { width: auto; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; padding: 6px; background: var(--surface-2); border-radius: 12px; }
+.tab { border: none; background: transparent; padding: 7px 13px; border-radius: 9px; cursor: pointer; font-size: 13px;
+  color: var(--text-soft); display: inline-flex; align-items: center; gap: 6px; }
 .tab.on { background: var(--surface); color: var(--primary); font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
 .on-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); }
-
-.panel { padding: 20px; }
-.ch-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.ch-head h3 { margin: 0; font-size: 17px; }
+.ch-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.ch-head h4 { margin: 0; font-size: 16px; }
 .ch-actions { display: flex; align-items: center; gap: 12px; }
-
-.fields { display: flex; flex-direction: column; gap: 14px; }
-.two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.three { display: grid; grid-template-columns: 1fr 1fr auto; gap: 14px; align-items: end; }
+.fields { display: flex; flex-direction: column; gap: 13px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+.three { display: grid; grid-template-columns: 1fr 1fr auto; gap: 13px; align-items: end; }
 .f { display: flex; flex-direction: column; gap: 5px; }
+.f.sw { align-items: flex-start; }
 .f label { font-size: 12px; font-weight: 600; color: var(--text-soft); letter-spacing: .03em; }
-.f input, .f select, .f textarea { width: 100%; }
 .f-h { display: flex; justify-content: space-between; align-items: center; }
 .f small { font-size: 12px; }
-.empty { border: 1px dashed var(--border); border-radius: 10px; padding: 14px; text-align: center;
-  color: var(--text-soft); font-size: 13px; margin: 0; }
+.empty { border: 1px dashed var(--border); border-radius: 10px; padding: 12px; text-align: center; color: var(--text-soft); font-size: 13px; margin: 0; }
 .list-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
 .list-row input { flex: 1; }
-.x { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; width: 34px; height: 34px;
-  cursor: pointer; color: var(--danger); flex-shrink: 0; }
-
+.x { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; width: 34px; height: 34px; cursor: pointer; color: var(--danger); flex-shrink: 0; }
 .btn.sm { width: auto; padding: 7px 12px; font-size: 13px; }
 .btn.xs { width: auto; padding: 4px 10px; font-size: 12px; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; }
 .switch { display: inline-flex; align-items: center; cursor: pointer; }
-.switch.mt { margin-top: 4px; }
 .switch input { display: none; }
-.switch .track { width: 42px; height: 24px; border-radius: 12px; background: var(--border); position: relative;
-  transition: background .2s; }
-.switch .track::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
-  border-radius: 50%; background: #fff; transition: transform .2s; }
+.switch .track { width: 42px; height: 24px; border-radius: 12px; background: var(--border); position: relative; transition: background .2s; }
+.switch .track::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .2s; }
 .switch input:checked + .track { background: var(--primary); }
 .switch input:checked + .track::after { transform: translateX(18px); }
 .ok { color: var(--success); font-size: 13px; }

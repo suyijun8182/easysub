@@ -233,7 +233,7 @@ def _restore_entities(db: Session, user: User, data: dict, replace: bool) -> int
             show_in_calendar=s.get("show_in_calendar", True),
             sort=s.get("sort", 0) or 0,
             family_members=s.get("family_members"),
-            remind_days_before=s.get("remind_days_before", "7,1") or "7,1",
+            remind_days_before=s.get("remind_days_before", "7,6,5,4,3,2,1") or "7,6,5,4,3,2,1",
         )
         if billing_type == "recurring" and not sub.next_renewal_date:
             sub.next_renewal_date = compute_next_renewal(start, sub.cycle, sub.cycle_count)

@@ -14,7 +14,6 @@ const routes = [
       { path: 'calendar', component: () => import('../views/Calendar.vue') },
       { path: 'reports', component: () => import('../views/Reports.vue') },
       { path: 'notifications', component: () => import('../views/Notifications.vue') },
-      { path: 'notify-settings', component: () => import('../views/NotifySettings.vue') },
       { path: 'logs', component: () => import('../views/Logs.vue') },
       { path: 'settings', component: () => import('../views/Settings.vue') },
       { path: 'users', component: () => import('../views/Users.vue') }

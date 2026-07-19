@@ -55,7 +55,6 @@ const navItems = computed(() => {
     { to: '/calendar', key: 'calendar', label: 'nav.calendar' },
     { to: '/reports', key: 'reports', label: 'nav.reports' },
     { to: '/notifications', key: 'notifications', label: 'nav.notifications' },
-    { to: '/notify-settings', key: 'notifyCfg', label: 'nav.notifyConfig' },
     { to: '/logs', key: 'logs', label: 'nav.logs' },
     { to: '/settings', key: 'settings', label: 'nav.settings' }
   ]

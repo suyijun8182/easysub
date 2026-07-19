@@ -125,7 +125,7 @@ class SubscriptionIn(BaseModel):
     auto_renew: bool = True
     show_in_calendar: bool = True
     family_members: list[str] | None = None
-    remind_days_before: str = "7,1"
+    remind_days_before: str = "7,6,5,4,3,2,1"
 
 
 class SubscriptionUpdate(BaseModel):

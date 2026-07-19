@@ -250,7 +250,7 @@
           <div class="row" v-if="form.billing_type === 'recurring'">
             <div style="flex:1">
               <label>{{ t('sub.remindDays') }}</label>
-              <input v-model="form.remind_days_before" placeholder="7,1" />
+              <input v-model="form.remind_days_before" placeholder="7,6,5,4,3,2,1" />
             </div>
             <div style="flex:1">
               <label>{{ t('sub.active') }}</label>
@@ -466,7 +466,7 @@ function blank() {
     category_id: null, payment_method_id: null, bundle_id: null, billing_type: 'recurring',
     cycle: 'month', cycle_count: 1, start_date: new Date().toISOString().slice(0, 10),
     next_renewal_date: '', end_date: null, url: '', notes: '', remark: '', ipv4: '', ipv6: '',
-    remind_days_before: '7,1', auto_renew: true, is_active: true,
+    remind_days_before: '7,6,5,4,3,2,1', auto_renew: true, is_active: true,
     show_in_calendar: true, family_members: []
   }
 }
