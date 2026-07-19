@@ -31,6 +31,18 @@
         </div>
       </div>
 
+      <!-- 月度预算 -->
+      <div class="card budget" v-if="data.monthly_budget">
+        <div class="bc-h">
+          <span class="muted">{{ t('remind.budget') }}</span>
+          <b :class="{ over: overBudget }">{{ fmt(data.month_spend) }} / {{ fmt(data.monthly_budget) }}</b>
+        </div>
+        <div class="bc-bar"><div class="bc-fill" :class="{ over: overBudget }" :style="{ width: budgetPct + '%' }"></div></div>
+        <div class="muted bc-note">
+          {{ overBudget ? t('remind.over') : t('remind.budgetLeft') }}：{{ fmt(Math.abs(data.monthly_budget - data.month_spend)) }}
+        </div>
+      </div>
+
       <div class="grid main">
         <!-- 即将到期 -->
         <div class="card">
@@ -122,6 +134,13 @@ const breakdown = ref([])
 const expiredCount = ref(0)
 const allSubs = ref([])
 const cats = ref([])
+
+const overBudget = computed(() => data.value.monthly_budget && data.value.month_spend > data.value.monthly_budget)
+const budgetPct = computed(() => {
+  const b = data.value.monthly_budget
+  if (!b) return 0
+  return Math.min(100, Math.round((data.value.month_spend / b) * 100))
+})
 
 const PALETTE = ['#5b5bd6', '#06b6d4', '#16a34a', '#f59e0b', '#ef4444', '#a855f7', '#0ea5e9', '#ec4899']
 function color(i) { return PALETTE[i % PALETTE.length] }
@@ -231,6 +250,13 @@ onMounted(async () => {
 .stat.s4.alert { border-color: var(--danger); }
 .stat .big { font-size: 24px; font-weight: 700; margin-top: 2px; letter-spacing: -.02em; }
 
+.budget { margin-bottom: 16px; }
+.bc-h { display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 8px; }
+.bc-h b.over { color: var(--danger); }
+.bc-bar { height: 10px; border-radius: 6px; background: var(--surface-2); overflow: hidden; }
+.bc-fill { height: 100%; background: var(--primary); border-radius: 6px; transition: width .4s ease; }
+.bc-fill.over { background: var(--danger); }
+.bc-note { font-size: 12px; margin-top: 6px; }
 .main { grid-template-columns: 1.2fr 1fr; margin-bottom: 16px; }
 .card-h { display: flex; justify-content: space-between; align-items: center; }
 .card-h h3 { margin: 0; }

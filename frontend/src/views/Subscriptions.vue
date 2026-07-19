@@ -12,6 +12,10 @@
         <button :class="{ on: filter === 'one_time' }" @click="setFilter('one_time')">{{ t('sub.filterOneTime') }}</button>
       </div>
       <input v-model="search" class="search-box" :placeholder="'🔍 ' + t('sub.searchPh')" />
+      <button class="btn ghost sm" @click="exportCsv">⬇️ CSV</button>
+      <label class="btn ghost sm" style="margin:0;cursor:pointer">⬆️ CSV
+        <input type="file" accept=".csv,text/csv" hidden @change="importCsv" />
+      </label>
       <span class="muted drag-hint">⠿ {{ t('sub.dragHint') }}</span>
     </div>
 
@@ -264,6 +268,18 @@
           </div>
         </div>
 
+        <div class="block" v-if="form.billing_type === 'recurring'">
+          <div class="block-t">{{ t('sub.secTrialCard') }}</div>
+          <div class="row">
+            <div style="flex:1"><label>{{ t('sub.trialEnd') }}</label><input type="date" v-model="form.trial_end" /></div>
+            <div style="flex:1"><label>{{ t('sub.cancelBy') }}</label><input type="date" v-model="form.cancel_by" /></div>
+          </div>
+          <div class="row">
+            <div style="flex:1"><label>{{ t('sub.cardLast4') }}</label><input v-model="form.card_last4" maxlength="4" placeholder="4242" /></div>
+            <div style="flex:1"><label>{{ t('sub.cardExpiry') }}</label><input v-model="form.card_expiry" placeholder="MM/YY" /></div>
+          </div>
+        </div>
+
         <div class="block">
           <div class="block-t">{{ t('sub.secClassify') }}</div>
           <div class="row">
@@ -468,7 +484,8 @@ function blank() {
     cycle: 'month', cycle_count: 1, start_date: new Date().toISOString().slice(0, 10),
     next_renewal_date: '', end_date: null, url: '', notes: '', remark: '', ipv4: '', ipv6: '',
     remind_days_before: '7,6,5,4,3,2,1', auto_renew: true, is_active: true,
-    show_in_calendar: true, family_members: []
+    show_in_calendar: true, family_members: [],
+    trial_end: null, cancel_by: null, card_last4: '', card_expiry: ''
   }
 }
 
@@ -678,6 +695,27 @@ async function uploadIcon(e) {
   form.value.icon = data.url
 }
 
+async function exportCsv() {
+  try {
+    const { data } = await api.get('/api/subscriptions/export.csv', { responseType: 'text' })
+    const blob = new Blob([data], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url; a.download = 'easysub-subscriptions.csv'
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url)
+  } catch (e) { toast(e.response?.data?.detail || 'Error') }
+}
+async function importCsv(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  try {
+    const content = await file.text()
+    const { data } = await api.post('/api/subscriptions/import-csv', { content })
+    toast(t('sub.csvImported', { n: data.imported }))
+    load()
+  } catch (err) { toast(err.response?.data?.detail || 'Error') } finally { e.target.value = '' }
+}
+
 async function save() {
   formErr.value = ''
   try {
@@ -690,6 +728,9 @@ async function save() {
     }
     const payload = { ...form.value }
     if (!payload.next_renewal_date) delete payload.next_renewal_date
+    // 空日期串转 null，避免后端日期解析报错
+    for (const k of ['trial_end', 'cancel_by']) if (!payload[k]) payload[k] = null
+    for (const k of ['card_last4', 'card_expiry']) if (!payload[k]) payload[k] = null
     if (payload.id) await api.put(`/api/subscriptions/${payload.id}`, payload)
     else await api.post('/api/subscriptions', payload)
     showForm.value = false

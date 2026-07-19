@@ -43,6 +43,8 @@ class UserOut(BaseModel):
     telegram_admin_id: str | None
     telegram_api_base: str | None
     telegram_proxy: str | None
+    monthly_budget: float | None = None
+    notify_settings: dict | None = None
 
 
 class UserUpdate(BaseModel):
@@ -56,6 +58,8 @@ class UserUpdate(BaseModel):
     telegram_admin_id: str | None = None
     telegram_api_base: str | None = None
     telegram_proxy: str | None = None
+    monthly_budget: float | None = None
+    notify_settings: dict | None = None
 
 
 # ---------- Category ----------
@@ -126,6 +130,10 @@ class SubscriptionIn(BaseModel):
     show_in_calendar: bool = True
     family_members: list[str] | None = None
     remind_days_before: str = "7,6,5,4,3,2,1"
+    trial_end: date | None = None
+    cancel_by: date | None = None
+    card_last4: str | None = None
+    card_expiry: str | None = None
 
 
 class SubscriptionUpdate(BaseModel):
@@ -153,6 +161,10 @@ class SubscriptionUpdate(BaseModel):
     show_in_calendar: bool | None = None
     family_members: list[str] | None = None
     remind_days_before: str | None = None
+    trial_end: date | None = None
+    cancel_by: date | None = None
+    card_last4: str | None = None
+    card_expiry: str | None = None
 
 
 class SubscriptionOut(BaseModel):
@@ -184,6 +196,10 @@ class SubscriptionOut(BaseModel):
     sort: int = 0
     family_members: list[str] | None
     remind_days_before: str
+    trial_end: date | None = None
+    cancel_by: date | None = None
+    card_last4: str | None = None
+    card_expiry: str | None = None
     created_at: datetime
     # 派生字段
     amount_in_base: float | None = None
@@ -208,6 +224,7 @@ class DashboardOut(BaseModel):
     month_spend: float
     year_spend: float
     active_count: int
+    monthly_budget: float | None = None
     upcoming: list[SubscriptionOut]
     recent: list[SubscriptionOut]
 

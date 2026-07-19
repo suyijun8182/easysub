@@ -69,6 +69,7 @@ def dashboard(user: User = Depends(get_current_user), db: Session = Depends(get_
         month_spend=round(month_spend, 2),
         year_spend=round(year_spend, 2),
         active_count=len(subs),
+        monthly_budget=user.monthly_budget,
         upcoming=conv(upcoming),
         recent=conv(recent),
     )

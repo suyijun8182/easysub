@@ -78,3 +78,6 @@ docker-compose.gui.yml
 docker-compose.panel.yml
 update-dockerhub-overview.sh
 通知image/
+
+backend/_smoke.py
+backend/.venv/

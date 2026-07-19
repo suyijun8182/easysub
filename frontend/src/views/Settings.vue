@@ -65,6 +65,34 @@
     <!-- 通知渠道配置（内嵌在设置页） -->
     <NotifyChannels />
 
+    <!-- 提醒与预算 -->
+    <div class="card sect">
+      <h3>⏰ {{ t('remind.title') }}</h3>
+      <div class="row" style="gap:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:150px">
+          <label>{{ t('remind.budget') }}（{{ baseCurrency }}）</label>
+          <input v-model.number="prefs.monthly_budget" type="number" min="0" :placeholder="t('remind.budgetPh')" />
+        </div>
+        <div style="flex:1;min-width:120px">
+          <label>{{ t('remind.quietStart') }}</label>
+          <input v-model="prefs.quiet_start" type="time" />
+        </div>
+        <div style="flex:1;min-width:120px">
+          <label>{{ t('remind.quietEnd') }}</label>
+          <input v-model="prefs.quiet_end" type="time" />
+        </div>
+      </div>
+      <p class="muted" style="font-size:12px;margin:6px 0 0">{{ t('remind.quietHint') }}</p>
+      <div class="row" style="align-items:center;gap:14px;margin-top:12px;flex-wrap:wrap">
+        <label class="switch"><input type="checkbox" v-model="prefs.digest_enabled" /> <span>{{ t('remind.digest') }}</span></label>
+        <select v-if="prefs.digest_enabled" v-model.number="prefs.digest_weekday" style="width:auto">
+          <option v-for="(d, i) in weekdays" :key="i" :value="i">{{ d }}</option>
+        </select>
+        <button class="btn" style="width:auto" @click="savePrefs">{{ t('settings.save') }}</button>
+      </div>
+      <p v-if="prefsMsg" class="ok">{{ prefsMsg }}</p>
+    </div>
+
     <!-- 数据备份与恢复 -->
     <div class="card sect">
       <h3>💾 {{ t('backup.title') }}</h3>
@@ -138,7 +166,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '../api'
 import { useAuth } from '../stores/auth'
@@ -171,6 +199,30 @@ const sys = ref(null)
 const calUrl = ref('')
 const calMsg = ref('')
 const autobk = ref(null)
+
+const ns = auth.user?.notify_settings || {}
+const prefs = reactive({
+  monthly_budget: auth.user?.monthly_budget ?? null,
+  quiet_start: ns.quiet_start || '',
+  quiet_end: ns.quiet_end || '',
+  digest_enabled: !!ns.digest_enabled,
+  digest_weekday: ns.digest_weekday ?? 0
+})
+const prefsMsg = ref('')
+const weekdays = computed(() => [
+  t('wk.mon'), t('wk.tue'), t('wk.wed'), t('wk.thu'), t('wk.fri'), t('wk.sat'), t('wk.sun')
+])
+async function savePrefs() {
+  await auth.updateMe({
+    monthly_budget: prefs.monthly_budget || null,
+    notify_settings: {
+      quiet_start: prefs.quiet_start || null, quiet_end: prefs.quiet_end || null,
+      digest_enabled: prefs.digest_enabled, digest_weekday: prefs.digest_weekday
+    }
+  })
+  prefsMsg.value = t('settings.saved')
+  setTimeout(() => (prefsMsg.value = ''), 3000)
+}
 
 const backupMsg = ref('')
 const backupOk = ref(false)

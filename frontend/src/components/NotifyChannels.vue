@@ -111,6 +111,56 @@
         </div>
       </div>
 
+      <!-- Server酱 -->
+      <div v-else-if="tab === 'serverchan'" class="fields">
+        <div class="f"><label>SENDKEY</label><input v-model="cfg.serverchan.sendkey" placeholder="SCT... / SendKey" />
+          <small class="muted">{{ t('notifyCfg.serverchanHint') }}</small></div>
+      </div>
+
+      <!-- 企业微信 -->
+      <div v-else-if="tab === 'wecom'" class="fields">
+        <div class="f"><label>{{ t('notifyCfg.robotUrl') }}</label><input v-model="cfg.wecom.url" placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..." />
+          <small class="muted">{{ t('notifyCfg.wecomHint') }}</small></div>
+      </div>
+
+      <!-- 钉钉 -->
+      <div v-else-if="tab === 'dingtalk'" class="fields">
+        <div class="f"><label>{{ t('notifyCfg.robotUrl') }}</label><input v-model="cfg.dingtalk.url" placeholder="https://oapi.dingtalk.com/robot/send?access_token=..." /></div>
+        <div class="f"><label>{{ t('notifyCfg.signSecret') }}</label><input v-model="cfg.dingtalk.secret" placeholder="SEC... 加签密钥，选填" />
+          <small class="muted">{{ t('notifyCfg.dingtalkHint') }}</small></div>
+      </div>
+
+      <!-- Discord -->
+      <div v-else-if="tab === 'discord'" class="fields">
+        <div class="f"><label>Webhook URL</label><input v-model="cfg.discord.url" placeholder="https://discord.com/api/webhooks/..." />
+          <small class="muted">{{ t('notifyCfg.discordHint') }}</small></div>
+      </div>
+
+      <!-- Slack -->
+      <div v-else-if="tab === 'slack'" class="fields">
+        <div class="f"><label>Webhook URL</label><input v-model="cfg.slack.url" placeholder="https://hooks.slack.com/services/..." />
+          <small class="muted">{{ t('notifyCfg.slackHint') }}</small></div>
+      </div>
+
+      <!-- ntfy -->
+      <div v-else-if="tab === 'ntfy'" class="fields">
+        <div class="two">
+          <div class="f"><label>{{ t('notifyCfg.server') }}</label><input v-model="cfg.ntfy.server" placeholder="https://ntfy.sh" /></div>
+          <div class="f"><label>Topic</label><input v-model="cfg.ntfy.topic" placeholder="your-topic" /></div>
+        </div>
+        <div class="f"><label>{{ t('notifyCfg.tokenOptional') }}</label><input v-model="cfg.ntfy.token" placeholder="tk_... 访问令牌，选填" />
+          <small class="muted">{{ t('notifyCfg.ntfyHint') }}</small></div>
+      </div>
+
+      <!-- Gotify -->
+      <div v-else-if="tab === 'gotify'" class="fields">
+        <div class="two">
+          <div class="f"><label>{{ t('notifyCfg.server') }}</label><input v-model="cfg.gotify.server" placeholder="https://gotify.example.com" /></div>
+          <div class="f"><label>App Token</label><input v-model="cfg.gotify.token" placeholder="应用 Token" /></div>
+        </div>
+        <div class="f" style="max-width:160px"><label>{{ t('notifyCfg.priority') }}</label><input v-model.number="cfg.gotify.priority" type="number" /></div>
+      </div>
+
       <!-- Webhook -->
       <div v-else-if="tab === 'webhook'" class="fields">
         <div class="f">
@@ -166,11 +216,18 @@ const tplPlaceholder = '{{subject}} {{text}}'
 const tabs = [
   { key: 'telegram', label: 'Telegram Bot' }, { key: 'feishu', label: '飞书 Bot' },
   { key: 'qq', label: 'QQ Bot' }, { key: 'bark', label: 'Bark' }, { key: 'email', label: 'Email' },
-  { key: 'pushplus', label: 'Pushplus' }, { key: 'webhook', label: 'Webhook' }
+  { key: 'pushplus', label: 'Pushplus' }, { key: 'serverchan', label: 'Server酱' },
+  { key: 'wecom', label: '企业微信' }, { key: 'dingtalk', label: '钉钉' },
+  { key: 'discord', label: 'Discord' }, { key: 'slack', label: 'Slack' },
+  { key: 'ntfy', label: 'ntfy' }, { key: 'gotify', label: 'Gotify' },
+  { key: 'webhook', label: 'Webhook' }
 ]
 const enableLabels = {
   telegram: '启用 Telegram 机器人', feishu: '启用飞书机器人', qq: '启用 QQ 机器人',
-  bark: '启用 Bark 推送', email: '启用 Email 推送', pushplus: '启用 Pushplus 推送', webhook: '启用 Webhook 推送'
+  bark: '启用 Bark 推送', email: '启用 Email 推送', pushplus: '启用 Pushplus 推送',
+  serverchan: '启用 Server酱', wecom: '启用企业微信机器人', dingtalk: '启用钉钉机器人',
+  discord: '启用 Discord', slack: '启用 Slack', ntfy: '启用 ntfy', gotify: '启用 Gotify',
+  webhook: '启用 Webhook 推送'
 }
 const enableLabel = computed(() => enableLabels[tab.value])
 
@@ -183,6 +240,13 @@ function defaults() {
     bark: { enabled: false, urls: [], group: '', level: 'active', icon: '' },
     email: { enabled: false, host: '', port: 465, ssl: true, username: '', password: '', from: '', to: '' },
     pushplus: { enabled: false, token: '', topic: '', channel: 'wechat' },
+    serverchan: { enabled: false, sendkey: '' },
+    wecom: { enabled: false, url: '' },
+    dingtalk: { enabled: false, url: '', secret: '' },
+    discord: { enabled: false, url: '' },
+    slack: { enabled: false, url: '' },
+    ntfy: { enabled: false, server: 'https://ntfy.sh', topic: '', token: '' },
+    gotify: { enabled: false, server: '', token: '', priority: 5 },
     webhook: { enabled: false, urls: [], secret: '', headers: [], template: '', timeout_ms: 5000, max_retries: 3 }
   }
 }

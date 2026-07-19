@@ -55,6 +55,11 @@ class User(Base):
     # 日历订阅（.ics）令牌：用于生成可在 Apple/Google 日历订阅的私有链接
     calendar_token: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
 
+    # 月度预算（基准货币）；超支时仪表盘预警
+    monthly_budget: Mapped[float | None] = mapped_column(Float, nullable=True)
+    # 通知相关设置：免打扰时段、每周汇总等（{quiet_start,quiet_end,digest_enabled,digest_weekday}）
+    notify_settings: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     subscriptions: Mapped[list["Subscription"]] = relationship(
@@ -138,6 +143,13 @@ class Subscription(Base):
     next_renewal_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     end_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     last_renewed_at: Mapped[date | None] = mapped_column(Date, nullable=True)   # 最近付款/续费日
+
+    # 试用期结束日 / 取消截止日：到点提醒，避免被自动扣费
+    trial_end: Mapped[date | None] = mapped_column(Date, nullable=True)
+    cancel_by: Mapped[date | None] = mapped_column(Date, nullable=True)
+    # 付款卡尾号与有效期（MM/YY）：卡快到期时提醒更换
+    card_last4: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    card_expiry: Mapped[str | None] = mapped_column(String(8), nullable=True)
 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     auto_renew: Mapped[bool] = mapped_column(Boolean, default=True)

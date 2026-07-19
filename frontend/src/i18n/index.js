@@ -24,7 +24,14 @@ const zh = {
     whSecret: '数字签名密钥 (SECRET)', whSecretHint: '若配置，将通过请求头 X-EasySub-Signature 提供 payload 验证。',
     whHeaders: '自定义请求头 (HEADERS)', whTemplate: '文本模板 (TEXT TEMPLATE)',
     whTemplateHint: '支持占位符 text / subject / event / timestamp（各用双花括号包裹，见下方输入框示例）。留空则发送原始文本。',
-    whTimeout: '请求超时 (MS)', whRetries: '最大重试次数'
+    whTimeout: '请求超时 (MS)', whRetries: '最大重试次数',
+    robotUrl: '机器人 Webhook', signSecret: '加签密钥 (SECRET)', server: '服务器地址', tokenOptional: '令牌（可选）', priority: '优先级',
+    serverchanHint: '在 sct.ftqq.com 获取 SendKey（Server酱·Turbo）。',
+    wecomHint: '企业微信群 → 添加群机器人 → 复制 Webhook 地址。',
+    dingtalkHint: '钉钉群 → 智能群助手 → 添加自定义机器人，安全设置建议用「加签」并把密钥填到上方。',
+    discordHint: '频道设置 → 整合 → Webhook → 复制 Webhook URL。',
+    slackHint: 'Slack App → Incoming Webhooks → 复制 Webhook URL。',
+    ntfyHint: '自建或用公共 ntfy.sh；订阅同名 Topic 即可收到推送。'
   },
   notify: { title: '通知中心', runScan: '立即扫描提醒', empty: '暂无通知记录', sent: '已发送', failed: '失败', daysBefore: '提前天数' },
   rtlog: { title: '实时日志', live: '实时', paused: '已暂停', action: '操作', user: '用户', detail: '详情', time: '时间', empty: '暂无日志', auto: '自动刷新' },
@@ -70,6 +77,8 @@ const zh = {
     bundleNone: '不使用捆绑包', bundleJoin: '加入已有捆绑包', bundleCreate: '创建捆绑包', bundleName: '捆绑包名称',
     showInCalendar: '在日历中显示', website: '官方网站',
     browse: '按分类浏览', browseTitle: '选择服务', searchPh: '搜索服务名…', pickHint: '点击下方服务快速填入名称、图标与官网',
+    secTrialCard: '试用 / 付款卡', trialEnd: '试用结束日', cancelBy: '取消截止日', cardLast4: '卡尾号', cardExpiry: '卡有效期 (MM/YY)',
+    csvImported: '已导入 {n} 个订阅', perMember: '人均', trialTag: '试用', cancelTag: '待取消', cardTag: '卡',
     renewTitle: '确认续费', renewMsg: '为「{name}」选择续费方式：',
     renewToday: '保号 / 提前续费：从今天起 +1 个周期（重新计周期）',
     renewDue: '常规循环：从原到期日 +1 个周期（不浪费已付时间）',
@@ -121,6 +130,13 @@ const zh = {
     title: '本地自动备份', tip: '系统每天凌晨自动把整站数据导出到服务器 data/backups 目录，多一层保险。',
     run: '立即备份一次', keep: '保留最近 {n} 份', none: '暂无自动备份文件'
   },
+  remind: {
+    title: '提醒与预算', budget: '月度预算', budgetPh: '0 或留空 = 不限',
+    quietStart: '免打扰开始', quietEnd: '免打扰结束',
+    quietHint: '免打扰时段内仅暂缓非紧急提醒；到期当天/次日的提醒仍会照常发送。',
+    digest: '每周汇总推送', over: '已超预算', budgetLeft: '预算剩余'
+  },
+  wk: { mon: '周一', tue: '周二', wed: '周三', thu: '周四', fri: '周五', sat: '周六', sun: '周日' },
   common: { loading: '加载中...', save: '保存', actions: '操作', status: '状态', date: '日期', confirm: '确认', cancel: '取消', close: '关闭' }
 }
 
@@ -148,7 +164,14 @@ const en = {
     whSecret: 'Signing secret', whSecretHint: 'If set, payload is signed via the X-EasySub-Signature header.',
     whHeaders: 'Custom headers', whTemplate: 'Text template',
     whTemplateHint: 'Placeholders: text / subject / event / timestamp (wrap each in double curly braces, see the input example). Empty = raw text.',
-    whTimeout: 'Timeout (ms)', whRetries: 'Max retries'
+    whTimeout: 'Timeout (ms)', whRetries: 'Max retries',
+    robotUrl: 'Robot Webhook', signSecret: 'Sign secret', server: 'Server', tokenOptional: 'Token (optional)', priority: 'Priority',
+    serverchanHint: 'Get your SendKey at sct.ftqq.com (ServerChan Turbo).',
+    wecomHint: 'WeCom group → add group robot → copy the Webhook URL.',
+    dingtalkHint: 'DingTalk group → add custom robot; recommended security: sign, put the secret above.',
+    discordHint: 'Channel settings → Integrations → Webhooks → copy the Webhook URL.',
+    slackHint: 'Slack App → Incoming Webhooks → copy the Webhook URL.',
+    ntfyHint: 'Self-hosted or public ntfy.sh; subscribe to the same topic to receive pushes.'
   },
   notify: { title: 'Notification Center', runScan: 'Run scan now', empty: 'No notifications yet', sent: 'Sent', failed: 'Failed', daysBefore: 'Days before' },
   rtlog: { title: 'Live Logs', live: 'Live', paused: 'Paused', action: 'Action', user: 'User', detail: 'Detail', time: 'Time', empty: 'No logs', auto: 'Auto refresh' },
@@ -194,6 +217,8 @@ const en = {
     bundleNone: 'No bundle', bundleJoin: 'Join existing bundle', bundleCreate: 'Create bundle', bundleName: 'Bundle name',
     showInCalendar: 'Show in calendar', website: 'Website',
     browse: 'Browse by category', browseTitle: 'Pick a service', searchPh: 'Search services…', pickHint: 'Click a service to fill name, icon and website',
+    secTrialCard: 'Trial / Card', trialEnd: 'Trial ends', cancelBy: 'Cancel by', cardLast4: 'Card last 4', cardExpiry: 'Card expiry (MM/YY)',
+    csvImported: 'Imported {n} subscriptions', perMember: 'per person', trialTag: 'trial', cancelTag: 'cancel', cardTag: 'card',
     renewTitle: 'Confirm renewal', renewMsg: 'Choose how to renew "{name}":',
     renewToday: 'Keep-alive / early: +1 cycle from today (restart the cycle)',
     renewDue: 'Regular recurring: +1 cycle from current due date (no paid time lost)',
@@ -245,6 +270,13 @@ const en = {
     title: 'Local auto-backup', tip: 'The server exports a full-site snapshot to data/backups every night — an extra safety net.',
     run: 'Back up now', keep: 'Keeps last {n}', none: 'No auto-backup files yet'
   },
+  remind: {
+    title: 'Reminders & budget', budget: 'Monthly budget', budgetPh: '0 or empty = no limit',
+    quietStart: 'Quiet from', quietEnd: 'Quiet to',
+    quietHint: 'Quiet hours only defer non-urgent reminders; due-today/tomorrow reminders still send.',
+    digest: 'Weekly digest', over: 'Over budget', budgetLeft: 'Budget left'
+  },
+  wk: { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat', sun: 'Sun' },
   common: { loading: 'Loading...', save: 'Save', actions: 'Actions', status: 'Status', date: 'Date', confirm: 'Confirm', cancel: 'Cancel', close: 'Close' }
 }
 
@@ -272,7 +304,14 @@ const ru = {
     whSecret: 'Ключ подписи', whSecretHint: 'Если задан, payload подписывается заголовком X-EasySub-Signature.',
     whHeaders: 'Заголовки', whTemplate: 'Шаблон текста',
     whTemplateHint: 'Плейсхолдеры: text / subject / event / timestamp (в двойных фигурных скобках, см. пример в поле). Пусто = исходный текст.',
-    whTimeout: 'Таймаут (мс)', whRetries: 'Повторы'
+    whTimeout: 'Таймаут (мс)', whRetries: 'Повторы',
+    robotUrl: 'Webhook робота', signSecret: 'Секрет подписи', server: 'Сервер', tokenOptional: 'Токен (опц.)', priority: 'Приоритет',
+    serverchanHint: 'Получите SendKey на sct.ftqq.com (ServerChan Turbo).',
+    wecomHint: 'Группа WeCom → добавить робота → скопировать Webhook URL.',
+    dingtalkHint: 'Группа DingTalk → добавить робота; рекомендуется подпись, укажите секрет выше.',
+    discordHint: 'Настройки канала → Интеграции → Вебхуки → скопировать URL.',
+    slackHint: 'Slack App → Incoming Webhooks → скопировать URL.',
+    ntfyHint: 'Свой или публичный ntfy.sh; подпишитесь на тот же topic.'
   },
   notify: { title: 'Центр уведомлений', runScan: 'Запустить проверку', empty: 'Нет уведомлений', sent: 'Отправлено', failed: 'Ошибка', daysBefore: 'За дней' },
   rtlog: { title: 'Логи в реальном времени', live: 'Онлайн', paused: 'Пауза', action: 'Действие', user: 'Польз.', detail: 'Детали', time: 'Время', empty: 'Нет логов', auto: 'Автообновление' },
@@ -318,6 +357,8 @@ const ru = {
     bundleNone: 'Без пакета', bundleJoin: 'В существующий пакет', bundleCreate: 'Создать пакет', bundleName: 'Название пакета',
     showInCalendar: 'Показывать в календаре', website: 'Сайт',
     browse: 'По категориям', browseTitle: 'Выбор сервиса', searchPh: 'Поиск сервисов…', pickHint: 'Нажмите на сервис, чтобы заполнить название, иконку и сайт',
+    secTrialCard: 'Пробный / Карта', trialEnd: 'Конец пробного', cancelBy: 'Отменить до', cardLast4: 'Карта (4 цифры)', cardExpiry: 'Срок карты (ММ/ГГ)',
+    csvImported: 'Импортировано подписок: {n}', perMember: 'на чел.', trialTag: 'проб', cancelTag: 'отмена', cardTag: 'карта',
     renewTitle: 'Подтвердить продление', renewMsg: 'Выберите способ продления «{name}»:',
     renewToday: 'Поддержание / заранее: +1 цикл от сегодня (сброс цикла)',
     renewDue: 'Обычное: +1 цикл от текущей даты продления (без потери оплаченного)',
@@ -369,6 +410,13 @@ const ru = {
     title: 'Локальное авто-резервирование', tip: 'Сервер каждую ночь экспортирует снимок всех данных в data/backups — дополнительная страховка.',
     run: 'Сделать резерв', keep: 'Хранит последние {n}', none: 'Файлов авто-бэкапа пока нет'
   },
+  remind: {
+    title: 'Напоминания и бюджет', budget: 'Месячный бюджет', budgetPh: '0 или пусто = без лимита',
+    quietStart: 'Тихо с', quietEnd: 'Тихо до',
+    quietHint: 'В тихие часы откладываются только несрочные напоминания; на сегодня/завтра — отправляются.',
+    digest: 'Еженедельная сводка', over: 'Превышен бюджет', budgetLeft: 'Остаток бюджета'
+  },
+  wk: { mon: 'Пн', tue: 'Вт', wed: 'Ср', thu: 'Чт', fri: 'Пт', sat: 'Сб', sun: 'Вс' },
   common: { loading: 'Загрузка...', save: 'Сохранить', actions: 'Действия', status: 'Статус', date: 'Дата', confirm: 'Подтвердить', cancel: 'Отмена', close: 'Закрыть' }
 }
 

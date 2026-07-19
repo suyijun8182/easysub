@@ -1,15 +1,18 @@
+import csv
+import io
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app import activity, icon_library
 from app.billing import add_cycle, compute_next_renewal
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import Subscription, User
+from app.models import Category, Subscription, User
 from app.schemas import SubscriptionIn, SubscriptionOut, SubscriptionUpdate
 from app.security import verify_password
 from app.services import exchange
@@ -72,6 +75,101 @@ def create_sub(
     db.refresh(sub)
     activity.log("subscription.create", f"新增订阅「{sub.name}」", user=user)
     return _to_out(db, sub, user.base_currency)
+
+
+# ---------- CSV 批量导入 / 导出（须声明在 /{sub_id} 之前，避免路径被吞） ----------
+_CSV_FIELDS = [
+    "name", "plan", "category", "amount", "currency", "billing_type", "cycle",
+    "cycle_count", "start_date", "next_renewal_date", "remark", "url", "remind_days_before",
+]
+
+
+@router.get("/export.csv")
+def export_csv(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """导出当前用户的订阅为 CSV。"""
+    subs = db.scalars(select(Subscription).where(Subscription.user_id == user.id)).all()
+    cat_map = {c.id: c.name for c in db.scalars(
+        select(Category).where(or_(Category.user_id == user.id, Category.is_system.is_(True)))
+    ).all()}
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(_CSV_FIELDS)
+    for s in subs:
+        w.writerow([
+            s.name, s.plan or "", cat_map.get(s.category_id, ""), s.amount, s.currency,
+            s.billing_type, s.cycle, s.cycle_count,
+            s.start_date.isoformat() if s.start_date else "",
+            s.next_renewal_date.isoformat() if s.next_renewal_date else "",
+            s.remark or "", s.url or "", s.remind_days_before,
+        ])
+    return PlainTextResponse("﻿" + buf.getvalue(), media_type="text/csv; charset=utf-8",
+                             headers={"Content-Disposition": "attachment; filename=easysub-subscriptions.csv"})
+
+
+class CsvImportIn(BaseModel):
+    content: str
+
+
+@router.post("/import-csv")
+def import_csv(payload: CsvImportIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """从 CSV 文本批量导入订阅。分类按名称匹配（缺失则新建）。"""
+    text = (payload.content or "").lstrip("﻿")
+    reader = csv.DictReader(io.StringIO(text))
+    existing_cats = {
+        c.name: c for c in db.scalars(
+            select(Category).where(or_(Category.user_id == user.id, Category.is_system.is_(True)))
+        ).all()
+    }
+
+    def _num(v, default):
+        try:
+            return type(default)(v)
+        except (TypeError, ValueError):
+            return default
+
+    def _d(v):
+        try:
+            return date.fromisoformat(v.strip()) if v and v.strip() else None
+        except (TypeError, ValueError):
+            return None
+
+    count = 0
+    for row in reader:
+        name = (row.get("name") or "").strip()
+        if not name:
+            continue
+        cat_name = (row.get("category") or "").strip()
+        cat_id = None
+        if cat_name:
+            cat = existing_cats.get(cat_name)
+            if not cat:
+                cat = Category(name=cat_name, user_id=user.id, is_system=False)
+                db.add(cat)
+                db.flush()
+                existing_cats[cat_name] = cat
+            cat_id = cat.id
+        billing_type = (row.get("billing_type") or "recurring").strip() or "recurring"
+        start = _d(row.get("start_date")) or date.today()
+        sub = Subscription(
+            user_id=user.id, name=name, plan=(row.get("plan") or None),
+            category_id=cat_id, amount=_num(row.get("amount"), 0.0),
+            currency=(row.get("currency") or user.base_currency).strip() or user.base_currency,
+            billing_type=billing_type, cycle=(row.get("cycle") or "month").strip() or "month",
+            cycle_count=_num(row.get("cycle_count"), 1) or 1, start_date=start,
+            next_renewal_date=_d(row.get("next_renewal_date")),
+            remark=(row.get("remark") or None), url=(row.get("url") or None),
+            remind_days_before=(row.get("remind_days_before") or "7,6,5,4,3,2,1").strip() or "7,6,5,4,3,2,1",
+        )
+        if billing_type == "recurring" and not sub.next_renewal_date:
+            sub.next_renewal_date = compute_next_renewal(start, sub.cycle, sub.cycle_count)
+        if billing_type == "one_time":
+            sub.next_renewal_date = None
+            sub.auto_renew = False
+        db.add(sub)
+        count += 1
+    db.commit()
+    activity.log("subscription.import_csv", f"CSV 导入了 {count} 个订阅", user=user)
+    return {"ok": True, "imported": count}
 
 
 @router.get("/{sub_id}", response_model=SubscriptionOut)

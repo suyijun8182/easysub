@@ -24,6 +24,12 @@ _COLUMNS = [
     ("users", "telegram_proxy", "VARCHAR(255) NULL"),
     ("users", "notify_config", "JSON NULL"),
     ("users", "calendar_token", "VARCHAR(64) NULL"),
+    ("users", "monthly_budget", "DOUBLE NULL"),
+    ("users", "notify_settings", "JSON NULL"),
+    ("subscriptions", "trial_end", "DATE NULL"),
+    ("subscriptions", "cancel_by", "DATE NULL"),
+    ("subscriptions", "card_last4", "VARCHAR(8) NULL"),
+    ("subscriptions", "card_expiry", "VARCHAR(8) NULL"),
 ]
 
 

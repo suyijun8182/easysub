@@ -11,6 +11,7 @@
 - dispatch(user, subject, text_plain, text_md=None)  向所有已启用渠道推送
 - send_one(channel, conf, subject, text)             按单渠道配置发送（用于测试）
 """
+import base64
 import copy
 import hashlib
 import hmac
@@ -19,6 +20,7 @@ import re
 import smtplib
 import ssl
 import time
+import urllib.parse
 from email.message import EmailMessage
 
 import httpx
@@ -35,6 +37,13 @@ _DEFAULTS = {
     "email": {"enabled": False, "host": "", "port": 465, "ssl": True, "username": "",
               "password": "", "from": "", "to": ""},
     "pushplus": {"enabled": False, "token": "", "topic": "", "channel": "wechat"},
+    "serverchan": {"enabled": False, "sendkey": ""},
+    "wecom": {"enabled": False, "url": ""},
+    "dingtalk": {"enabled": False, "url": "", "secret": ""},
+    "discord": {"enabled": False, "url": ""},
+    "slack": {"enabled": False, "url": ""},
+    "ntfy": {"enabled": False, "server": "https://ntfy.sh", "topic": "", "token": ""},
+    "gotify": {"enabled": False, "server": "", "token": "", "priority": 5},
     "webhook": {"enabled": False, "urls": [], "secret": "", "headers": [], "template": "",
                 "timeout_ms": 5000, "max_retries": 3},
 }
@@ -274,6 +283,91 @@ def _send_webhook(conf: dict, subject: str, text: str, event: str = "reminder") 
             raise RuntimeError(f"Webhook 发送失败（{url}）：{last_err}")
 
 
+def _send_serverchan(conf: dict, subject: str, text: str) -> None:
+    key = conf.get("sendkey")
+    if not key:
+        raise RuntimeError("Server酱未配置 SendKey")
+    with httpx.Client(timeout=15) as c:
+        r = c.post(f"https://sctapi.ftqq.com/{key}.send",
+                   data={"title": subject or "省心订阅 EasySub", "desp": text})
+        r.raise_for_status()
+        if r.json().get("code", 0) != 0:
+            raise RuntimeError(f"Server酱发送失败：{r.text}")
+
+
+def _send_wecom(conf: dict, subject: str, text: str) -> None:
+    url = conf.get("url")
+    if not url:
+        raise RuntimeError("企业微信未配置机器人 Webhook")
+    body_text = f"{subject}\n\n{text}" if subject else text
+    with httpx.Client(timeout=15) as c:
+        r = c.post(url, json={"msgtype": "text", "text": {"content": body_text}})
+        r.raise_for_status()
+        if r.json().get("errcode", 0) != 0:
+            raise RuntimeError(f"企业微信发送失败：{r.text}")
+
+
+def _send_dingtalk(conf: dict, subject: str, text: str) -> None:
+    url = conf.get("url")
+    if not url:
+        raise RuntimeError("钉钉未配置机器人 Webhook")
+    secret = conf.get("secret")
+    if secret:
+        ts = str(round(time.time() * 1000))
+        sign = urllib.parse.quote_plus(base64.b64encode(
+            hmac.new(secret.encode(), f"{ts}\n{secret}".encode(), hashlib.sha256).digest()
+        ))
+        url = f"{url}&timestamp={ts}&sign={sign}"
+    body_text = f"{subject}\n\n{text}" if subject else text
+    with httpx.Client(timeout=15) as c:
+        r = c.post(url, json={"msgtype": "text", "text": {"content": body_text}})
+        r.raise_for_status()
+        if r.json().get("errcode", 0) != 0:
+            raise RuntimeError(f"钉钉发送失败：{r.text}")
+
+
+def _send_discord(conf: dict, subject: str, text: str) -> None:
+    url = conf.get("url")
+    if not url:
+        raise RuntimeError("Discord 未配置 Webhook URL")
+    content = f"**{subject}**\n{text}" if subject else text
+    with httpx.Client(timeout=15) as c:
+        c.post(url, json={"content": content[:1900]}).raise_for_status()
+
+
+def _send_slack(conf: dict, subject: str, text: str) -> None:
+    url = conf.get("url")
+    if not url:
+        raise RuntimeError("Slack 未配置 Webhook URL")
+    body_text = f"*{subject}*\n{text}" if subject else text
+    with httpx.Client(timeout=15) as c:
+        c.post(url, json={"text": body_text}).raise_for_status()
+
+
+def _send_ntfy(conf: dict, subject: str, text: str) -> None:
+    server = (conf.get("server") or "https://ntfy.sh").rstrip("/")
+    topic = conf.get("topic")
+    if not topic:
+        raise RuntimeError("ntfy 未配置 Topic")
+    body = f"{subject}\n\n{text}" if subject else text
+    headers = {}
+    if conf.get("token"):
+        headers["Authorization"] = f"Bearer {conf['token']}"
+    with httpx.Client(timeout=15) as c:
+        c.post(f"{server}/{topic}", content=body.encode("utf-8"), headers=headers).raise_for_status()
+
+
+def _send_gotify(conf: dict, subject: str, text: str) -> None:
+    server = (conf.get("server") or "").rstrip("/")
+    token = conf.get("token")
+    if not server or not token:
+        raise RuntimeError("Gotify 未配置 Server / Token")
+    with httpx.Client(timeout=15) as c:
+        c.post(f"{server}/message", params={"token": token},
+               json={"title": subject or "省心订阅 EasySub", "message": text,
+                     "priority": int(conf.get("priority") or 5)}).raise_for_status()
+
+
 _SENDERS = {
     "telegram": _send_telegram,
     "feishu": _send_feishu,
@@ -281,6 +375,13 @@ _SENDERS = {
     "bark": _send_bark,
     "email": _send_email,
     "pushplus": _send_pushplus,
+    "serverchan": _send_serverchan,
+    "wecom": _send_wecom,
+    "dingtalk": _send_dingtalk,
+    "discord": _send_discord,
+    "slack": _send_slack,
+    "ntfy": _send_ntfy,
+    "gotify": _send_gotify,
     "webhook": _send_webhook,
 }
 
@@ -293,6 +394,18 @@ def send_one(channel: str, conf: dict, subject: str, text: str) -> None:
     # 非 Telegram 渠道用纯文本
     body = text if channel == "telegram" else _strip_md(text)
     fn(conf, subject, body)
+
+
+def in_quiet_hours(user) -> bool:
+    """当前本地时间是否落在用户设置的免打扰时段内。支持跨午夜（如 23:00-07:00）。"""
+    st = getattr(user, "notify_settings", None) or {}
+    q1, q2 = st.get("quiet_start"), st.get("quiet_end")
+    if not q1 or not q2:
+        return False
+    now = time.strftime("%H:%M")
+    if q1 <= q2:
+        return q1 <= now < q2
+    return now >= q1 or now < q2  # 跨午夜窗口
 
 
 def dispatch(user, subject: str, text_plain: str, text_md: str | None = None,
