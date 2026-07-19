@@ -87,6 +87,28 @@ docker compose up -d --build
 
 ---
 
+## 🔄 升级
+
+数据都在**你自己的 MySQL** 里，升级只换镜像、不会丢数据；新增数据库列由程序启动时**自动迁移**（幂等）。
+
+```bash
+# 方式 A（拉取镜像部署）
+docker compose -f docker-compose.hub.yml pull && docker compose -f docker-compose.hub.yml up -d
+
+# docker run 部署：拉新镜像后重建容器（保持 -v easysub_data:/app/data 与环境变量不变）
+docker pull suyijun8182/easysub:latest && docker rm -f easysub && docker run -d --name easysub ... suyijun8182/easysub:latest
+
+# 方式 B（源码构建部署）
+git pull && docker compose up -d --build   # 或执行 ./update.sh
+```
+
+NAS 图形界面：在镜像里重新拉取 `latest`，再重建容器（保持 `/app/data` 映射不变）。
+
+> 💡 **升级前先备份**：网页 **设置 → 数据备份** 导出一份 JSON；管理员可用 **整站备份** 导出全部成员数据。
+> 旧版本导出的备份可安全导入新版本。
+
+---
+
 ## ⚙️ 环境变量
 
 | 变量 | 必填 | 说明 |

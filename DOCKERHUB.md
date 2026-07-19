@@ -64,6 +64,26 @@ volumes:
 
 - `/app/data` — DB connection config (`db_config.json`) + uploaded icons. Persist this.
 
+## Upgrade / 升级
+
+Data lives in **your MySQL**; upgrading only swaps the image and is non-destructive.
+数据都在**你自己的 MySQL** 里，升级只换镜像，不会动数据。
+
+```bash
+# compose
+docker compose -f docker-compose.hub.yml pull && docker compose -f docker-compose.hub.yml up -d
+
+# docker run
+docker pull suyijun8182/easysub:latest
+docker rm -f easysub && docker run -d --name easysub ... suyijun8182/easysub:latest   # 保持 -v easysub_data:/app/data 不变
+```
+
+NAS 图形界面：重新拉取 `latest` 标签 → 重建容器，保持 `/app/data` 映射与环境变量不变。
+新增列由程序启动时**自动迁移**（幂等，不丢旧数据）。
+
+> **升级前建议先备份**：网页 **设置 → 数据备份** 导出 JSON；管理员可用 **整站备份** 导出全部成员数据。
+> Before upgrading, export a backup from **Settings → Data backup** (admins: full-site backup).
+
 ## Features
 
 Multi-user (JWT, admin/user roles) · recurring & one-time subscriptions · multi-language (中/EN/RU) · 5 themes · multi-currency with live FX · dashboard analytics · category management · Apple-style calendar · spending reports · Telegram notifications · per-user & **admin full-site** backup/restore.
