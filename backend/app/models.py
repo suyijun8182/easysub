@@ -49,6 +49,9 @@ class User(Base):
     telegram_api_base: Mapped[str | None] = mapped_column(String(255), nullable=True)  # TG API 反代
     telegram_proxy: Mapped[str | None] = mapped_column(String(255), nullable=True)      # HTTP 代理
 
+    # 多渠道通知配置（飞书 / QQ / Bark / Email / Pushplus / Webhook + Telegram）
+    notify_config: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     subscriptions: Mapped[list["Subscription"]] = relationship(

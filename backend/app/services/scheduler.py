@@ -8,7 +8,7 @@ from sqlalchemy import select
 from app import activity, database
 from app.config import settings
 from app.models import Category, NotificationLog, PaymentMethod, Subscription, User
-from app.services import exchange, telegram
+from app.services import exchange, notify
 
 _scheduler: BackgroundScheduler | None = None
 
@@ -50,49 +50,54 @@ def run_reminder_scan() -> dict:
         ).all()
         for sub in subs:
             user = db.get(User, sub.user_id)
-            # 仅当用户开启了 Telegram 且配置了 Token 与 Chat ID 才发送
-            if not user or not user.telegram_enabled:
+            if not user:
                 continue
-            if not user.telegram_bot_token or not user.telegram_chat_id:
+            # 只要启用了任意一个通知渠道即发送
+            cfg = notify.load_config(user)
+            if not any(cfg.get(c, {}).get("enabled") for c in notify.CHANNELS):
                 continue
             days_left = (sub.next_renewal_date - today).days
             for n in _parse_days(sub.remind_days_before):
                 if days_left == n and not _already_sent(db, sub.id, n, today):
-                    text = _build_text(db, sub, user, days_left)
+                    text_md = _build_text(db, sub, user, days_left)
+                    subject = f"续费提醒：{sub.name}"
+                    results = notify.dispatch(
+                        user, subject, notify._strip_md(text_md), text_md=text_md
+                    )
+                    ok_ch = [r["channel"] for r in results if r.get("ok")]
+                    err = [f"{r['channel']}: {r['error']}" for r in results if not r.get("ok")]
+                    # channel 列仅 16 字符：单渠道存名字，多渠道存紧凑摘要
+                    if len(ok_ch) == 1:
+                        ch_label = ok_ch[0]
+                    elif ok_ch:
+                        ch_label = f"multi:{len(ok_ch)}"
+                    else:
+                        ch_label = "none"
                     log = NotificationLog(
                         subscription_id=sub.id,
                         user_id=user.id,
                         days_before=n,
-                        channel="telegram",
-                        status="sent",
+                        channel=ch_label,
+                        status="sent" if ok_ch else "failed",
+                        message=text_md if ok_ch else "; ".join(err) or "无可用渠道",
+                        sent_at=datetime.utcnow(),
                     )
-                    try:
-                        telegram.send_message(
-                            user.telegram_chat_id,
-                            text,
-                            token=user.telegram_bot_token,
-                            api_base=user.telegram_api_base,
-                            proxy=user.telegram_proxy,
-                        )
-                        log.message = text
+                    db.add(log)
+                    if ok_ch:
                         sent += 1
                         activity.log(
-                            "telegram.reminder",
-                            f"已提醒「{sub.name}」（提前 {n} 天）",
+                            "notify.reminder",
+                            f"已提醒「{sub.name}」（提前 {n} 天，渠道：{', '.join(ok_ch)}）",
                             user=user,
                         )
-                    except Exception as e:  # noqa: BLE001
-                        log.status = "failed"
-                        log.message = f"{type(e).__name__}: {e}"
+                    if err:
                         failed += 1
                         activity.log(
-                            "telegram.reminder",
-                            f"提醒「{sub.name}」发送失败：{e}",
+                            "notify.reminder",
+                            f"提醒「{sub.name}」部分渠道失败：{'; '.join(err)}",
                             user=user,
-                            level="error",
+                            level="error" if not ok_ch else "warn",
                         )
-                    log.sent_at = datetime.utcnow()
-                    db.add(log)
         db.commit()
     finally:
         db.close()

@@ -62,51 +62,16 @@
       <p v-else class="muted">{{ t('settings.noRates') }}</p>
     </div>
 
-    <!-- Telegram -->
-    <div class="card sect">
-      <div class="tg-head">
-        <h3>📲 {{ t('settings.telegram') }}</h3>
-        <label class="switch">
-          <input type="checkbox" v-model="tg.enabled" @change="saveTg" />
-          <span>{{ t('settings.tgEnabled') }}</span>
-        </label>
+    <!-- 通知渠道（已迁移到独立页面） -->
+    <router-link to="/notify-settings" class="card sect notify-link">
+      <div>
+        <h3>🔔 {{ t('settings.telegram') }} / {{ t('nav.notifyConfig') }}</h3>
+        <p class="muted" style="font-size:13px;margin:4px 0 0">
+          Telegram / 飞书 / QQ / Bark / Email / Pushplus / Webhook —— {{ t('nav.notifyConfig') }} →
+        </p>
       </div>
-      <p class="muted" style="font-size:13px">
-        1. 在 Telegram 找 @BotFather 创建机器人，拿到 Bot Token 填到下面。<br />
-        2. 给你的机器人发一条消息，点「{{ t('settings.getUpdates') }}」自动获取 Chat ID。
-      </p>
-      <div class="row">
-        <div style="flex:2">
-          <label>{{ t('settings.botToken') }}</label>
-          <input v-model="tg.bot_token" placeholder="8954101204:AAGx00hzpMjR..." />
-        </div>
-        <div style="flex:1">
-          <label>{{ t('settings.chatId') }}</label>
-          <input v-model="tg.chat_id" placeholder="123456789" />
-        </div>
-        <div style="flex:1">
-          <label>{{ t('settings.adminId') }}</label>
-          <input v-model="tg.admin_id" placeholder="123456789" />
-        </div>
-      </div>
-      <div class="row">
-        <div style="flex:1">
-          <label>{{ t('settings.apiBase') }}</label>
-          <input v-model="tg.api_base" placeholder="https://api.telegram.org" />
-        </div>
-        <div style="flex:1">
-          <label>{{ t('settings.proxy') }}</label>
-          <input v-model="tg.proxy" placeholder="http://127.0.0.1:7890" />
-        </div>
-      </div>
-      <div class="row" style="margin-top:12px">
-        <button class="btn" @click="saveTg">{{ t('settings.save') }}</button>
-        <button class="btn ghost" @click="getUpdates">{{ t('settings.getUpdates') }}</button>
-        <button class="btn ghost" @click="checkBot">{{ t('settings.checkBot') }}</button>
-        <button class="btn ghost" @click="testSend">{{ t('settings.testSend') }}</button>
-      </div>
-      <p v-if="tgMsg" :class="tgOk ? 'ok' : 'err'">{{ tgMsg }}</p>
-    </div>
+      <span class="arrow">›</span>
+    </router-link>
 
     <!-- 数据备份与恢复 -->
     <div class="card sect">
@@ -173,19 +138,9 @@ const themes = [
 
 const theme = ref(auth.user?.theme || 'light')
 const baseCurrency = ref(auth.user?.base_currency || 'CNY')
-const tg = reactive({
-  enabled: auth.user?.telegram_enabled || false,
-  bot_token: auth.user?.telegram_bot_token || '',
-  chat_id: auth.user?.telegram_chat_id || '',
-  admin_id: auth.user?.telegram_admin_id || '',
-  api_base: auth.user?.telegram_api_base || '',
-  proxy: auth.user?.telegram_proxy || ''
-})
 const currencies = ref([])
 const rateMsg = ref('')
 const rates = ref({ base: baseCurrency.value, updated_at: null, items: [] })
-const tgMsg = ref('')
-const tgOk = ref(false)
 
 const acc = reactive({ username: auth.user?.username || '', email: auth.user?.email || '' })
 const pwd = reactive({ old_password: '', new_password: '' })
@@ -319,48 +274,12 @@ async function loadRates() {
   try { rates.value = (await api.get('/api/currencies/rate-table')).data }
   catch { /* ignore */ }
 }
-async function saveTg() {
-  await auth.updateMe({
-    telegram_enabled: tg.enabled,
-    telegram_bot_token: tg.bot_token,
-    telegram_chat_id: tg.chat_id,
-    telegram_admin_id: tg.admin_id,
-    telegram_api_base: tg.api_base || null,
-    telegram_proxy: tg.proxy || null
-  })
-  tgOk.value = true; tgMsg.value = t('settings.saved')
-}
-
 async function refreshRates() {
   try {
     await api.post('/api/currencies/rates/refresh')
     rateMsg.value = t('settings.ratesUpdated')
     await loadRates()
   } catch (e) { rateMsg.value = e.response?.data?.detail || 'Error' }
-}
-async function checkBot() {
-  await saveTg()
-  try {
-    const { data } = await api.get('/api/notifications/telegram/me')
-    tgOk.value = true; tgMsg.value = `${t('settings.botOk')}: @${data.result?.username}`
-  } catch (e) { tgOk.value = false; tgMsg.value = t('settings.botFail') + ': ' + (e.response?.data?.detail || '') }
-}
-async function testSend() {
-  await saveTg()
-  try {
-    await api.post('/api/notifications/telegram/test', { chat_id: tg.chat_id })
-    tgOk.value = true; tgMsg.value = t('settings.testOk')
-  } catch (e) { tgOk.value = false; tgMsg.value = e.response?.data?.detail || 'Error' }
-}
-async function getUpdates() {
-  await saveTg()
-  try {
-    const { data } = await api.get('/api/notifications/telegram/updates')
-    const ids = (data.result || []).map((u) => u.message?.chat?.id).filter(Boolean)
-    tgOk.value = true
-    tgMsg.value = ids.length ? 'Chat IDs: ' + [...new Set(ids)].join(', ') : 'No messages yet'
-    if (ids.length) tg.chat_id = String(ids[ids.length - 1])
-  } catch (e) { tgOk.value = false; tgMsg.value = e.response?.data?.detail || 'Error' }
 }
 
 onMounted(async () => {
@@ -372,6 +291,11 @@ onMounted(async () => {
 
 <style scoped>
 h1 { margin-top: 0; }
+.notify-link { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  text-decoration: none; color: inherit; transition: border-color .15s ease, transform .15s ease; }
+.notify-link:hover { border-color: var(--primary); transform: translateY(-1px); }
+.notify-link h3 { margin: 0; }
+.notify-link .arrow { font-size: 22px; color: var(--text-soft); }
 .two { grid-template-columns: 1fr 1fr; margin-bottom: 16px; }
 .sect { margin-bottom: 16px; }
 .sect h3 { margin-top: 0; }

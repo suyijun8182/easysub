@@ -17,6 +17,7 @@ from app.database import get_db
 from app.deps import get_admin_user, get_current_user
 from app.models import Bundle, Category, Currency, PaymentMethod, Subscription, User
 from app.security import hash_password
+from app.services import notify
 
 router = APIRouter(prefix="/api/backup", tags=["backup"])
 
@@ -259,6 +260,7 @@ def export_data(user: User = Depends(get_current_user), db: Session = Depends(ge
             "base_currency": user.base_currency,
             "locale": user.locale,
             "theme": user.theme,
+            "notify_config": notify.load_config(user),
         },
         **_collect_entities(db, user),
     }
@@ -281,6 +283,10 @@ def import_data(
         raise HTTPException(400, "备份文件格式不正确：缺少 subscriptions")
 
     count = _restore_entities(db, user, data, payload.replace)
+    # 恢复通知渠道配置（旧备份无此字段则跳过，保证向后兼容）
+    udata = data.get("user") or {}
+    if isinstance(udata.get("notify_config"), dict):
+        notify.apply_config(user, udata["notify_config"])
     db.commit()
     activity.log("backup.import", f"导入恢复了 {count} 个订阅", user=user)
     return {"ok": True, "imported": count}
@@ -303,6 +309,7 @@ def _user_meta(u: User) -> dict:
         "theme": u.theme,
         "base_currency": u.base_currency,
         "category_order": u.category_order,
+        "notify_config": notify.load_config(u),
     }
 
 
@@ -378,6 +385,10 @@ def import_all(
             db.flush()
             existing_users[username] = target
             created_users += 1
+
+        # 恢复该用户的通知渠道配置（旧备份无此字段则跳过）
+        if isinstance(meta.get("notify_config"), dict):
+            notify.apply_config(target, meta["notify_config"])
 
         total_subs += _restore_entities(db, target, ub, payload.replace)
 
