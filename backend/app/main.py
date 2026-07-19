@@ -1,3 +1,4 @@
+import asyncio
 import os
 from contextlib import asynccontextmanager
 
@@ -6,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app import bootstrap, database, migrate
+from app import bootstrap, database
 from app.routers import (
     admin,
     auth,
@@ -25,29 +26,26 @@ from app.routers import (
     system,
     users,
 )
-from app.seed import seed_all
 from app.services import scheduler
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # 若磁盘上已有数据库配置，则尝试初始化；否则进入安装向导模式
+    # 若磁盘上已有数据库配置，则尝试初始化；否则进入安装向导模式。
+    # 宿主机/容器异常重启时，app 常比 MySQL 先起来——这里做多次重试，
+    # 避免因 MySQL 尚未就绪而一次性失败、掉进「需要重新配置数据库」的状态。
     if bootstrap.config_exists():
-        try:
-            cfg = bootstrap.load_config()
-            database.init_engine(bootstrap.build_url(cfg))
-            database.Base.metadata.create_all(bind=database.engine)
-            migrate.run_migrations(database.engine)
-            db = database.SessionLocal()
-            try:
-                seed_all(db)
-            finally:
-                db.close()
-            scheduler.start_scheduler()
-            print("[startup] 数据库已连接，系统就绪。")
-        except Exception as e:  # noqa: BLE001
-            database.reset_engine()
-            print(f"[startup] 数据库初始化失败，进入安装向导模式：{e}")
+        attempts = 10
+        for i in range(1, attempts + 1):
+            if database.connect_from_saved_config(force=True):
+                print("[startup] 数据库已连接，系统就绪。")
+                break
+            print(f"[startup] 数据库暂不可用，重试 {i}/{attempts} …")
+            if i < attempts:
+                await asyncio.sleep(3)
+        else:
+            # 仍未连上：不阻塞启动，后续请求到达时会自动重连（database.get_db 自愈）
+            print("[startup] 数据库多次重试仍不可用，转为按需自动重连（无需重走安装向导）。")
     else:
         print("[startup] 未检测到数据库配置，进入安装向导模式。")
     yield

@@ -23,18 +23,25 @@ const routes = [
 
 const router = createRouter({ history: createWebHistory(), routes })
 
-// 缓存安装状态，避免每次导航都请求
+// 缓存安装状态，避免每次导航都请求（仅缓存「已配置」这一确定结果）
 let configured = null
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 async function checkConfigured() {
-  if (configured !== null) return configured
-  try {
-    const { data } = await axios.get('/api/setup/status')
-    configured = !!data.configured
-  } catch {
-    configured = false
+  if (configured === true) return true
+  // 宿主机重启后端可能正在自愈重连数据库：若磁盘已有配置但引擎暂未就绪，
+  // 稍等重试几次，避免误判为「未配置」而错误弹出安装向导。
+  for (let i = 0; i < 3; i++) {
+    try {
+      const { data } = await axios.get('/api/setup/status')
+      if (data.configured) { configured = true; return true }
+      if (data.config_present) { await sleep(1200); continue }  // 后端自愈中
+      return false  // 确为首次安装，未配置
+    } catch {
+      await sleep(1200)  // 后端暂不可达，重试
+    }
   }
-  return configured
+  return false
 }
 
 router.beforeEach(async (to) => {

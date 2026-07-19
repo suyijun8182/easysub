@@ -166,9 +166,14 @@ const catGroups = computed(() => {
   })
   return order.map((key) => {
     const c = cats.value.find((x) => String(x.id) === key)
+    // 按到期时间排序：越早到期越靠前；一次性买断/无到期日排最后
     const items = byCat[key].slice().sort((a, b) => {
-      const rank = { overdue: 0, soon: 1, ok: 2 }
-      return rank[statusOf(a)] - rank[statusOf(b)]
+      const da = daysLeft(a)
+      const db = daysLeft(b)
+      if (da === null && db === null) return 0
+      if (da === null) return 1
+      if (db === null) return -1
+      return da - db
     })
     return {
       key,

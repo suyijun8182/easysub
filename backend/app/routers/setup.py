@@ -31,6 +31,10 @@ def _initialize(cfg: dict) -> None:
 
 @router.get("/status")
 def status():
+    # 若磁盘已有配置但引擎未就绪（如启动时 MySQL 未准备好），尝试自愈重连，
+    # 这样前端刷新即可恢复，而不会误判为「未配置」再次弹出安装向导。
+    if not database.is_configured() and bootstrap.config_exists():
+        database.connect_from_saved_config()
     return {
         "configured": database.is_configured(),  # 引擎已就绪可用
         "config_present": bootstrap.config_exists(),  # 磁盘上已有配置文件
