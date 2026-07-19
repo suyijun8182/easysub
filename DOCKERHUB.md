@@ -1,8 +1,8 @@
 # EasySub · 省心订阅
 
-Self-hosted subscription / renewal manager with **multi-channel reminders** (Telegram / Feishu / QQ / Bark / Email / Pushplus / Webhook) so you never let a subscription — or a SIM keep-alive plan — expire.
+Self-hosted subscription / renewal manager with **14 notification channels** so you never let a subscription — or a SIM keep-alive plan — expire.
 
-自托管的订阅 / 续费 / 保号管理系统，通过 **多渠道通知**（Telegram / 飞书 / QQ / Bark / Email / Pushplus / Webhook）提醒续费，防止忘记导致过期。
+自托管的订阅 / 续费 / 保号管理系统，**14 种通知渠道**（Telegram / 飞书 / QQ / Bark / Email / Pushplus / Server酱 / 企业微信 / 钉钉 / Discord / Slack / ntfy / Gotify / Webhook）提醒续费，防止忘记导致过期。
 
 - **Source / 源码**: https://github.com/suyijun8182/easysub
 - **Tags**: `latest`, `v*` (per release) — multi-arch `linux/amd64` + `linux/arm64`
@@ -86,7 +86,7 @@ NAS 图形界面：重新拉取 `latest` 标签 → 重建容器，保持 `/app/
 
 ## Features
 
-Multi-user (JWT, admin/user roles) · recurring & one-time subscriptions · **7 notification channels** (Telegram / Feishu / QQ / Bark / Email / Pushplus / Webhook) · built-in service library (100s of presets incl. dozens of carriers & eSIM) · multi-language (中/EN/RU) · 5 themes · multi-currency with live FX · dashboard analytics · Apple-style calendar · spending reports · per-user & **admin full-site** backup/restore · **auto DB reconnect** & auto-migration on upgrade.
+Multi-user (JWT, admin/user roles) · recurring & one-time subscriptions · **14 notification channels** (Telegram / Feishu / QQ / Bark / Email / Pushplus / ServerChan / WeCom / DingTalk / Discord / Slack / ntfy / Gotify / Webhook) with quiet hours & weekly digest · trial / cancel / card-expiry reminders · monthly budget with overspend alert · built-in service library (100s of presets incl. dozens of carriers & eSIM) · multi-language (中/EN/RU) · 6 themes (incl. system-follow) · multi-currency with live FX · dashboard & reports + **CSV export** · Apple-style calendar + **.ics feed** · per-user & **admin full-site** backup/restore + **daily auto-backup** + CSV import/export · **2FA · API tokens · encrypted secrets** · **auto DB reconnect** & auto-migration · **PWA installable** · **in-app update check** · Home Assistant integration.
 
 ## NAS install guides
 
