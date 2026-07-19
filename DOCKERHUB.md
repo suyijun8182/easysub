@@ -86,7 +86,7 @@ NAS 图形界面：重新拉取 `latest` 标签 → 重建容器，保持 `/app/
 
 ## Features
 
-Multi-user (JWT, admin/user roles) · recurring & one-time subscriptions · multi-language (中/EN/RU) · 5 themes · multi-currency with live FX · dashboard analytics · category management · Apple-style calendar · spending reports · Telegram notifications · per-user & **admin full-site** backup/restore.
+Multi-user (JWT, admin/user roles) · recurring & one-time subscriptions · **7 notification channels** (Telegram / Feishu / QQ / Bark / Email / Pushplus / Webhook) · built-in service library (100s of presets incl. dozens of carriers & eSIM) · multi-language (中/EN/RU) · 5 themes · multi-currency with live FX · dashboard analytics · Apple-style calendar · spending reports · per-user & **admin full-site** backup/restore · **auto DB reconnect** & auto-migration on upgrade.
 
 ## NAS install guides
 
