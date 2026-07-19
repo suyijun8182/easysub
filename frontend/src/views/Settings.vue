@@ -187,6 +187,26 @@
       </ul>
     </div>
 
+    <!-- 版本与更新 -->
+    <div class="card sect">
+      <h3>🚀 {{ t('upd.title') }}</h3>
+      <div class="row" style="align-items:center;gap:12px;flex-wrap:wrap">
+        <span>{{ t('sys.version') }}：<b>v{{ sys?.version }}</b></span>
+        <button class="btn ghost sm" :disabled="updChecking" @click="checkUpdate(true)">🔄 {{ t('upd.check') }}</button>
+        <span v-if="upd && !upd.error">
+          <b v-if="upd.update_available" class="ok">🎉 {{ t('upd.newVersion', { v: upd.latest }) }}</b>
+          <b v-else-if="upd.latest" style="color:var(--success)">✓ {{ t('upd.isLatest') }}</b>
+        </span>
+        <span v-else-if="upd && upd.error" class="muted" style="font-size:12px">{{ t('upd.failed') }}</span>
+      </div>
+      <div v-if="upd && upd.update_available" class="upd-box">
+        <p style="font-size:13px;margin:0 0 6px">{{ t('upd.howto') }}
+          <a :href="upd.release_url" target="_blank" rel="noopener">{{ t('upd.view') }} →</a></p>
+        <code>docker compose -f docker-compose.hub.yml pull &amp;&amp; docker compose -f docker-compose.hub.yml up -d</code>
+        <p class="muted" style="font-size:12px;margin:6px 0 0">💡 {{ t('upd.backupTip') }}</p>
+      </div>
+    </div>
+
     <!-- 系统信息 -->
     <div class="card sect">
       <h3>ℹ️ {{ t('sys.title') }}</h3>
@@ -239,6 +259,14 @@ const sys = ref(null)
 const calUrl = ref('')
 const calMsg = ref('')
 const autobk = ref(null)
+
+const upd = ref(null)
+const updChecking = ref(false)
+async function checkUpdate(force = false) {
+  updChecking.value = true
+  try { upd.value = (await api.get('/api/system/version-check', { params: force === true ? { refresh: true } : {} })).data }
+  catch { /* ignore */ } finally { updChecking.value = false }
+}
 
 const ns = auth.user?.notify_settings || {}
 const prefs = reactive({
@@ -462,6 +490,7 @@ onMounted(async () => {
   sys.value = (await api.get('/api/system/info')).data
   loadRates()
   loadTokens()
+  checkUpdate()
   if (auth.user?.is_admin) loadAutoBackups()
 })
 </script>
@@ -479,6 +508,8 @@ h1 { margin-top: 0; }
 .twofa-box .qr { width: 150px; height: 150px; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
 .twofa-r { flex: 1; min-width: 200px; }
 .secret { display: inline-block; background: var(--surface-2); padding: 4px 8px; border-radius: 6px; font-size: 13px; word-break: break-all; }
+.upd-box { margin-top: 12px; padding: 12px; background: var(--surface-2); border-radius: 10px; border: 1px solid var(--border); }
+.upd-box code { display: block; background: var(--surface); padding: 8px 10px; border-radius: 8px; font-size: 12px; word-break: break-all; }
 .two { grid-template-columns: 1fr 1fr; margin-bottom: 16px; }
 .sect { margin-bottom: 16px; }
 .sect h3 { margin-top: 0; }

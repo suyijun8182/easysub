@@ -146,6 +146,11 @@ const zh = {
     apiTokens: 'API Token', tokenName: 'Token 名称', tokenOnce: '请立即复制并妥善保管，仅显示一次：',
     neverUsed: '未使用', revokeConfirm: '确定吊销该 Token？使用它的脚本将立即失效。'
   },
+  upd: {
+    title: '版本与更新', check: '检查更新', newVersion: '发现新版本 v{v}', isLatest: '已是最新版本', failed: '检查失败（无法连接 GitHub）',
+    howto: '升级方式（数据不丢，自动迁移）：', view: '查看更新内容', banner: '发现新版本 v{v}，前往设置查看升级方式',
+    backupTip: '升级前建议先在「数据备份」导出一份。'
+  },
   common: { loading: '加载中...', save: '保存', actions: '操作', status: '状态', date: '日期', confirm: '确认', cancel: '取消', close: '关闭' }
 }
 
@@ -295,6 +300,11 @@ const en = {
     apiTokens: 'API Tokens', tokenName: 'Token name', tokenOnce: 'Copy and store it now — shown only once:',
     neverUsed: 'never used', revokeConfirm: 'Revoke this token? Scripts using it will stop working.'
   },
+  upd: {
+    title: 'Version & updates', check: 'Check for updates', newVersion: 'New version v{v} available', isLatest: 'You are on the latest version', failed: 'Check failed (cannot reach GitHub)',
+    howto: 'How to upgrade (data preserved, auto-migrated):', view: 'View changes', banner: 'New version v{v} available — see Settings to upgrade',
+    backupTip: 'Export a backup from Data backup before upgrading.'
+  },
   common: { loading: 'Loading...', save: 'Save', actions: 'Actions', status: 'Status', date: 'Date', confirm: 'Confirm', cancel: 'Cancel', close: 'Close' }
 }
 
@@ -443,6 +453,11 @@ const ru = {
     enabledOk: '2FA включена', disabledOk: '2FA выключена', enterPwd: 'Введите пароль, чтобы выключить 2FA',
     apiTokens: 'API-токены', tokenName: 'Имя токена', tokenOnce: 'Скопируйте сейчас — показывается один раз:',
     neverUsed: 'не использован', revokeConfirm: 'Отозвать токен? Скрипты перестанут работать.'
+  },
+  upd: {
+    title: 'Версия и обновления', check: 'Проверить обновления', newVersion: 'Доступна версия v{v}', isLatest: 'Установлена последняя версия', failed: 'Ошибка проверки (нет связи с GitHub)',
+    howto: 'Как обновить (данные сохраняются, авто-миграция):', view: 'Что нового', banner: 'Доступна версия v{v} — см. Настройки',
+    backupTip: 'Перед обновлением сделайте резервную копию.'
   },
   common: { loading: 'Загрузка...', save: 'Сохранить', actions: 'Действия', status: 'Статус', date: 'Дата', confirm: 'Подтвердить', cancel: 'Отмена', close: 'Закрыть' }
 }

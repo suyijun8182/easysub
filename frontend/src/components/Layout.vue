@@ -31,15 +31,20 @@
     </aside>
 
     <main class="content">
+      <router-link v-if="updateInfo && updateInfo.update_available && !bannerDismissed" to="/settings" class="upd-banner" @click="dismissBanner">
+        <span>🎉 {{ t('upd.banner', { v: updateInfo.latest }) }}</span>
+        <a href="#" class="x" @click.prevent.stop="dismissBanner">✕</a>
+      </router-link>
       <router-view />
     </main>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
+import api from '../api'
 import { useAuth } from '../stores/auth'
 import { icon } from '../icons'
 
@@ -47,6 +52,20 @@ const { t } = useI18n()
 const auth = useAuth()
 const router = useRouter()
 const drawer = ref(false)
+
+const updateInfo = ref(null)
+const bannerDismissed = ref(false)
+function dismissBanner() {
+  bannerDismissed.value = true
+  try { sessionStorage.setItem('upd_dismissed', updateInfo.value?.latest || '1') } catch { /* ignore */ }
+}
+onMounted(async () => {
+  try {
+    const { data } = await api.get('/api/system/version-check')
+    updateInfo.value = data
+    if (sessionStorage.getItem('upd_dismissed') === (data.latest || '')) bannerDismissed.value = true
+  } catch { /* ignore */ }
+})
 
 const navItems = computed(() => {
   const base = [
@@ -82,6 +101,11 @@ nav { display: flex; flex-direction: column; gap: 7px; }
 .nav-ico { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center;
   justify-content: center; background: var(--surface); border: 1px solid var(--border);
   flex-shrink: 0; transition: transform .2s ease; color: var(--text-soft); }
+.upd-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-bottom: 16px; padding: 10px 14px; border-radius: 12px; font-size: 14px; text-decoration: none;
+  background: linear-gradient(120deg, var(--primary-soft), var(--surface)); color: var(--text);
+  border: 1px solid var(--primary); }
+.upd-banner .x { color: var(--text-soft); text-decoration: none; font-size: 13px; }
 .nav-ico :deep(svg) { width: 17px; height: 17px; }
 .nav-card:hover .nav-ico { color: var(--primary); }
 .nav-card.router-link-active .nav-ico { color: #fff; }
