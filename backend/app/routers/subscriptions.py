@@ -5,14 +5,14 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
-from sqlalchemy import or_, select
+from sqlalchemy import delete, or_, select
 from sqlalchemy.orm import Session
 
 from app import activity, icon_library
 from app.billing import add_cycle, compute_next_renewal
 from app.database import get_db
 from app.deps import get_current_user
-from app.models import Category, Subscription, User
+from app.models import Category, NotificationLog, Subscription, User
 from app.schemas import SubscriptionIn, SubscriptionOut, SubscriptionUpdate
 from app.security import verify_password
 from app.services import exchange
@@ -285,6 +285,8 @@ def delete_sub(
     if not sub or sub.user_id != user.id:
         raise HTTPException(404, "订阅不存在")
     name = sub.name
+    # notification_log.subscription_id 外键指向订阅且无级联：MySQL 下有过提醒记录的订阅直接删会报 1451（debug17）
+    db.execute(delete(NotificationLog).where(NotificationLog.subscription_id == sub.id))
     db.delete(sub)
     db.commit()
     activity.log("subscription.delete", f"删除订阅「{name}」", user=user, level="warn")

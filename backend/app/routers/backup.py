@@ -8,14 +8,14 @@ from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import or_, select
+from sqlalchemy import delete, or_, select
 from sqlalchemy.orm import Session
 
 from app import activity
 from app.billing import compute_next_renewal
 from app.database import get_db
 from app.deps import get_admin_user, get_current_user
-from app.models import Bundle, Category, Currency, PaymentMethod, Subscription, User
+from app.models import Bundle, Category, Currency, NotificationLog, PaymentMethod, Subscription, User
 from app.security import hash_password
 from app.services import notify
 
@@ -117,6 +117,8 @@ def _restore_entities(db: Session, user: User, data: dict, replace: bool) -> int
     subs_in = data.get("subscriptions") or []
 
     if replace:
+        # 先清通知记录，否则有过提醒的订阅受外键约束删不掉（debug17）
+        db.execute(delete(NotificationLog).where(NotificationLog.user_id == user.id))
         for s in db.scalars(
             select(Subscription).where(Subscription.user_id == user.id)
         ).all():
