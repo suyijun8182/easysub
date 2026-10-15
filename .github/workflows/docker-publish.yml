@@ -51,12 +51,19 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # 把 DOCKERHUB.md 同步到 Docker Hub 仓库的 Overview（full_description）。
-      # 只在 main 推送时跑（tag 推送内容相同，避免重复请求）；失败不影响镜像发布，故 continue-on-error。
-      # 逻辑内联在此，不引用本地维护脚本 update-dockerhub-overview.sh（该脚本按 .gitignore 不入库）。
+  # 把 DOCKERHUB.md 同步到 Docker Hub 仓库的 Overview（full_description）。
+  # 独立成 job：失败不影响镜像发布，但会在 Actions 里显示红叉（此前用 continue-on-error，失败被静默吞掉）。
+  # 只在 main 推送时跑（tag 推送内容相同，避免重复请求）。
+  # 注意：DOCKERHUB_TOKEN 需为 Read, Write, Delete 权限的 Access Token，Read & Write 只能推镜像、改不了说明。
+  # 逻辑内联在此，不引用本地维护脚本 update-dockerhub-overview.sh（该脚本按 .gitignore 不入库）。
+  dockerhub-overview:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
       - name: Sync Docker Hub overview (DOCKERHUB.md)
-        if: github.ref == 'refs/heads/main'
-        continue-on-error: true
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
