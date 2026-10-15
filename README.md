@@ -196,7 +196,7 @@ docker compose -f docker-compose.hub.yml pull && docker compose -f docker-compos
 
 欢迎 Issue 与 PR！Fork → 建分支 → 提交 → 发起 Pull Request，详见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
-仓库已配置 GitHub Actions：推送到 `main` 或打 `v*` tag 会自动构建并发布多架构镜像到 Docker Hub 和 GHCR。
+仓库已配置 GitHub Actions：推送到 `main` 或打 `v*` tag 会自动构建并发布多架构镜像到 Docker Hub 和 GHCR，同步 Docker Hub 说明，并按 CHANGELOG 自动创建 GitHub Release。
 
 ## 📝 许可
 

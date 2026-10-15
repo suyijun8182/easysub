@@ -1,0 +1,75 @@
+name: GitHub Release
+
+# 推送 v* tag 时自动创建 GitHub Release，正文取自 CHANGELOG.md 对应版本段落。
+# 推送 main 时补建：凡 >= BACKFILL_FROM 且还没有 Release 的 tag 都会补上（幂等，已存在的跳过）。
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BACKFILL_FROM: v1.12.0
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Create missing releases
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            TAGS="${GITHUB_REF_NAME}"
+          else
+            TAGS=$(git tag -l 'v*' --sort=v:refname | while read -r t; do
+              [ "$(printf '%s\n%s\n' "$BACKFILL_FROM" "$t" | sort -V | head -1)" = "$BACKFILL_FROM" ] && echo "$t"
+            done)
+          fi
+
+          for TAG in $TAGS; do
+            if gh release view "$TAG" >/dev/null 2>&1; then echo "skip $TAG（已有 Release）"; continue; fi
+            VER="${TAG#v}"
+
+            # 标题：附注 tag 用 tag 说明，轻量 tag 用提交标题；去掉 type 前缀、debugN 编号与末尾版本号
+            if [ "$(git cat-file -t "$TAG")" = "tag" ]; then SUBJ=$(git tag -l --format='%(contents:subject)' "$TAG")
+            else SUBJ=$(git log -1 --format=%s "$TAG"); fi
+            SUMMARY=$(printf '%s' "$SUBJ" | sed -E \
+              -e 's/^(Release )?v?[0-9.]+:? *(—— *)?//' \
+              -e 's/^[a-z]+(\([^)]*\))?: *//' \
+              -e 's/debug[0-9]+(-[0-9]+)? *//g' \
+              -e 's/^—— *//' \
+              -e 's/(（|\()v[0-9.]+(）|\))$//')
+
+            # 正文：CHANGELOG 中 "## [VER]" 到下一个 "## [" 之间的内容
+            NOTES=$(awk -v v="## [$VER]" '$0==v{f=1;next} /^## \[/{if(f)exit} f' CHANGELOG.md | sed -e '/^---$/d')
+            [ -n "$NOTES" ] || NOTES="详见提交记录。"
+
+            {
+              echo '### 升级方式'
+              echo
+              echo '```bash'
+              echo 'docker compose pull && docker compose up -d'
+              echo '```'
+              echo
+              echo '> 升级前建议先在「设置 → 数据备份」导出一份 JSON。'
+              echo
+              echo '---'
+              echo
+              echo "## [$VER]"
+              echo "$NOTES"
+              echo
+              echo '---'
+              echo
+              echo "完整变更历史见 [CHANGELOG.md](https://github.com/${GITHUB_REPOSITORY}/blob/main/CHANGELOG.md)。"
+            } > notes.md
+
+            gh release create "$TAG" --title "$TAG · $SUMMARY" --notes-file notes.md --verify-tag
+            echo "created $TAG · $SUMMARY"
+          done
