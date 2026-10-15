@@ -7,6 +7,7 @@ Self-hosted subscription / renewal manager with **14 notification channels** so 
 - **Source / 源码**: https://github.com/suyijun8182/easysub
 - **Tags**: `latest`, `v*` (per release) — multi-arch `linux/amd64` + `linux/arm64`
 - **GHCR mirror**: `ghcr.io/suyijun8182/easysub:latest`
+- **Changelog / 更新日志**: https://github.com/suyijun8182/easysub/blob/main/CHANGELOG.md
 
 > The image does **not** bundle a database. On first visit a web wizard asks for **your existing MySQL 8** connection.
 > 镜像**不内置数据库**，首次访问网页向导填入你已有的 MySQL 连接即可。
@@ -57,6 +58,7 @@ volumes:
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD` / `ADMIN_EMAIL` | Initial admin account created on first init. |
 | `TZ` | Timezone, e.g. `Asia/Shanghai`. |
 | `REMINDER_SCAN_TIME` | Daily scan time for reminders, e.g. `09:00`. |
+| `REQUIRE_ADMIN_APPROVAL` | Require admin approval for new sign-ups. Default `false` (sign up and log in right away). |
 | `TELEGRAM_BOT_TOKEN` | Optional; can also be set in the web UI. |
 | `EXCHANGE_API_BASE` / `EXCHANGE_API_URL` | Exchange-rate source (defaults provided). |
 
@@ -84,9 +86,15 @@ NAS 图形界面：重新拉取 `latest` 标签 → 重建容器，保持 `/app/
 > **升级前建议先备份**：网页 **设置 → 数据备份** 导出 JSON；管理员可用 **整站备份** 导出全部成员数据。
 > Before upgrading, export a backup from **Settings → Data backup** (admins: full-site backup).
 
+## What's new / 最近更新
+
+- **v1.12.1** — Sign-up no longer needs admin approval; set `REQUIRE_ADMIN_APPROVAL=true` to keep it. 注册后直接可用，如需审核设 `REQUIRE_ADMIN_APPROVAL=true`。
+- **v1.12.0** — Full UI redesign: remaining-cycle bar on every card, green / yellow / red expiry states, renewal-timeline dashboard, mobile bottom tab bar. Backup import now shows the real error instead of "invalid file format". 全站 UI 改版；导入备份报错显示真实原因。
+- **v1.11.x** — WeCom self-built app push; fixes for the notification panel disappearing and for deleting subscriptions that had sent reminders. 企业微信自建应用推送；修复通知面板消失与删除订阅报错。
+
 ## Features
 
-Multi-user (JWT, admin/user roles) · recurring & one-time subscriptions · **14 notification channels** (Telegram / Feishu / QQ / Bark / Email / Pushplus / ServerChan / **WeCom — group robot *or* self-built app** / DingTalk / Discord / Slack / ntfy / Gotify / Webhook) with quiet hours & weekly digest · trial / cancel / card-expiry reminders · monthly budget with overspend alert · built-in service library (100s of presets incl. dozens of carriers & eSIM) · multi-language (中/EN/RU) · 6 themes (incl. system-follow) · multi-currency with live FX · dashboard & reports + **CSV export** · Apple-style calendar + **.ics feed** · per-user & **admin full-site** backup/restore + **daily auto-backup** + CSV import/export · **2FA · API tokens · encrypted secrets** · **auto DB reconnect** & auto-migration · **PWA installable** · **in-app update check** · Home Assistant integration.
+Multi-user (JWT, admin/user roles, open sign-up — admin approval optional) · redesigned UI (remaining-cycle bar, renewal timeline, mobile tab bar) · recurring & one-time subscriptions · **14 notification channels** (Telegram / Feishu / QQ / Bark / Email / Pushplus / ServerChan / **WeCom — group robot *or* self-built app** / DingTalk / Discord / Slack / ntfy / Gotify / Webhook) with quiet hours & weekly digest · trial / cancel / card-expiry reminders · monthly budget with overspend alert · built-in service library (100s of presets incl. dozens of carriers & eSIM) · multi-language (中/EN/RU) · 6 themes (incl. system-follow) · multi-currency with live FX · dashboard & reports + **CSV export** · Apple-style calendar + **.ics feed** · per-user & **admin full-site** backup/restore + **daily auto-backup** + CSV import/export · **2FA · API tokens · encrypted secrets** · **auto DB reconnect** & auto-migration · **PWA installable** · **in-app update check** · Home Assistant integration.
 
 ## NAS install guides
 
