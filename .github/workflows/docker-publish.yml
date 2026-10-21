@@ -52,10 +52,9 @@ jobs:
           cache-to: type=gha,mode=max
 
   # 把 DOCKERHUB.md 同步到 Docker Hub 仓库的 Overview（full_description）。
-  # 独立成 job：失败不影响镜像发布，但会在 Actions 里显示红叉（此前用 continue-on-error，失败被静默吞掉）。
-  # 只在 main 推送时跑（tag 推送内容相同，避免重复请求）。
-  # 注意：DOCKERHUB_TOKEN 需为 Read, Write, Delete 权限的 Access Token，Read & Write 只能推镜像、改不了说明。
-  # 逻辑内联在此，不引用本地维护脚本 update-dockerhub-overview.sh（该脚本按 .gitignore 不入库）。
+  # 独立成 job：失败不影响镜像发布。只在 main 推送时跑（tag 推送内容相同，避免重复请求）。
+  # 用社区维护的 peter-evans/dockerhub-description：此前内联 curl 走 /v2/users/login + JWT，
+  # Docker Hub 认证方式变更后一直失败（与 token 权限无关）。DOCKERHUB_TOKEN 需 Read, Write, Delete。
   dockerhub-overview:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -64,24 +63,10 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Sync Docker Hub overview (DOCKERHUB.md)
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          DOCKERHUB_REPO: suyijun8182/easysub
-          DOCKERHUB_SHORT: "Self-hosted subscription & renewal manager, 14 notify channels. 自托管订阅续费保号管理."
-        run: |
-          set -euo pipefail
-          JWT=$(curl -s -H "Content-Type: application/json" \
-            -d "$(jq -n --arg u "$DOCKERHUB_USERNAME" --arg p "$DOCKERHUB_TOKEN" '{username:$u,password:$p}')" \
-            https://hub.docker.com/v2/users/login/ | jq -r .token)
-          [ -n "$JWT" ] && [ "$JWT" != "null" ] || { echo "Docker Hub 登录失败：检查 DOCKERHUB_USERNAME / DOCKERHUB_TOKEN"; exit 1; }
-          BODY=$(jq -n --arg full "$(cat DOCKERHUB.md)" --arg short "$DOCKERHUB_SHORT" \
-            '{full_description:$full, description:$short}')
-          CODE=$(curl -s -o /tmp/dh_resp.json -w '%{http_code}' -X PATCH \
-            -H "Authorization: JWT $JWT" -H "Content-Type: application/json" \
-            -d "$BODY" "https://hub.docker.com/v2/repositories/$DOCKERHUB_REPO/")
-          if [ "$CODE" = "200" ]; then
-            echo "✅ Overview 已同步：https://hub.docker.com/r/$DOCKERHUB_REPO"
-          else
-            echo "❌ 同步失败（HTTP $CODE）："; cat /tmp/dh_resp.json; exit 1
-          fi
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: suyijun8182/easysub
+          readme-filepath: ./DOCKERHUB.md
+          short-description: "Self-hosted subscription & renewal manager, 14 notify channels. 自托管订阅续费保号管理."
