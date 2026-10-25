@@ -121,7 +121,14 @@ const zh = {
     expiredTag: '已过期', soonTag: '即将到期', uncategorized: '未分类', dragHint: '拖动卡片可排序，拖动分类标题可调整分类顺序',
     deleteTitle: '删除订阅', deletePwdTip: '为防止误删，请输入你的登录密码以确认删除「{name}」', pwdPh: '登录密码',
     remark: '个性化备注', remarkPh: '如：家庭主力机 / 香港 CN2（会显示在卡片上）',
-    ipLabel: 'IP 地址（选填）', ipv4: 'IPv4', ipv6: 'IPv6'
+    ipLabel: 'IP 地址（选填）', ipv4: 'IPv4', ipv6: 'IPv6',
+    sortMode: '排序', selectMode: '多选', done: '完成', moveUp: '上移', moveDown: '下移',
+    moveCatUp: '上移分类「{name}」', moveCatDown: '下移分类「{name}」', sortHint: '用上移 / 下移按钮调整顺序，改动即时保存',
+    selectOne: '选择「{name}」', selectedN: '已选 {n} 项', selectAll: '全选', selectNone: '取消全选',
+    enable: '启用', disable: '停用', moveToCat: '移到分类…',
+    bulkRenewMsg: '为选中的 {n} 个周期订阅选择续费方式（一次性买断项目会跳过）：',
+    bulkDeleteTip: '将删除选中的 {n} 个订阅，无法撤销。请输入登录密码确认。',
+    bulkDone: '已完成 {n} 项', bulkPartial: '完成 {ok} 项，失败 {fail} 项'
   },
   calendar: { title: '续费日历', noEvents: '本月无续费', noEventsDay: '当天无续费', today: '今天', more: '还有 {n} 项' },
   reports: {
@@ -307,7 +314,14 @@ const en = {
     expiredTag: 'Expired', soonTag: 'Due soon', uncategorized: 'Uncategorized', dragHint: 'Drag cards to reorder; drag a category header to reorder categories',
     deleteTitle: 'Delete subscription', deletePwdTip: 'To prevent mistakes, enter your login password to delete "{name}"', pwdPh: 'Login password',
     remark: 'Personal note', remarkPh: 'e.g. main box / HK CN2 (shown on card)',
-    ipLabel: 'IP address (optional)', ipv4: 'IPv4', ipv6: 'IPv6'
+    ipLabel: 'IP address (optional)', ipv4: 'IPv4', ipv6: 'IPv6',
+    sortMode: 'Reorder', selectMode: 'Select', done: 'Done', moveUp: 'Move up', moveDown: 'Move down',
+    moveCatUp: 'Move category "{name}" up', moveCatDown: 'Move category "{name}" down', sortHint: 'Use the up / down buttons to reorder; changes save instantly',
+    selectOne: 'Select "{name}"', selectedN: '{n} selected', selectAll: 'Select all', selectNone: 'Clear selection',
+    enable: 'Enable', disable: 'Disable', moveToCat: 'Move to category…',
+    bulkRenewMsg: 'Choose how to renew the {n} selected recurring subscriptions (one-time items are skipped):',
+    bulkDeleteTip: 'This will delete the {n} selected subscriptions and cannot be undone. Enter your login password to confirm.',
+    bulkDone: '{n} done', bulkPartial: '{ok} done, {fail} failed'
   },
   calendar: { title: 'Renewal Calendar', noEvents: 'No renewals this month', noEventsDay: 'No renewals on this day', today: 'Today', more: '+{n} more' },
   reports: {
@@ -493,7 +507,14 @@ const ru = {
     expiredTag: 'Истекло', soonTag: 'Скоро', uncategorized: 'Без категории', dragHint: 'Перетащите карточки для сортировки; заголовок категории — для порядка категорий',
     deleteTitle: 'Удалить подписку', deletePwdTip: 'Во избежание ошибок введите пароль, чтобы удалить «{name}»', pwdPh: 'Пароль',
     remark: 'Заметка', remarkPh: 'напр. основной сервер / HK CN2 (на карточке)',
-    ipLabel: 'IP-адрес (необязательно)', ipv4: 'IPv4', ipv6: 'IPv6'
+    ipLabel: 'IP-адрес (необязательно)', ipv4: 'IPv4', ipv6: 'IPv6',
+    sortMode: 'Порядок', selectMode: 'Выбрать', done: 'Готово', moveUp: 'Вверх', moveDown: 'Вниз',
+    moveCatUp: 'Переместить категорию «{name}» вверх', moveCatDown: 'Переместить категорию «{name}» вниз', sortHint: 'Меняйте порядок кнопками вверх / вниз; изменения сохраняются сразу',
+    selectOne: 'Выбрать «{name}»', selectedN: 'Выбрано: {n}', selectAll: 'Выбрать все', selectNone: 'Снять выбор',
+    enable: 'Включить', disable: 'Отключить', moveToCat: 'В категорию…',
+    bulkRenewMsg: 'Выберите способ продления для {n} выбранных периодических подписок (разовые покупки пропускаются):',
+    bulkDeleteTip: 'Будут удалены выбранные подписки ({n}) без возможности восстановления. Введите пароль для подтверждения.',
+    bulkDone: 'Готово: {n}', bulkPartial: 'Готово: {ok}, ошибок: {fail}'
   },
   calendar: { title: 'Календарь продлений', noEvents: 'Нет продлений', noEventsDay: 'В этот день продлений нет', today: 'Сегодня', more: '+{n} ещё' },
   reports: {

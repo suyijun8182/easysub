@@ -88,13 +88,14 @@ NAS 图形界面：重新拉取 `latest` 标签 → 重建容器，保持 `/app/
 
 ## What's new / 最近更新
 
+- **v1.13.0** — Bulk actions on subscriptions (renew / enable / disable / move / delete) and a button-based reorder mode; fixed login errors and the 2FA prompt vanishing on a fresh browser; keyboard & screen-reader fixes across forms and dialogs. 订阅批量操作与按钮排序；修复登录报错不显示、新浏览器下两步验证无法登录；表单与弹窗无障碍改进。
 - **v1.12.1** — Sign-up no longer needs admin approval; set `REQUIRE_ADMIN_APPROVAL=true` to keep it. 注册后直接可用，如需审核设 `REQUIRE_ADMIN_APPROVAL=true`。
 - **v1.12.0** — Full UI redesign: remaining-cycle bar on every card, green / yellow / red expiry states, renewal-timeline dashboard, mobile bottom tab bar. Backup import now shows the real error instead of "invalid file format". 全站 UI 改版；导入备份报错显示真实原因。
 - **v1.11.x** — WeCom self-built app push; fixes for the notification panel disappearing and for deleting subscriptions that had sent reminders. 企业微信自建应用推送；修复通知面板消失与删除订阅报错。
 
 ## Features
 
-Multi-user (JWT, admin/user roles, open sign-up — admin approval optional) · redesigned UI (remaining-cycle bar, renewal timeline, mobile tab bar) · recurring & one-time subscriptions · **14 notification channels** (Telegram / Feishu / QQ / Bark / Email / Pushplus / ServerChan / **WeCom — group robot *or* self-built app** / DingTalk / Discord / Slack / ntfy / Gotify / Webhook) with quiet hours & weekly digest · trial / cancel / card-expiry reminders · monthly budget with overspend alert · built-in service library (100s of presets incl. dozens of carriers & eSIM) · multi-language (中/EN/RU) · 6 themes (incl. system-follow) · multi-currency with live FX · dashboard & reports + **CSV export** · Apple-style calendar + **.ics feed** · per-user & **admin full-site** backup/restore + **daily auto-backup** + CSV import/export · **2FA · API tokens · encrypted secrets** · **auto DB reconnect** & auto-migration · **PWA installable** · **in-app update check** · Home Assistant integration.
+Multi-user (JWT, admin/user roles, open sign-up — admin approval optional) · redesigned UI (remaining-cycle bar, renewal timeline, mobile tab bar) · recurring & one-time subscriptions with **bulk actions** and button / drag reordering · keyboard & screen-reader friendly · **14 notification channels** (Telegram / Feishu / QQ / Bark / Email / Pushplus / ServerChan / **WeCom — group robot *or* self-built app** / DingTalk / Discord / Slack / ntfy / Gotify / Webhook) with quiet hours & weekly digest · trial / cancel / card-expiry reminders · monthly budget with overspend alert · built-in service library (100s of presets incl. dozens of carriers & eSIM) · multi-language (中/EN/RU) · 6 themes (incl. system-follow) · multi-currency with live FX · dashboard & reports + **CSV export** · Apple-style calendar + **.ics feed** · per-user & **admin full-site** backup/restore + **daily auto-backup** + CSV import/export · **2FA · API tokens · encrypted secrets** · **auto DB reconnect** & auto-migration · **PWA installable** · **in-app update check** · Home Assistant integration.
 
 ## NAS install guides
 

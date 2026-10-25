@@ -41,6 +41,8 @@ const PATHS = {
   library: '<rect x="3" y="3" width="7" height="18" rx="1.5"/><rect x="14" y="3" width="7" height="18" rx="1.5"/>',
   chevron: '<polyline points="9 18 15 12 9 6"/>',
   chevronL: '<polyline points="15 18 9 12 15 6"/>',
+  chevronU: '<polyline points="18 15 12 9 6 15"/>',
+  chevronD: '<polyline points="6 9 12 15 18 9"/>',
   sparkle: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/>',
   inbox: '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
 }

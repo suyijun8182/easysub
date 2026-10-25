@@ -26,7 +26,7 @@
             <div class="hz-late-t">{{ t('dashboard.lateZone') }}</div>
             <div class="hz-late-items">
               <router-link v-for="s in lateList.slice(0, 6)" :key="s.id" to="/subscriptions" class="hz-chip late"
-                           :title="chipTitle(s)">
+                           :title="chipTitle(s)" :aria-label="chipTitle(s)">
                 <SubIcon :icon="s.icon" :name="s.name" :size="30" />
               </router-link>
               <span v-if="lateList.length > 6" class="hz-plus">+{{ lateList.length - 6 }}</span>
@@ -41,7 +41,7 @@
             </div>
             <router-link v-for="(c, i) in placed" :key="c.s.id" to="/subscriptions" class="hz-chip" :class="c.st"
                          :style="{ left: c.x + '%', bottom: (34 + c.lane * 40) + 'px', '--d': i * 40 + 'ms' }"
-                         :title="chipTitle(c.s)">
+                         :title="chipTitle(c.s)" :aria-label="chipTitle(c.s)">
               <SubIcon :icon="c.s.icon" :name="c.s.name" :size="30" />
               <span class="hz-stem" :style="{ height: (14 + c.lane * 40) + 'px' }"></span>
             </router-link>
