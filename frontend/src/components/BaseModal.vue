@@ -6,19 +6,27 @@
 -->
 <template>
   <div class="modal-mask" :class="maskClass" @click.self="emit('close')">
-    <div ref="box" class="modal" v-bind="$attrs" role="dialog" aria-modal="true" :aria-labelledby="titleId"
+    <div ref="box" class="modal" :class="{ 'android-page': androidPreview && page }" v-bind="$attrs" role="dialog" aria-modal="true" :aria-labelledby="titleId"
          tabindex="-1" @keydown="onKey">
+      <header v-if="androidPreview" class="mobile-modal-header">
+        <button type="button" class="btn ghost" @click="emit('close')">{{ t('common.cancel') }}</button>
+        <h3 v-if="heading" :id="titleId">{{ heading }}</h3>
+        <button v-if="submitLabel" type="button" class="btn" :disabled="busy" @click="emit('submit')">{{ submitLabel }}</button>
+      </header>
       <slot :title-id="titleId" />
     </div>
   </div>
 </template>
 
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref, useId } from 'vue'
+import { inject, nextTick, onBeforeUnmount, onMounted, ref, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 defineOptions({ inheritAttrs: false })
-defineProps({ maskClass: { type: [String, Array, Object], default: '' } })
-const emit = defineEmits(['close'])
+defineProps({ maskClass: { type: [String, Array, Object], default: '' }, page: Boolean, heading: String, submitLabel: String, busy: Boolean })
+const emit = defineEmits(['close', 'submit'])
+const androidPreview = inject('preview', null)
+const { t } = useI18n()
 
 const titleId = useId()
 const box = ref(null)
@@ -51,7 +59,7 @@ onMounted(async () => {
   await nextTick()
   // 优先聚焦文本类输入；没有就聚焦弹窗本身，让读屏先读标题
   const field = box.value.querySelector('input:not([type="radio"]):not([type="checkbox"]):not([hidden]), textarea')
-  ;(field || box.value).focus()
+  ;(androidPreview ? box.value : field || box.value).focus({ preventScroll: !!androidPreview })
 })
 onBeforeUnmount(() => {
   if (opener && document.contains(opener)) opener.focus()

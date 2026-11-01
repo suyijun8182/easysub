@@ -62,6 +62,15 @@ def run_migrations(engine: Engine) -> None:
     if engine is None or not engine.url.get_backend_name().startswith("mysql"):
         return
     with engine.begin() as conn:
+        for table in ("sync_records", "sync_changes", "sync_receipts"):
+            data_type = conn.execute(text(
+                "SELECT DATA_TYPE FROM information_schema.columns "
+                "WHERE table_schema = DATABASE() AND table_name = :t AND column_name = 'payload'"
+            ), {"t": table}).scalar()
+            if data_type and data_type.lower() != "longtext":
+                # Ciphertext grows beyond TEXT even for existing valid subscription notes.
+                conn.execute(text(f"ALTER TABLE `{table}` MODIFY COLUMN `payload` LONGTEXT NOT NULL"))
+                print(f"[migrate] 已扩展 {table}.payload 为 LONGTEXT")
         for table, column, ddl in _COLUMNS:
             try:
                 if not _table_exists(conn, table):

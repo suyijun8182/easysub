@@ -30,6 +30,7 @@ def init_engine(url: str):
         pool_pre_ping=True,
         pool_recycle=1800,
         connect_args=connect_args,
+        **({"isolation_level": "READ COMMITTED"} if url.startswith("mysql") else {}),
     )
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     return engine

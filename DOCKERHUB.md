@@ -68,6 +68,10 @@ volumes:
 
 ## Upgrade / 升级
 
+**v1.14.0 / App 同步后端**：建议固定镜像 `suyijun8182/easysub:v1.14.0`。升级前备份 MySQL、原 Compose/.env 和 `/app/data`，保留原 `JWT_SECRET`，不要重新生成。启动会新增四张同步表，数据库账号需要 CREATE/ALTER 权限。
+
+保持原项目、端口、反向代理和数据卷；只更新 app 镜像并重建。`/api/health` 应显示 `version: 1.14.0`、`configured: true`、`sync_protocol: 1`。完整步骤和回滚：[v1.14.0 更新方案](https://github.com/suyijun8182/easysub/blob/main/docs/update-v1.14.0.md)。
+
 Data lives in **your MySQL**; upgrading only swaps the image and is non-destructive.
 数据都在**你自己的 MySQL** 里，升级只换镜像，不会动数据。
 
@@ -77,7 +81,8 @@ docker compose -f docker-compose.hub.yml pull && docker compose -f docker-compos
 
 # docker run
 docker pull suyijun8182/easysub:latest
-docker rm -f easysub && docker run -d --name easysub ... suyijun8182/easysub:latest   # 保持 -v easysub_data:/app/data 不变
+# 使用原来的环境、网络、端口和挂载配置重建，镜像改为固定版本。
+# 特别保留原 JWT_SECRET 和 /app/data，不要重新运行上方随机生成密钥的首次安装命令。
 ```
 
 NAS 图形界面：重新拉取 `latest` 标签 → 重建容器，保持 `/app/data` 映射与环境变量不变。

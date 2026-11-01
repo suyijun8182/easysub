@@ -2,7 +2,7 @@ import asyncio
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -26,9 +26,11 @@ from app.routers import (
     setup,
     subscriptions,
     system,
+    sync,
     users,
 )
 from app.services import scheduler
+from app.routers.system import APP_VERSION
 
 
 @asynccontextmanager
@@ -54,7 +56,7 @@ async def lifespan(app: FastAPI):
     scheduler.shutdown_scheduler()
 
 
-app = FastAPI(title="订阅保号通知系统 API", version="1.1.0", lifespan=lifespan)
+app = FastAPI(title="订阅保号通知系统 API", version=APP_VERSION, lifespan=lifespan)
 
 
 @app.exception_handler(Exception)
@@ -63,9 +65,8 @@ async def _unhandled(request: Request, exc: Exception):
 
     默认的 500 是纯文本，前端取不到 detail，只能显示笼统的兜底文案，把真实原因掩盖掉。
     """
-    print(f"[error] {request.method} {request.url.path}: {exc!r}")
-    msg = (str(exc).splitlines() or [""])[0][:300]
-    return JSONResponse(status_code=500, content={"detail": f"服务器内部错误：{type(exc).__name__}: {msg}"})
+    print(f"[error] {request.method} {request.url.path}: {type(exc).__name__}")
+    return JSONResponse(status_code=500, content={"detail": "服务器内部错误，请查看服务运行状态后重试"})
 
 app.add_middleware(
     CORSMiddleware,
@@ -94,13 +95,14 @@ for r in (
     backup.router,
     calendar.router,
     integrations.router,
+    sync.router,
 ):
     app.include_router(r)
 
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "configured": database.is_configured()}
+    return {"status": "ok", "configured": database.is_configured(), "version": APP_VERSION, "sync_protocol": 1}
 
 
 # 静态资源（上传的图标）
@@ -116,6 +118,8 @@ if os.path.isdir(_frontend_dist):
 
     @app.get("/{full_path:path}")
     async def spa_fallback(full_path: str):
+        if full_path.startswith("api/"):
+            raise HTTPException(404, "API endpoint not found")
         candidate = os.path.join(_frontend_dist, full_path)
         if full_path and os.path.isfile(candidate):
             return FileResponse(candidate)

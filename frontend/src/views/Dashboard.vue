@@ -115,16 +115,17 @@
             <router-link to="/reports" class="more">{{ t('nav.reports') }}<span v-html="icon('chevron')"></span></router-link>
           </div>
           <div v-if="breakdown.length" class="donut-wrap">
-            <div class="donut" :style="donutStyle" role="img" :aria-label="t('dashboard.byCategory')">
+            <div v-if="!androidPreview || breakdown.length <= 4" class="donut" :style="donutStyle" role="img" :aria-label="t('dashboard.byCategory')">
               <div class="donut-hole"><span class="num">{{ breakdown.length }}</span></div>
             </div>
-            <ul class="legend">
+            <ul v-if="!androidPreview || breakdown.length <= 4" class="legend">
               <li v-for="(b, i) in breakdown.slice(0, 7)" :key="b.category">
                 <span class="sw" :style="{ background: color(i) }"></span>
                 <span class="lg-n">{{ b.category }}</span>
                 <span class="num muted">{{ b.percent }}%</span>
               </li>
             </ul>
+            <div v-else class="ranked-categories"><div v-for="b in breakdown" :key="b.category"><div class="category-line"><span>{{ b.category }}</span><span class="category-value">{{ b.monthly.toFixed(2) }} {{ auth.user?.base_currency }} · {{ b.percent }}%</span></div><div class="category-track"><i :style="{ width: b.percent + '%' }"></i></div></div></div>
           </div>
           <div v-else class="empty sm"><span v-html="icon('reports')"></span><p>{{ t('dashboard.none') }}</p></div>
         </section>
@@ -167,7 +168,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '../api'
 import { useAuth } from '../stores/auth'
@@ -177,6 +178,7 @@ import SubIcon from '../components/SubIcon.vue'
 
 const { t } = useI18n()
 const auth = useAuth()
+const androidPreview = inject('preview', null)
 const loading = ref(true)
 const data = ref({ upcoming: [], recent: [] })
 const breakdown = ref([])

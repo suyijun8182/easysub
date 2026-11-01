@@ -1,0 +1,8 @@
+{
+  "appId": "com.easysub.app",
+  "appName": "EasySub",
+  "webDir": "dist-android",
+  "loggingBehavior": "none",
+  "server": { "androidScheme": "https" },
+  "android": { "allowMixedContent": false }
+}

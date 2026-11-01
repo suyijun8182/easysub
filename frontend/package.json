@@ -4,21 +4,30 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build:android": "node scripts/build-android.mjs && cap sync android",
     "dev": "vite",
+    "preview:android": "vite --config vite.android-preview.config.js",
+    "build:android-preview": "vite build --config vite.android-preview.config.js",
+    "test:android-preview": "node --test src/android-preview/*.test.js",
+    "test:sync": "node --test src/sync/*.test.js",
     "i18n:check": "node scripts/check-i18n.mjs",
     "prebuild": "node scripts/check-i18n.mjs",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.0",
     "@fontsource-variable/onest": "^5.3.1",
     "axios": "^1.7.9",
     "pinia": "^2.3.0",
     "vue": "^3.5.13",
-    "vue-i18n": "^10.0.5",
+    "vue-i18n": "^11.4.16",
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.6.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "vite": "^6.0.7"
   }

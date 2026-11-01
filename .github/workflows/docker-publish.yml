@@ -7,7 +7,54 @@ on:
   workflow_dispatch:
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci-test-password
+          MYSQL_DATABASE: easysub_ci_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pci-test-password"
+          --health-interval=10s --health-timeout=5s --health-retries=12
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Test backend with SQLite and MySQL
+        working-directory: backend
+        env:
+          EASYSUB_TEST_MYSQL_URL: mysql+pymysql://root:ci-test-password@127.0.0.1:3306/easysub_ci_test
+        run: |
+          pip install -r requirements.txt
+          python -m unittest discover -s tests -p 'test_sync*.py'
+      - name: Test and build website and Android assets
+        working-directory: frontend
+        run: |
+          npm ci
+          npm audit --omit=dev --audit-level=high
+          python -m uvicorn --app-dir ../backend tests.sync_fixture:app --host 127.0.0.1 --port 18765 > "$RUNNER_TEMP/sync-fixture.log" 2>&1 &
+          fixture_pid=$!
+          trap 'kill "$fixture_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:18765/openapi.json > /dev/null; then break; fi
+            sleep 1
+          done
+          EASYSUB_SYNC_FIXTURE=1 npm run test:sync
+          npm run test:android-preview
+          npm run build
+          npm run build:android-preview
+          node scripts/build-android.mjs
   build-and-push:
+    needs: validate
     runs-on: ubuntu-latest
     # 默认 GITHUB_TOKEN 没有 packages 写权限，推送到 GHCR 会被拒（denied），
     # 导致 Build and push 步骤失败。这里显式授予 packages:write。
@@ -38,6 +85,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
+        id: publish
         uses: docker/build-push-action@v7
         with:
           context: .
@@ -50,6 +98,24 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/easysub:${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+      - name: Verify published image routes and version
+        run: |
+          docker run --rm "suyijun8182/easysub@${{ steps.publish.outputs.digest }}" python -c '
+          from fastapi.testclient import TestClient
+          from app.main import app
+          from app.routers.system import APP_VERSION
+          client = TestClient(app)
+          health = client.get("/api/health").json()
+          assert health["version"] == APP_VERSION and health["sync_protocol"] == 1, health
+          response = client.get("/api/sync/v1/capabilities")
+          assert response.status_code == 401 and "application/json" in response.headers["content-type"]
+          assert client.get("/api/missing-route").status_code == 404
+          print("Published image verified:", health["version"], "sync protocol", health["sync_protocol"])
+          '
 
   # 把 DOCKERHUB.md 同步到 Docker Hub 仓库的 Overview（full_description）。
   # 独立成 job：失败不影响镜像发布。只在 main 推送时跑（tag 推送内容相同，避免重复请求）。

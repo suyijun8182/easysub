@@ -19,24 +19,24 @@
     <div class="card cal-card">
       <div class="cal">
         <div v-for="(d, i) in dows" :key="d" class="dow" :class="{ wknd: i === 0 || i === 6 }">{{ d }}</div>
-        <div v-for="(cell, i) in cells" :key="cell.key" class="cell"
+        <button v-for="(cell, i) in cells" :key="cell.key" class="cell" type="button"
              :class="{ out: !cell.inMonth, today: cell.isToday, wknd: i % 7 === 0 || i % 7 === 6, sel: selected === cell.key }"
-             role="button" tabindex="0" :aria-label="cell.key"
-             @click="select(cell)" @keydown.enter.prevent="select(cell)">
+             :aria-label="dateLabel(cell)" :aria-pressed="selected === cell.key" :aria-current="cell.isToday ? 'date' : undefined"
+             @click="select(cell)">
           <div class="dnum"><span class="num">{{ cell.day }}</span></div>
           <div class="evs">
             <div v-for="ev in cell.events.slice(0, 3)" :key="ev.id" class="ev" :class="statusOf(ev)" :title="ev.name">
               <SubIcon :icon="ev.icon" :name="ev.name" :size="16" />
               <span class="ev-name">{{ ev.name }}</span>
             </div>
-            <button v-if="cell.events.length > 3" type="button" class="ev-more" @click.stop="select(cell, true)">
+            <span v-if="cell.events.length > 3" class="ev-more">
               {{ t('calendar.more', { n: cell.events.length - 3 }) }}
-            </button>
+            </span>
           </div>
           <div v-if="cell.events.length" class="dots" aria-hidden="true">
             <span v-for="ev in cell.events.slice(0, 3)" :key="ev.id" class="dot" :class="statusOf(ev)"></span>
           </div>
-        </div>
+        </button>
       </div>
     </div>
 
@@ -48,7 +48,7 @@
         </button>
       </div>
       <div v-if="agenda.length" class="ag-list">
-        <div v-for="ev in agenda" :key="ev.id + '-' + ev.next_renewal_date" class="ag-row">
+        <component :is="androidPreview ? RouterLink : 'div'" v-for="ev in agenda" :key="ev.id + '-' + ev.next_renewal_date" class="ag-row" :to="androidPreview ? '/subscriptions/' + ev.id : undefined">
           <div class="ag-date num">
             <b>{{ dayOf(ev) }}</b>
             <span>{{ dowOf(ev) }}</span>
@@ -62,7 +62,7 @@
             <div v-if="ev.amount != null" class="ag-amt num">{{ Number(ev.amount).toFixed(2) }} {{ ev.currency }}</div>
             <span class="tag" :class="statusOf(ev)">{{ leftText(ev) }}</span>
           </div>
-        </div>
+        </component>
       </div>
       <div v-else class="empty">
         <span class="empty-ico" v-html="icon('calendar')"></span>
@@ -73,7 +73,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, inject, onMounted, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import api from '../api'
 import { icon } from '../icons'
@@ -81,6 +82,7 @@ import { daysLeft, statusOf } from '../lifeline'
 import SubIcon from '../components/SubIcon.vue'
 
 const { t, locale } = useI18n()
+const androidPreview = inject('preview', null)
 const now = new Date()
 const year = ref(now.getFullYear())
 const month = ref(now.getMonth())
@@ -92,6 +94,10 @@ const pad = (n) => String(n).padStart(2, '0')
 const keyOf = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 const dateOf = (k) => new Date(k + 'T00:00:00')
 const dueKey = (s) => String(s.next_renewal_date || '').slice(0, 10)
+function dateLabel(cell) {
+  const date = new Intl.DateTimeFormat(loc.value, { dateStyle: 'full' }).format(dateOf(cell.key))
+  return androidPreview ? t('mobile.selectedDate', { date, count: cell.events.length }) : date + ' · ' + cell.events.length
+}
 
 const dows = computed(() => {
   const fmt = new Intl.DateTimeFormat(loc.value, { weekday: 'short' })
@@ -187,7 +193,7 @@ onMounted(async () => {
 .cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
 .dow { text-align: right; font-size: 12px; font-weight: 550; color: var(--text-soft); padding: 10px 12px 8px; }
 .dow.wknd { color: var(--text-faint); }
-.cell { min-height: 112px; border-top: 1px solid var(--border); border-left: 1px solid var(--border);
+.cell { min-height: 112px; border: 0; background: var(--surface); color: var(--text); font: inherit; border-top: 1px solid var(--border); border-left: 1px solid var(--border);
   padding: 5px 6px 6px; display: flex; flex-direction: column; min-width: 0; cursor: pointer;
   transition: background-color .15s; outline: none; }
 .cell:nth-child(7n + 1) { border-left: none; }

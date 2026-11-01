@@ -2,6 +2,7 @@
 node_modules/
 dist/
 frontend_dist/
+dist-android-preview/
 __pycache__/
 *.pyc
 .venv/
@@ -81,3 +82,10 @@ update-dockerhub-overview.sh
 
 backend/_smoke.py
 backend/.venv/
+.android-tools/
+frontend/dist-android/
+artifacts/
+*.jks
+*.keystore
+_notes.md
+easysub-backup-*.json

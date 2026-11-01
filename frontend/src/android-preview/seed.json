@@ -1,0 +1,3523 @@
+{
+  "CURRENCIES": [
+    [
+      "USD",
+      "美元 US Dollar",
+      "$"
+    ],
+    [
+      "CNY",
+      "人民币 Chinese Yuan",
+      "¥"
+    ],
+    [
+      "EUR",
+      "欧元 Euro",
+      "€"
+    ],
+    [
+      "GBP",
+      "英镑 British Pound",
+      "£"
+    ],
+    [
+      "JPY",
+      "日元 Japanese Yen",
+      "¥"
+    ],
+    [
+      "RUB",
+      "卢布 Russian Ruble",
+      "₽"
+    ],
+    [
+      "HKD",
+      "港币 Hong Kong Dollar",
+      "HK$"
+    ],
+    [
+      "TWD",
+      "新台币 Taiwan Dollar",
+      "NT$"
+    ],
+    [
+      "KRW",
+      "韩元 Korean Won",
+      "₩"
+    ],
+    [
+      "SGD",
+      "新加坡元 Singapore Dollar",
+      "S$"
+    ],
+    [
+      "AUD",
+      "澳元 Australian Dollar",
+      "A$"
+    ],
+    [
+      "CAD",
+      "加元 Canadian Dollar",
+      "C$"
+    ],
+    [
+      "CHF",
+      "瑞士法郎 Swiss Franc",
+      "Fr"
+    ],
+    [
+      "INR",
+      "印度卢比 Indian Rupee",
+      "₹"
+    ],
+    [
+      "BRL",
+      "巴西雷亚尔 Brazilian Real",
+      "R$"
+    ],
+    [
+      "THB",
+      "泰铢 Thai Baht",
+      "฿"
+    ],
+    [
+      "MYR",
+      "马来西亚林吉特 Malaysian Ringgit",
+      "RM"
+    ],
+    [
+      "PHP",
+      "菲律宾比索 Philippine Peso",
+      "₱"
+    ],
+    [
+      "IDR",
+      "印尼盾 Indonesian Rupiah",
+      "Rp"
+    ],
+    [
+      "TRY",
+      "土耳其里拉 Turkish Lira",
+      "₺"
+    ],
+    [
+      "AED",
+      "阿联酋迪拉姆 UAE Dirham",
+      "د.إ"
+    ]
+  ],
+  "CATEGORIES": [
+    [
+      "流媒体 / Streaming",
+      "📺",
+      "#e50914"
+    ],
+    [
+      "AI 服务 / AI",
+      "🤖",
+      "#10a37f"
+    ],
+    [
+      "游戏 / Gaming",
+      "🎮",
+      "#107c10"
+    ],
+    [
+      "VPS / 服务器",
+      "🖥️",
+      "#0078d4"
+    ],
+    [
+      "电信运营商 / Carrier (SIM 保号)",
+      "📱",
+      "#e60000"
+    ],
+    [
+      "软件 / Software",
+      "🧩",
+      "#5b6ee1"
+    ],
+    [
+      "音乐 / Music",
+      "🎵",
+      "#1db954"
+    ],
+    [
+      "云存储 / Cloud",
+      "☁️",
+      "#4285f4"
+    ],
+    [
+      "域名 / Domain",
+      "🌐",
+      "#f59e0b"
+    ],
+    [
+      "会员 / Membership",
+      "💳",
+      "#9333ea"
+    ],
+    [
+      "教育 / Education",
+      "📚",
+      "#0ea5e9"
+    ],
+    [
+      "新闻 / News",
+      "📰",
+      "#374151"
+    ],
+    [
+      "健身 / Fitness",
+      "💪",
+      "#ef4444"
+    ],
+    [
+      "其它 / Other",
+      "📦",
+      "#6b7280"
+    ]
+  ],
+  "PAYMENT_METHODS": [
+    [
+      "信用卡 / Credit Card",
+      "💳"
+    ],
+    [
+      "借记卡 / Debit Card",
+      "🏦"
+    ],
+    [
+      "Apple Pay",
+      "🍎"
+    ],
+    [
+      "Google Pay",
+      "🅖"
+    ],
+    [
+      "支付宝 / Alipay",
+      "🅰️"
+    ],
+    [
+      "微信支付 / WeChat Pay",
+      "💬"
+    ],
+    [
+      "PayPal",
+      "🅿️"
+    ],
+    [
+      "银行转账 / Bank Transfer",
+      "🏛️"
+    ],
+    [
+      "加密货币 / Crypto",
+      "₿"
+    ]
+  ],
+  "notify": {
+    "telegram": {
+      "enabled": false,
+      "bot_token": "",
+      "chat_id": "",
+      "admin_id": "",
+      "api_base": "",
+      "proxy": ""
+    },
+    "feishu": {
+      "enabled": false,
+      "app_id": "",
+      "app_secret": "",
+      "chat_ids": ""
+    },
+    "qq": {
+      "enabled": false,
+      "app_id": "",
+      "app_secret": "",
+      "group_ids": "",
+      "user_ids": ""
+    },
+    "bark": {
+      "enabled": false,
+      "urls": [],
+      "group": "",
+      "level": "active",
+      "icon": ""
+    },
+    "email": {
+      "enabled": false,
+      "host": "",
+      "port": 465,
+      "ssl": true,
+      "username": "",
+      "password": "",
+      "from": "",
+      "to": ""
+    },
+    "pushplus": {
+      "enabled": false,
+      "token": "",
+      "topic": "",
+      "channel": "wechat"
+    },
+    "serverchan": {
+      "enabled": false,
+      "sendkey": ""
+    },
+    "wecom": {
+      "enabled": false,
+      "mode": "webhook",
+      "url": "",
+      "corp_id": "",
+      "agent_id": "",
+      "secret": "",
+      "proxy_base": "",
+      "to_user": "@all",
+      "to_party": "",
+      "to_tag": "",
+      "msg_type": "text",
+      "card_url": ""
+    },
+    "dingtalk": {
+      "enabled": false,
+      "url": "",
+      "secret": ""
+    },
+    "discord": {
+      "enabled": false,
+      "url": ""
+    },
+    "slack": {
+      "enabled": false,
+      "url": ""
+    },
+    "ntfy": {
+      "enabled": false,
+      "server": "https://ntfy.sh",
+      "topic": "",
+      "token": ""
+    },
+    "gotify": {
+      "enabled": false,
+      "server": "",
+      "token": "",
+      "priority": 5
+    },
+    "webhook": {
+      "enabled": false,
+      "urls": [],
+      "secret": "",
+      "headers": [],
+      "template": "",
+      "timeout_ms": 5000,
+      "max_retries": 3
+    }
+  },
+  "catalog": [
+    {
+      "name": "Netflix",
+      "domain": "netflix.com",
+      "website": "https://netflix.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "netflix_com",
+      "icon": "/api/icons/library/netflix_com.png"
+    },
+    {
+      "name": "Disney+",
+      "domain": "disneyplus.com",
+      "website": "https://disneyplus.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "disneyplus_com",
+      "icon": "/api/icons/library/disneyplus_com.png"
+    },
+    {
+      "name": "YouTube Premium",
+      "domain": "youtube.com",
+      "website": "https://youtube.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "youtube_com",
+      "icon": "/api/icons/library/youtube_com.png"
+    },
+    {
+      "name": "HBO Max",
+      "domain": "max.com",
+      "website": "https://max.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "max_com",
+      "icon": "/api/icons/library/max_com.png"
+    },
+    {
+      "name": "Prime Video",
+      "domain": "primevideo.com",
+      "website": "https://primevideo.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "primevideo_com",
+      "icon": "/api/icons/library/primevideo_com.png"
+    },
+    {
+      "name": "Hulu",
+      "domain": "hulu.com",
+      "website": "https://hulu.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "hulu_com",
+      "icon": "/api/icons/library/hulu_com.png"
+    },
+    {
+      "name": "Apple TV+",
+      "domain": "tv.apple.com",
+      "website": "https://tv.apple.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "tv_apple_com",
+      "icon": "/api/icons/library/tv_apple_com.png"
+    },
+    {
+      "name": "Paramount+",
+      "domain": "paramountplus.com",
+      "website": "https://paramountplus.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "paramountplus_com",
+      "icon": "/api/icons/library/paramountplus_com.png"
+    },
+    {
+      "name": "Peacock",
+      "domain": "peacocktv.com",
+      "website": "https://peacocktv.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "peacocktv_com",
+      "icon": "/api/icons/library/peacocktv_com.png"
+    },
+    {
+      "name": "Crunchyroll",
+      "domain": "crunchyroll.com",
+      "website": "https://crunchyroll.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "crunchyroll_com",
+      "icon": "/api/icons/library/crunchyroll_com.png"
+    },
+    {
+      "name": "DAZN",
+      "domain": "dazn.com",
+      "website": "https://dazn.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "dazn_com",
+      "icon": "/api/icons/library/dazn_com.png"
+    },
+    {
+      "name": "Viu",
+      "domain": "viu.com",
+      "website": "https://viu.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "viu_com",
+      "icon": "/api/icons/library/viu_com.png"
+    },
+    {
+      "name": "bilibili",
+      "domain": "bilibili.com",
+      "website": "https://bilibili.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "bilibili_com",
+      "icon": "/api/icons/library/bilibili_com.png"
+    },
+    {
+      "name": "爱奇艺 iQIYI",
+      "domain": "iqiyi.com",
+      "website": "https://iqiyi.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "iqiyi_com",
+      "icon": "/api/icons/library/iqiyi_com.png"
+    },
+    {
+      "name": "腾讯视频",
+      "domain": "v.qq.com",
+      "website": "https://v.qq.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "v_qq_com",
+      "icon": "/api/icons/library/v_qq_com.png"
+    },
+    {
+      "name": "优酷 Youku",
+      "domain": "youku.com",
+      "website": "https://youku.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "youku_com",
+      "icon": "/api/icons/library/youku_com.png"
+    },
+    {
+      "name": "芒果TV",
+      "domain": "mgtv.com",
+      "website": "https://mgtv.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "mgtv_com",
+      "icon": "/api/icons/library/mgtv_com.png"
+    },
+    {
+      "name": "Spotify",
+      "domain": "spotify.com",
+      "website": "https://spotify.com",
+      "category": "music",
+      "category_label": "音乐 / Music",
+      "slug": "spotify_com",
+      "icon": "/api/icons/library/spotify_com.png"
+    },
+    {
+      "name": "Apple Music",
+      "domain": "music.apple.com",
+      "website": "https://music.apple.com",
+      "category": "music",
+      "category_label": "音乐 / Music",
+      "slug": "music_apple_com",
+      "icon": "/api/icons/library/music_apple_com.png"
+    },
+    {
+      "name": "YouTube Music",
+      "domain": "music.youtube.com",
+      "website": "https://music.youtube.com",
+      "category": "music",
+      "category_label": "音乐 / Music",
+      "slug": "music_youtube_com",
+      "icon": "/api/icons/library/music_youtube_com.png"
+    },
+    {
+      "name": "Amazon Music",
+      "domain": "music.amazon.com",
+      "website": "https://music.amazon.com",
+      "category": "music",
+      "category_label": "音乐 / Music",
+      "slug": "music_amazon_com",
+      "icon": "/api/icons/library/music_amazon_com.png"
+    },
+    {
+      "name": "Tidal",
+      "domain": "tidal.com",
+      "website": "https://tidal.com",
+      "category": "music",
+      "category_label": "音乐 / Music",
+      "slug": "tidal_com",
+      "icon": "/api/icons/library/tidal_com.png"
+    },
+    {
+      "name": "Deezer",
+      "domain": "deezer.com",
+      "website": "https://deezer.com",
+      "category": "music",
+      "category_label": "音乐 / Music",
+      "slug": "deezer_com",
+      "icon": "/api/icons/library/deezer_com.png"
+    },
+    {
+      "name": "Qobuz",
+      "domain": "qobuz.com",
+      "website": "https://qobuz.com",
+      "category": "music",
+      "category_label": "音乐 / Music",
+      "slug": "qobuz_com",
+      "icon": "/api/icons/library/qobuz_com.png"
+    },
+    {
+      "name": "SoundCloud",
+      "domain": "soundcloud.com",
+      "website": "https://soundcloud.com",
+      "category": "music",
+      "category_label": "音乐 / Music",
+      "slug": "soundcloud_com",
+      "icon": "/api/icons/library/soundcloud_com.png"
+    },
+    {
+      "name": "网易云音乐",
+      "domain": "music.163.com",
+      "website": "https://music.163.com",
+      "category": "music",
+      "category_label": "音乐 / Music",
+      "slug": "music_163_com",
+      "icon": "/api/icons/library/music_163_com.png"
+    },
+    {
+      "name": "QQ音乐",
+      "domain": "y.qq.com",
+      "website": "https://y.qq.com",
+      "category": "music",
+      "category_label": "音乐 / Music",
+      "slug": "y_qq_com",
+      "icon": "/api/icons/library/y_qq_com.png"
+    },
+    {
+      "name": "ChatGPT",
+      "domain": "openai.com",
+      "website": "https://openai.com",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "openai_com",
+      "icon": "/api/icons/library/openai_com.png"
+    },
+    {
+      "name": "Claude",
+      "domain": "claude.ai",
+      "website": "https://claude.ai",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "claude_ai",
+      "icon": "/api/icons/library/claude_ai.png"
+    },
+    {
+      "name": "Google Gemini",
+      "domain": "gemini.google.com",
+      "website": "https://gemini.google.com",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "gemini_google_com",
+      "icon": "/api/icons/library/gemini_google_com.png"
+    },
+    {
+      "name": "Perplexity",
+      "domain": "perplexity.ai",
+      "website": "https://perplexity.ai",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "perplexity_ai",
+      "icon": "/api/icons/library/perplexity_ai.png"
+    },
+    {
+      "name": "Midjourney",
+      "domain": "midjourney.com",
+      "website": "https://midjourney.com",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "midjourney_com",
+      "icon": "/api/icons/library/midjourney_com.png"
+    },
+    {
+      "name": "GitHub Copilot",
+      "domain": "github.com",
+      "website": "https://github.com",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "github_com",
+      "icon": "/api/icons/library/github_com.png"
+    },
+    {
+      "name": "Cursor",
+      "domain": "cursor.com",
+      "website": "https://cursor.com",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "cursor_com",
+      "icon": "/api/icons/library/cursor_com.png"
+    },
+    {
+      "name": "Grok",
+      "domain": "x.ai",
+      "website": "https://x.ai",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "x_ai",
+      "icon": "/api/icons/library/x_ai.png"
+    },
+    {
+      "name": "Poe",
+      "domain": "poe.com",
+      "website": "https://poe.com",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "poe_com",
+      "icon": "/api/icons/library/poe_com.png"
+    },
+    {
+      "name": "Mistral AI",
+      "domain": "mistral.ai",
+      "website": "https://mistral.ai",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "mistral_ai",
+      "icon": "/api/icons/library/mistral_ai.png"
+    },
+    {
+      "name": "DeepSeek",
+      "domain": "deepseek.com",
+      "website": "https://deepseek.com",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "deepseek_com",
+      "icon": "/api/icons/library/deepseek_com.png"
+    },
+    {
+      "name": "Suno",
+      "domain": "suno.com",
+      "website": "https://suno.com",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "suno_com",
+      "icon": "/api/icons/library/suno_com.png"
+    },
+    {
+      "name": "ElevenLabs",
+      "domain": "elevenlabs.io",
+      "website": "https://elevenlabs.io",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "elevenlabs_io",
+      "icon": "/api/icons/library/elevenlabs_io.png"
+    },
+    {
+      "name": "Runway",
+      "domain": "runwayml.com",
+      "website": "https://runwayml.com",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "runwayml_com",
+      "icon": "/api/icons/library/runwayml_com.png"
+    },
+    {
+      "name": "文心一言",
+      "domain": "yiyan.baidu.com",
+      "website": "https://yiyan.baidu.com",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "yiyan_baidu_com",
+      "icon": "/api/icons/library/yiyan_baidu_com.png"
+    },
+    {
+      "name": "通义千问",
+      "domain": "tongyi.aliyun.com",
+      "website": "https://tongyi.aliyun.com",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "tongyi_aliyun_com",
+      "icon": "/api/icons/library/tongyi_aliyun_com.png"
+    },
+    {
+      "name": "Kimi",
+      "domain": "kimi.moonshot.cn",
+      "website": "https://kimi.moonshot.cn",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "kimi_moonshot_cn",
+      "icon": "/api/icons/library/kimi_moonshot_cn.png"
+    },
+    {
+      "name": "Steam",
+      "domain": "steampowered.com",
+      "website": "https://steampowered.com",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "steampowered_com",
+      "icon": "/api/icons/library/steampowered_com.png"
+    },
+    {
+      "name": "Epic Games",
+      "domain": "epicgames.com",
+      "website": "https://epicgames.com",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "epicgames_com",
+      "icon": "/api/icons/library/epicgames_com.png"
+    },
+    {
+      "name": "PlayStation Plus",
+      "domain": "playstation.com",
+      "website": "https://playstation.com",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "playstation_com",
+      "icon": "/api/icons/library/playstation_com.png"
+    },
+    {
+      "name": "Xbox Game Pass",
+      "domain": "xbox.com",
+      "website": "https://xbox.com",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "xbox_com",
+      "icon": "/api/icons/library/xbox_com.png"
+    },
+    {
+      "name": "Nintendo Switch Online",
+      "domain": "nintendo.com",
+      "website": "https://nintendo.com",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "nintendo_com",
+      "icon": "/api/icons/library/nintendo_com.png"
+    },
+    {
+      "name": "EA Play",
+      "domain": "ea.com",
+      "website": "https://ea.com",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "ea_com",
+      "icon": "/api/icons/library/ea_com.png"
+    },
+    {
+      "name": "Ubisoft+",
+      "domain": "ubisoft.com",
+      "website": "https://ubisoft.com",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "ubisoft_com",
+      "icon": "/api/icons/library/ubisoft_com.png"
+    },
+    {
+      "name": "GeForce NOW",
+      "domain": "nvidia.com",
+      "website": "https://nvidia.com",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "nvidia_com",
+      "icon": "/api/icons/library/nvidia_com.png"
+    },
+    {
+      "name": "Apple Arcade",
+      "domain": "apple.com",
+      "website": "https://apple.com",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "apple_com",
+      "icon": "/api/icons/library/apple_com.png"
+    },
+    {
+      "name": "AWS",
+      "domain": "aws.amazon.com",
+      "website": "https://aws.amazon.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "aws_amazon_com",
+      "icon": "/api/icons/library/aws_amazon_com.png"
+    },
+    {
+      "name": "Google Cloud",
+      "domain": "cloud.google.com",
+      "website": "https://cloud.google.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "cloud_google_com",
+      "icon": "/api/icons/library/cloud_google_com.png"
+    },
+    {
+      "name": "Microsoft Azure",
+      "domain": "azure.microsoft.com",
+      "website": "https://azure.microsoft.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "azure_microsoft_com",
+      "icon": "/api/icons/library/azure_microsoft_com.png"
+    },
+    {
+      "name": "Oracle Cloud",
+      "domain": "oracle.com",
+      "website": "https://oracle.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "oracle_com",
+      "icon": "/api/icons/library/oracle_com.png"
+    },
+    {
+      "name": "DigitalOcean",
+      "domain": "digitalocean.com",
+      "website": "https://digitalocean.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "digitalocean_com",
+      "icon": "/api/icons/library/digitalocean_com.png"
+    },
+    {
+      "name": "Vultr",
+      "domain": "vultr.com",
+      "website": "https://vultr.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "vultr_com",
+      "icon": "/api/icons/library/vultr_com.png"
+    },
+    {
+      "name": "Linode / Akamai",
+      "domain": "linode.com",
+      "website": "https://linode.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "linode_com",
+      "icon": "/api/icons/library/linode_com.png"
+    },
+    {
+      "name": "Hetzner",
+      "domain": "hetzner.com",
+      "website": "https://hetzner.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "hetzner_com",
+      "icon": "/api/icons/library/hetzner_com.png"
+    },
+    {
+      "name": "Contabo",
+      "domain": "contabo.com",
+      "website": "https://contabo.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "contabo_com",
+      "icon": "/api/icons/library/contabo_com.png"
+    },
+    {
+      "name": "OVHcloud",
+      "domain": "ovhcloud.com",
+      "website": "https://ovhcloud.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "ovhcloud_com",
+      "icon": "/api/icons/library/ovhcloud_com.png"
+    },
+    {
+      "name": "Scaleway",
+      "domain": "scaleway.com",
+      "website": "https://scaleway.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "scaleway_com",
+      "icon": "/api/icons/library/scaleway_com.png"
+    },
+    {
+      "name": "UpCloud",
+      "domain": "upcloud.com",
+      "website": "https://upcloud.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "upcloud_com",
+      "icon": "/api/icons/library/upcloud_com.png"
+    },
+    {
+      "name": "Gcore",
+      "domain": "gcore.com",
+      "website": "https://gcore.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "gcore_com",
+      "icon": "/api/icons/library/gcore_com.png"
+    },
+    {
+      "name": "IONOS",
+      "domain": "ionos.com",
+      "website": "https://ionos.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "ionos_com",
+      "icon": "/api/icons/library/ionos_com.png"
+    },
+    {
+      "name": "Kamatera",
+      "domain": "kamatera.com",
+      "website": "https://kamatera.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "kamatera_com",
+      "icon": "/api/icons/library/kamatera_com.png"
+    },
+    {
+      "name": "Fly.io",
+      "domain": "fly.io",
+      "website": "https://fly.io",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "fly_io",
+      "icon": "/api/icons/library/fly_io.png"
+    },
+    {
+      "name": "Railway",
+      "domain": "railway.app",
+      "website": "https://railway.app",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "railway_app",
+      "icon": "/api/icons/library/railway_app.png"
+    },
+    {
+      "name": "Render",
+      "domain": "render.com",
+      "website": "https://render.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "render_com",
+      "icon": "/api/icons/library/render_com.png"
+    },
+    {
+      "name": "Hostinger",
+      "domain": "hostinger.com",
+      "website": "https://hostinger.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "hostinger_com",
+      "icon": "/api/icons/library/hostinger_com.png"
+    },
+    {
+      "name": "Hostwinds",
+      "domain": "hostwinds.com",
+      "website": "https://hostwinds.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "hostwinds_com",
+      "icon": "/api/icons/library/hostwinds_com.png"
+    },
+    {
+      "name": "DMIT",
+      "domain": "dmit.io",
+      "website": "https://dmit.io",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "dmit_io",
+      "icon": "/api/icons/library/dmit_io.png"
+    },
+    {
+      "name": "RackNerd",
+      "domain": "racknerd.com",
+      "website": "https://racknerd.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "racknerd_com",
+      "icon": "/api/icons/library/racknerd_com.png"
+    },
+    {
+      "name": "BandwagonHost 搬瓦工",
+      "domain": "bandwagonhost.com",
+      "website": "https://bandwagonhost.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "bandwagonhost_com",
+      "icon": "/api/icons/library/bandwagonhost_com.png"
+    },
+    {
+      "name": "BuyVM / Frantech",
+      "domain": "buyvm.net",
+      "website": "https://buyvm.net",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "buyvm_net",
+      "icon": "/api/icons/library/buyvm_net.png"
+    },
+    {
+      "name": "CloudCone",
+      "domain": "cloudcone.com",
+      "website": "https://cloudcone.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "cloudcone_com",
+      "icon": "/api/icons/library/cloudcone_com.png"
+    },
+    {
+      "name": "GreenCloud",
+      "domain": "greencloudvps.com",
+      "website": "https://greencloudvps.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "greencloudvps_com",
+      "icon": "/api/icons/library/greencloudvps_com.png"
+    },
+    {
+      "name": "HostHatch",
+      "domain": "hosthatch.com",
+      "website": "https://hosthatch.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "hosthatch_com",
+      "icon": "/api/icons/library/hosthatch_com.png"
+    },
+    {
+      "name": "Netcup",
+      "domain": "netcup.de",
+      "website": "https://netcup.de",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "netcup_de",
+      "icon": "/api/icons/library/netcup_de.png"
+    },
+    {
+      "name": "VirMach",
+      "domain": "virmach.com",
+      "website": "https://virmach.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "virmach_com",
+      "icon": "/api/icons/library/virmach_com.png"
+    },
+    {
+      "name": "HostDare",
+      "domain": "hostdare.com",
+      "website": "https://hostdare.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "hostdare_com",
+      "icon": "/api/icons/library/hostdare_com.png"
+    },
+    {
+      "name": "Hostodo",
+      "domain": "hostodo.com",
+      "website": "https://hostodo.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "hostodo_com",
+      "icon": "/api/icons/library/hostodo_com.png"
+    },
+    {
+      "name": "RamNode",
+      "domain": "ramnode.com",
+      "website": "https://ramnode.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "ramnode_com",
+      "icon": "/api/icons/library/ramnode_com.png"
+    },
+    {
+      "name": "Spartan Host",
+      "domain": "spartanhost.net",
+      "website": "https://spartanhost.net",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "spartanhost_net",
+      "icon": "/api/icons/library/spartanhost_net.png"
+    },
+    {
+      "name": "AlphaVPS",
+      "domain": "alphavps.com",
+      "website": "https://alphavps.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "alphavps_com",
+      "icon": "/api/icons/library/alphavps_com.png"
+    },
+    {
+      "name": "Servarica",
+      "domain": "servarica.com",
+      "website": "https://servarica.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "servarica_com",
+      "icon": "/api/icons/library/servarica_com.png"
+    },
+    {
+      "name": "Crunchbits",
+      "domain": "crunchbits.com",
+      "website": "https://crunchbits.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "crunchbits_com",
+      "icon": "/api/icons/library/crunchbits_com.png"
+    },
+    {
+      "name": "WebHorizon",
+      "domain": "webhorizon.net",
+      "website": "https://webhorizon.net",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "webhorizon_net",
+      "icon": "/api/icons/library/webhorizon_net.png"
+    },
+    {
+      "name": "Misaka",
+      "domain": "misaka.io",
+      "website": "https://misaka.io",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "misaka_io",
+      "icon": "/api/icons/library/misaka_io.png"
+    },
+    {
+      "name": "ZGOVPS",
+      "domain": "zgovps.com",
+      "website": "https://zgovps.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "zgovps_com",
+      "icon": "/api/icons/library/zgovps_com.png"
+    },
+    {
+      "name": "V.PS",
+      "domain": "v.ps",
+      "website": "https://v.ps",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "v_ps",
+      "icon": "/api/icons/library/v_ps.png"
+    },
+    {
+      "name": "LisaHost 丽萨主机",
+      "domain": "lisahost.com",
+      "website": "https://lisahost.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "lisahost_com",
+      "icon": "/api/icons/library/lisahost_com.png"
+    },
+    {
+      "name": "Cloudie / 莱卡云",
+      "domain": "lcayun.com",
+      "website": "https://lcayun.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "lcayun_com",
+      "icon": "/api/icons/library/lcayun_com.png"
+    },
+    {
+      "name": "雨云 RainYun",
+      "domain": "rainyun.com",
+      "website": "https://rainyun.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "rainyun_com",
+      "icon": "/api/icons/library/rainyun_com.png"
+    },
+    {
+      "name": "阿里云",
+      "domain": "aliyun.com",
+      "website": "https://aliyun.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "aliyun_com",
+      "icon": "/api/icons/library/aliyun_com.png"
+    },
+    {
+      "name": "腾讯云",
+      "domain": "cloud.tencent.com",
+      "website": "https://cloud.tencent.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "cloud_tencent_com",
+      "icon": "/api/icons/library/cloud_tencent_com.png"
+    },
+    {
+      "name": "华为云",
+      "domain": "huaweicloud.com",
+      "website": "https://huaweicloud.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "huaweicloud_com",
+      "icon": "/api/icons/library/huaweicloud_com.png"
+    },
+    {
+      "name": "UCloud",
+      "domain": "ucloud.cn",
+      "website": "https://ucloud.cn",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "ucloud_cn",
+      "icon": "/api/icons/library/ucloud_cn.png"
+    },
+    {
+      "name": "VOXI",
+      "domain": "voxi.co.uk",
+      "website": "https://voxi.co.uk",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "voxi_co_uk",
+      "icon": "/api/icons/library/voxi_co_uk.png"
+    },
+    {
+      "name": "Vodafone",
+      "domain": "vodafone.com",
+      "website": "https://vodafone.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "vodafone_com",
+      "icon": "/api/icons/library/vodafone_com.png"
+    },
+    {
+      "name": "giffgaff",
+      "domain": "giffgaff.com",
+      "website": "https://giffgaff.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "giffgaff_com",
+      "icon": "/api/icons/library/giffgaff_com.png"
+    },
+    {
+      "name": "EE",
+      "domain": "ee.co.uk",
+      "website": "https://ee.co.uk",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "ee_co_uk",
+      "icon": "/api/icons/library/ee_co_uk.png"
+    },
+    {
+      "name": "O2",
+      "domain": "o2.co.uk",
+      "website": "https://o2.co.uk",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "o2_co_uk",
+      "icon": "/api/icons/library/o2_co_uk.png"
+    },
+    {
+      "name": "Three",
+      "domain": "three.co.uk",
+      "website": "https://three.co.uk",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "three_co_uk",
+      "icon": "/api/icons/library/three_co_uk.png"
+    },
+    {
+      "name": "SMARTY",
+      "domain": "smarty.co.uk",
+      "website": "https://smarty.co.uk",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "smarty_co_uk",
+      "icon": "/api/icons/library/smarty_co_uk.png"
+    },
+    {
+      "name": "Tesco Mobile",
+      "domain": "tescomobile.com",
+      "website": "https://tescomobile.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "tescomobile_com",
+      "icon": "/api/icons/library/tescomobile_com.png"
+    },
+    {
+      "name": "iD Mobile",
+      "domain": "idmobile.co.uk",
+      "website": "https://idmobile.co.uk",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "idmobile_co_uk",
+      "icon": "/api/icons/library/idmobile_co_uk.png"
+    },
+    {
+      "name": "1pMobile",
+      "domain": "1pmobile.com",
+      "website": "https://1pmobile.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "1pmobile_com",
+      "icon": "/api/icons/library/1pmobile_com.png"
+    },
+    {
+      "name": "Lebara",
+      "domain": "lebara.com",
+      "website": "https://lebara.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "lebara_com",
+      "icon": "/api/icons/library/lebara_com.png"
+    },
+    {
+      "name": "Lycamobile",
+      "domain": "lycamobile.com",
+      "website": "https://lycamobile.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "lycamobile_com",
+      "icon": "/api/icons/library/lycamobile_com.png"
+    },
+    {
+      "name": "T-Mobile",
+      "domain": "t-mobile.com",
+      "website": "https://t-mobile.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "t-mobile_com",
+      "icon": "/api/icons/library/t-mobile_com.png"
+    },
+    {
+      "name": "AT&T",
+      "domain": "att.com",
+      "website": "https://att.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "att_com",
+      "icon": "/api/icons/library/att_com.png"
+    },
+    {
+      "name": "Verizon",
+      "domain": "verizon.com",
+      "website": "https://verizon.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "verizon_com",
+      "icon": "/api/icons/library/verizon_com.png"
+    },
+    {
+      "name": "Mint Mobile",
+      "domain": "mintmobile.com",
+      "website": "https://mintmobile.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "mintmobile_com",
+      "icon": "/api/icons/library/mintmobile_com.png"
+    },
+    {
+      "name": "Visible",
+      "domain": "visible.com",
+      "website": "https://visible.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "visible_com",
+      "icon": "/api/icons/library/visible_com.png"
+    },
+    {
+      "name": "US Mobile",
+      "domain": "usmobile.com",
+      "website": "https://usmobile.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "usmobile_com",
+      "icon": "/api/icons/library/usmobile_com.png"
+    },
+    {
+      "name": "Ultra Mobile",
+      "domain": "ultramobile.com",
+      "website": "https://ultramobile.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "ultramobile_com",
+      "icon": "/api/icons/library/ultramobile_com.png"
+    },
+    {
+      "name": "Google Fi",
+      "domain": "fi.google.com",
+      "website": "https://fi.google.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "fi_google_com",
+      "icon": "/api/icons/library/fi_google_com.png"
+    },
+    {
+      "name": "中国移动",
+      "domain": "10086.cn",
+      "website": "https://10086.cn",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "10086_cn",
+      "icon": "/api/icons/library/10086_cn.png"
+    },
+    {
+      "name": "中国联通",
+      "domain": "10010.com",
+      "website": "https://10010.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "10010_com",
+      "icon": "/api/icons/library/10010_com.png"
+    },
+    {
+      "name": "中国电信",
+      "domain": "189.cn",
+      "website": "https://189.cn",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "189_cn",
+      "icon": "/api/icons/library/189_cn.png"
+    },
+    {
+      "name": "Sky Mobile",
+      "domain": "sky.com",
+      "website": "https://sky.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "sky_com",
+      "icon": "/api/icons/library/sky_com.png"
+    },
+    {
+      "name": "BT Mobile",
+      "domain": "bt.com",
+      "website": "https://bt.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "bt_com",
+      "icon": "/api/icons/library/bt_com.png"
+    },
+    {
+      "name": "ASDA Mobile",
+      "domain": "asdamobile.com",
+      "website": "https://asdamobile.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "asdamobile_com",
+      "icon": "/api/icons/library/asdamobile_com.png"
+    },
+    {
+      "name": "Talkmobile",
+      "domain": "talkmobile.co.uk",
+      "website": "https://talkmobile.co.uk",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "talkmobile_co_uk",
+      "icon": "/api/icons/library/talkmobile_co_uk.png"
+    },
+    {
+      "name": "Spusu",
+      "domain": "spusu.co.uk",
+      "website": "https://spusu.co.uk",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "spusu_co_uk",
+      "icon": "/api/icons/library/spusu_co_uk.png"
+    },
+    {
+      "name": "Superdrug Mobile",
+      "domain": "superdrugmobile.com",
+      "website": "https://superdrugmobile.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "superdrugmobile_com",
+      "icon": "/api/icons/library/superdrugmobile_com.png"
+    },
+    {
+      "name": "Cricket Wireless",
+      "domain": "cricketwireless.com",
+      "website": "https://cricketwireless.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "cricketwireless_com",
+      "icon": "/api/icons/library/cricketwireless_com.png"
+    },
+    {
+      "name": "Boost Mobile",
+      "domain": "boostmobile.com",
+      "website": "https://boostmobile.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "boostmobile_com",
+      "icon": "/api/icons/library/boostmobile_com.png"
+    },
+    {
+      "name": "Metro by T-Mobile",
+      "domain": "metrobyt-mobile.com",
+      "website": "https://metrobyt-mobile.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "metrobyt-mobile_com",
+      "icon": "/api/icons/library/metrobyt-mobile_com.png"
+    },
+    {
+      "name": "Straight Talk",
+      "domain": "straighttalk.com",
+      "website": "https://straighttalk.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "straighttalk_com",
+      "icon": "/api/icons/library/straighttalk_com.png"
+    },
+    {
+      "name": "Tracfone",
+      "domain": "tracfone.com",
+      "website": "https://tracfone.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "tracfone_com",
+      "icon": "/api/icons/library/tracfone_com.png"
+    },
+    {
+      "name": "Consumer Cellular",
+      "domain": "consumercellular.com",
+      "website": "https://consumercellular.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "consumercellular_com",
+      "icon": "/api/icons/library/consumercellular_com.png"
+    },
+    {
+      "name": "Tello Mobile",
+      "domain": "tello.com",
+      "website": "https://tello.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "tello_com",
+      "icon": "/api/icons/library/tello_com.png"
+    },
+    {
+      "name": "Ting Mobile",
+      "domain": "ting.com",
+      "website": "https://ting.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "ting_com",
+      "icon": "/api/icons/library/ting_com.png"
+    },
+    {
+      "name": "Red Pocket Mobile",
+      "domain": "redpocket.com",
+      "website": "https://redpocket.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "redpocket_com",
+      "icon": "/api/icons/library/redpocket_com.png"
+    },
+    {
+      "name": "H2O Wireless",
+      "domain": "h2owireless.com",
+      "website": "https://h2owireless.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "h2owireless_com",
+      "icon": "/api/icons/library/h2owireless_com.png"
+    },
+    {
+      "name": "Orange",
+      "domain": "orange.fr",
+      "website": "https://orange.fr",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "orange_fr",
+      "icon": "/api/icons/library/orange_fr.png"
+    },
+    {
+      "name": "SFR",
+      "domain": "sfr.fr",
+      "website": "https://sfr.fr",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "sfr_fr",
+      "icon": "/api/icons/library/sfr_fr.png"
+    },
+    {
+      "name": "Free Mobile",
+      "domain": "free.fr",
+      "website": "https://free.fr",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "free_fr",
+      "icon": "/api/icons/library/free_fr.png"
+    },
+    {
+      "name": "Bouygues Telecom",
+      "domain": "bouyguestelecom.fr",
+      "website": "https://bouyguestelecom.fr",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "bouyguestelecom_fr",
+      "icon": "/api/icons/library/bouyguestelecom_fr.png"
+    },
+    {
+      "name": "Deutsche Telekom",
+      "domain": "telekom.de",
+      "website": "https://telekom.de",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "telekom_de",
+      "icon": "/api/icons/library/telekom_de.png"
+    },
+    {
+      "name": "O2 Germany",
+      "domain": "o2online.de",
+      "website": "https://o2online.de",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "o2online_de",
+      "icon": "/api/icons/library/o2online_de.png"
+    },
+    {
+      "name": "1&1",
+      "domain": "1und1.de",
+      "website": "https://1und1.de",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "1und1_de",
+      "icon": "/api/icons/library/1und1_de.png"
+    },
+    {
+      "name": "Aldi Talk",
+      "domain": "alditalk.de",
+      "website": "https://alditalk.de",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "alditalk_de",
+      "icon": "/api/icons/library/alditalk_de.png"
+    },
+    {
+      "name": "congstar",
+      "domain": "congstar.de",
+      "website": "https://congstar.de",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "congstar_de",
+      "icon": "/api/icons/library/congstar_de.png"
+    },
+    {
+      "name": "TIM",
+      "domain": "tim.it",
+      "website": "https://tim.it",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "tim_it",
+      "icon": "/api/icons/library/tim_it.png"
+    },
+    {
+      "name": "WindTre",
+      "domain": "windtre.it",
+      "website": "https://windtre.it",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "windtre_it",
+      "icon": "/api/icons/library/windtre_it.png"
+    },
+    {
+      "name": "Iliad",
+      "domain": "iliad.it",
+      "website": "https://iliad.it",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "iliad_it",
+      "icon": "/api/icons/library/iliad_it.png"
+    },
+    {
+      "name": "Movistar",
+      "domain": "movistar.es",
+      "website": "https://movistar.es",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "movistar_es",
+      "icon": "/api/icons/library/movistar_es.png"
+    },
+    {
+      "name": "NTT Docomo",
+      "domain": "docomo.ne.jp",
+      "website": "https://docomo.ne.jp",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "docomo_ne_jp",
+      "icon": "/api/icons/library/docomo_ne_jp.png"
+    },
+    {
+      "name": "au by KDDI",
+      "domain": "au.com",
+      "website": "https://au.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "au_com",
+      "icon": "/api/icons/library/au_com.png"
+    },
+    {
+      "name": "SoftBank",
+      "domain": "softbank.jp",
+      "website": "https://softbank.jp",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "softbank_jp",
+      "icon": "/api/icons/library/softbank_jp.png"
+    },
+    {
+      "name": "Rakuten Mobile",
+      "domain": "mobile.rakuten.co.jp",
+      "website": "https://mobile.rakuten.co.jp",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "mobile_rakuten_co_jp",
+      "icon": "/api/icons/library/mobile_rakuten_co_jp.png"
+    },
+    {
+      "name": "SK Telecom",
+      "domain": "tworld.co.kr",
+      "website": "https://tworld.co.kr",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "tworld_co_kr",
+      "icon": "/api/icons/library/tworld_co_kr.png"
+    },
+    {
+      "name": "KT",
+      "domain": "kt.com",
+      "website": "https://kt.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "kt_com",
+      "icon": "/api/icons/library/kt_com.png"
+    },
+    {
+      "name": "LG U+",
+      "domain": "lguplus.com",
+      "website": "https://lguplus.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "lguplus_com",
+      "icon": "/api/icons/library/lguplus_com.png"
+    },
+    {
+      "name": "Singtel",
+      "domain": "singtel.com",
+      "website": "https://singtel.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "singtel_com",
+      "icon": "/api/icons/library/singtel_com.png"
+    },
+    {
+      "name": "StarHub",
+      "domain": "starhub.com",
+      "website": "https://starhub.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "starhub_com",
+      "icon": "/api/icons/library/starhub_com.png"
+    },
+    {
+      "name": "M1",
+      "domain": "m1.com.sg",
+      "website": "https://m1.com.sg",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "m1_com_sg",
+      "icon": "/api/icons/library/m1_com_sg.png"
+    },
+    {
+      "name": "Circles.Life",
+      "domain": "circles.life",
+      "website": "https://circles.life",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "circles_life",
+      "icon": "/api/icons/library/circles_life.png"
+    },
+    {
+      "name": "3 Hong Kong",
+      "domain": "three.com.hk",
+      "website": "https://three.com.hk",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "three_com_hk",
+      "icon": "/api/icons/library/three_com_hk.png"
+    },
+    {
+      "name": "csl",
+      "domain": "hkcsl.com",
+      "website": "https://hkcsl.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "hkcsl_com",
+      "icon": "/api/icons/library/hkcsl_com.png"
+    },
+    {
+      "name": "SmarTone",
+      "domain": "smartone.com",
+      "website": "https://smartone.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "smartone_com",
+      "icon": "/api/icons/library/smartone_com.png"
+    },
+    {
+      "name": "中華電信 Chunghwa",
+      "domain": "cht.com.tw",
+      "website": "https://cht.com.tw",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "cht_com_tw",
+      "icon": "/api/icons/library/cht_com_tw.png"
+    },
+    {
+      "name": "台灣大哥大 Taiwan Mobile",
+      "domain": "taiwanmobile.com",
+      "website": "https://taiwanmobile.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "taiwanmobile_com",
+      "icon": "/api/icons/library/taiwanmobile_com.png"
+    },
+    {
+      "name": "Airtel",
+      "domain": "airtel.in",
+      "website": "https://airtel.in",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "airtel_in",
+      "icon": "/api/icons/library/airtel_in.png"
+    },
+    {
+      "name": "Jio",
+      "domain": "jio.com",
+      "website": "https://jio.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "jio_com",
+      "icon": "/api/icons/library/jio_com.png"
+    },
+    {
+      "name": "Vi (Vodafone Idea)",
+      "domain": "myvi.in",
+      "website": "https://myvi.in",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "myvi_in",
+      "icon": "/api/icons/library/myvi_in.png"
+    },
+    {
+      "name": "Telstra",
+      "domain": "telstra.com.au",
+      "website": "https://telstra.com.au",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "telstra_com_au",
+      "icon": "/api/icons/library/telstra_com_au.png"
+    },
+    {
+      "name": "Optus",
+      "domain": "optus.com.au",
+      "website": "https://optus.com.au",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "optus_com_au",
+      "icon": "/api/icons/library/optus_com_au.png"
+    },
+    {
+      "name": "Rogers",
+      "domain": "rogers.com",
+      "website": "https://rogers.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "rogers_com",
+      "icon": "/api/icons/library/rogers_com.png"
+    },
+    {
+      "name": "Bell",
+      "domain": "bell.ca",
+      "website": "https://bell.ca",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "bell_ca",
+      "icon": "/api/icons/library/bell_ca.png"
+    },
+    {
+      "name": "Telus",
+      "domain": "telus.com",
+      "website": "https://telus.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "telus_com",
+      "icon": "/api/icons/library/telus_com.png"
+    },
+    {
+      "name": "Fido",
+      "domain": "fido.ca",
+      "website": "https://fido.ca",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "fido_ca",
+      "icon": "/api/icons/library/fido_ca.png"
+    },
+    {
+      "name": "Koodo Mobile",
+      "domain": "koodomobile.com",
+      "website": "https://koodomobile.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "koodomobile_com",
+      "icon": "/api/icons/library/koodomobile_com.png"
+    },
+    {
+      "name": "Airalo",
+      "domain": "airalo.com",
+      "website": "https://airalo.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "airalo_com",
+      "icon": "/api/icons/library/airalo_com.png"
+    },
+    {
+      "name": "Holafly",
+      "domain": "holafly.com",
+      "website": "https://holafly.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "holafly_com",
+      "icon": "/api/icons/library/holafly_com.png"
+    },
+    {
+      "name": "Nomad eSIM",
+      "domain": "getnomad.app",
+      "website": "https://getnomad.app",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "getnomad_app",
+      "icon": "/api/icons/library/getnomad_app.png"
+    },
+    {
+      "name": "Ubigi",
+      "domain": "ubigi.com",
+      "website": "https://ubigi.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "ubigi_com",
+      "icon": "/api/icons/library/ubigi_com.png"
+    },
+    {
+      "name": "Saily",
+      "domain": "saily.com",
+      "website": "https://saily.com",
+      "category": "carrier",
+      "category_label": "电信运营商 / Carrier",
+      "slug": "saily_com",
+      "icon": "/api/icons/library/saily_com.png"
+    },
+    {
+      "name": "Google One",
+      "domain": "one.google.com",
+      "website": "https://one.google.com",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "one_google_com",
+      "icon": "/api/icons/library/one_google_com.png"
+    },
+    {
+      "name": "iCloud+",
+      "domain": "icloud.com",
+      "website": "https://icloud.com",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "icloud_com",
+      "icon": "/api/icons/library/icloud_com.png"
+    },
+    {
+      "name": "Dropbox",
+      "domain": "dropbox.com",
+      "website": "https://dropbox.com",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "dropbox_com",
+      "icon": "/api/icons/library/dropbox_com.png"
+    },
+    {
+      "name": "OneDrive",
+      "domain": "onedrive.live.com",
+      "website": "https://onedrive.live.com",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "onedrive_live_com",
+      "icon": "/api/icons/library/onedrive_live_com.png"
+    },
+    {
+      "name": "MEGA",
+      "domain": "mega.nz",
+      "website": "https://mega.nz",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "mega_nz",
+      "icon": "/api/icons/library/mega_nz.png"
+    },
+    {
+      "name": "pCloud",
+      "domain": "pcloud.com",
+      "website": "https://pcloud.com",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "pcloud_com",
+      "icon": "/api/icons/library/pcloud_com.png"
+    },
+    {
+      "name": "Backblaze",
+      "domain": "backblaze.com",
+      "website": "https://backblaze.com",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "backblaze_com",
+      "icon": "/api/icons/library/backblaze_com.png"
+    },
+    {
+      "name": "Box",
+      "domain": "box.com",
+      "website": "https://box.com",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "box_com",
+      "icon": "/api/icons/library/box_com.png"
+    },
+    {
+      "name": "百度网盘",
+      "domain": "pan.baidu.com",
+      "website": "https://pan.baidu.com",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "pan_baidu_com",
+      "icon": "/api/icons/library/pan_baidu_com.png"
+    },
+    {
+      "name": "Microsoft 365",
+      "domain": "microsoft.com",
+      "website": "https://microsoft.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "microsoft_com",
+      "icon": "/api/icons/library/microsoft_com.png"
+    },
+    {
+      "name": "Adobe Creative Cloud",
+      "domain": "adobe.com",
+      "website": "https://adobe.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "adobe_com",
+      "icon": "/api/icons/library/adobe_com.png"
+    },
+    {
+      "name": "Notion",
+      "domain": "notion.so",
+      "website": "https://notion.so",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "notion_so",
+      "icon": "/api/icons/library/notion_so.png"
+    },
+    {
+      "name": "1Password",
+      "domain": "1password.com",
+      "website": "https://1password.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "1password_com",
+      "icon": "/api/icons/library/1password_com.png"
+    },
+    {
+      "name": "Bitwarden",
+      "domain": "bitwarden.com",
+      "website": "https://bitwarden.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "bitwarden_com",
+      "icon": "/api/icons/library/bitwarden_com.png"
+    },
+    {
+      "name": "JetBrains",
+      "domain": "jetbrains.com",
+      "website": "https://jetbrains.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "jetbrains_com",
+      "icon": "/api/icons/library/jetbrains_com.png"
+    },
+    {
+      "name": "Figma",
+      "domain": "figma.com",
+      "website": "https://figma.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "figma_com",
+      "icon": "/api/icons/library/figma_com.png"
+    },
+    {
+      "name": "Canva",
+      "domain": "canva.com",
+      "website": "https://canva.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "canva_com",
+      "icon": "/api/icons/library/canva_com.png"
+    },
+    {
+      "name": "Grammarly",
+      "domain": "grammarly.com",
+      "website": "https://grammarly.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "grammarly_com",
+      "icon": "/api/icons/library/grammarly_com.png"
+    },
+    {
+      "name": "Zoom",
+      "domain": "zoom.us",
+      "website": "https://zoom.us",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "zoom_us",
+      "icon": "/api/icons/library/zoom_us.png"
+    },
+    {
+      "name": "Setapp",
+      "domain": "setapp.com",
+      "website": "https://setapp.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "setapp_com",
+      "icon": "/api/icons/library/setapp_com.png"
+    },
+    {
+      "name": "Todoist",
+      "domain": "todoist.com",
+      "website": "https://todoist.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "todoist_com",
+      "icon": "/api/icons/library/todoist_com.png"
+    },
+    {
+      "name": "Cloudflare",
+      "domain": "cloudflare.com",
+      "website": "https://cloudflare.com",
+      "category": "domain",
+      "category_label": "域名 / Domain",
+      "slug": "cloudflare_com",
+      "icon": "/api/icons/library/cloudflare_com.png"
+    },
+    {
+      "name": "Namecheap",
+      "domain": "namecheap.com",
+      "website": "https://namecheap.com",
+      "category": "domain",
+      "category_label": "域名 / Domain",
+      "slug": "namecheap_com",
+      "icon": "/api/icons/library/namecheap_com.png"
+    },
+    {
+      "name": "GoDaddy",
+      "domain": "godaddy.com",
+      "website": "https://godaddy.com",
+      "category": "domain",
+      "category_label": "域名 / Domain",
+      "slug": "godaddy_com",
+      "icon": "/api/icons/library/godaddy_com.png"
+    },
+    {
+      "name": "Porkbun",
+      "domain": "porkbun.com",
+      "website": "https://porkbun.com",
+      "category": "domain",
+      "category_label": "域名 / Domain",
+      "slug": "porkbun_com",
+      "icon": "/api/icons/library/porkbun_com.png"
+    },
+    {
+      "name": "Dynadot",
+      "domain": "dynadot.com",
+      "website": "https://dynadot.com",
+      "category": "domain",
+      "category_label": "域名 / Domain",
+      "slug": "dynadot_com",
+      "icon": "/api/icons/library/dynadot_com.png"
+    },
+    {
+      "name": "Gandi",
+      "domain": "gandi.net",
+      "website": "https://gandi.net",
+      "category": "domain",
+      "category_label": "域名 / Domain",
+      "slug": "gandi_net",
+      "icon": "/api/icons/library/gandi_net.png"
+    },
+    {
+      "name": "Coursera",
+      "domain": "coursera.org",
+      "website": "https://coursera.org",
+      "category": "education",
+      "category_label": "教育 / Education",
+      "slug": "coursera_org",
+      "icon": "/api/icons/library/coursera_org.png"
+    },
+    {
+      "name": "Udemy",
+      "domain": "udemy.com",
+      "website": "https://udemy.com",
+      "category": "education",
+      "category_label": "教育 / Education",
+      "slug": "udemy_com",
+      "icon": "/api/icons/library/udemy_com.png"
+    },
+    {
+      "name": "Duolingo",
+      "domain": "duolingo.com",
+      "website": "https://duolingo.com",
+      "category": "education",
+      "category_label": "教育 / Education",
+      "slug": "duolingo_com",
+      "icon": "/api/icons/library/duolingo_com.png"
+    },
+    {
+      "name": "MasterClass",
+      "domain": "masterclass.com",
+      "website": "https://masterclass.com",
+      "category": "education",
+      "category_label": "教育 / Education",
+      "slug": "masterclass_com",
+      "icon": "/api/icons/library/masterclass_com.png"
+    },
+    {
+      "name": "Skillshare",
+      "domain": "skillshare.com",
+      "website": "https://skillshare.com",
+      "category": "education",
+      "category_label": "教育 / Education",
+      "slug": "skillshare_com",
+      "icon": "/api/icons/library/skillshare_com.png"
+    },
+    {
+      "name": "Brilliant",
+      "domain": "brilliant.org",
+      "website": "https://brilliant.org",
+      "category": "education",
+      "category_label": "教育 / Education",
+      "slug": "brilliant_org",
+      "icon": "/api/icons/library/brilliant_org.png"
+    },
+    {
+      "name": "LinkedIn Learning",
+      "domain": "linkedin.com",
+      "website": "https://linkedin.com",
+      "category": "education",
+      "category_label": "教育 / Education",
+      "slug": "linkedin_com",
+      "icon": "/api/icons/library/linkedin_com.png"
+    },
+    {
+      "name": "Medium",
+      "domain": "medium.com",
+      "website": "https://medium.com",
+      "category": "news",
+      "category_label": "新闻 / News",
+      "slug": "medium_com",
+      "icon": "/api/icons/library/medium_com.png"
+    },
+    {
+      "name": "The New York Times",
+      "domain": "nytimes.com",
+      "website": "https://nytimes.com",
+      "category": "news",
+      "category_label": "新闻 / News",
+      "slug": "nytimes_com",
+      "icon": "/api/icons/library/nytimes_com.png"
+    },
+    {
+      "name": "The Wall Street Journal",
+      "domain": "wsj.com",
+      "website": "https://wsj.com",
+      "category": "news",
+      "category_label": "新闻 / News",
+      "slug": "wsj_com",
+      "icon": "/api/icons/library/wsj_com.png"
+    },
+    {
+      "name": "The Economist",
+      "domain": "economist.com",
+      "website": "https://economist.com",
+      "category": "news",
+      "category_label": "新闻 / News",
+      "slug": "economist_com",
+      "icon": "/api/icons/library/economist_com.png"
+    },
+    {
+      "name": "Bloomberg",
+      "domain": "bloomberg.com",
+      "website": "https://bloomberg.com",
+      "category": "news",
+      "category_label": "新闻 / News",
+      "slug": "bloomberg_com",
+      "icon": "/api/icons/library/bloomberg_com.png"
+    },
+    {
+      "name": "Strava",
+      "domain": "strava.com",
+      "website": "https://strava.com",
+      "category": "fitness",
+      "category_label": "健身 / Fitness",
+      "slug": "strava_com",
+      "icon": "/api/icons/library/strava_com.png"
+    },
+    {
+      "name": "Peloton",
+      "domain": "onepeloton.com",
+      "website": "https://onepeloton.com",
+      "category": "fitness",
+      "category_label": "健身 / Fitness",
+      "slug": "onepeloton_com",
+      "icon": "/api/icons/library/onepeloton_com.png"
+    },
+    {
+      "name": "MyFitnessPal",
+      "domain": "myfitnesspal.com",
+      "website": "https://myfitnesspal.com",
+      "category": "fitness",
+      "category_label": "健身 / Fitness",
+      "slug": "myfitnesspal_com",
+      "icon": "/api/icons/library/myfitnesspal_com.png"
+    },
+    {
+      "name": "Whoop",
+      "domain": "whoop.com",
+      "website": "https://whoop.com",
+      "category": "fitness",
+      "category_label": "健身 / Fitness",
+      "slug": "whoop_com",
+      "icon": "/api/icons/library/whoop_com.png"
+    },
+    {
+      "name": "Amazon Prime",
+      "domain": "amazon.com",
+      "website": "https://amazon.com",
+      "category": "membership",
+      "category_label": "会员 / Membership",
+      "slug": "amazon_com",
+      "icon": "/api/icons/library/amazon_com.png"
+    },
+    {
+      "name": "Costco",
+      "domain": "costco.com",
+      "website": "https://costco.com",
+      "category": "membership",
+      "category_label": "会员 / Membership",
+      "slug": "costco_com",
+      "icon": "/api/icons/library/costco_com.png"
+    },
+    {
+      "name": "Patreon",
+      "domain": "patreon.com",
+      "website": "https://patreon.com",
+      "category": "membership",
+      "category_label": "会员 / Membership",
+      "slug": "patreon_com",
+      "icon": "/api/icons/library/patreon_com.png"
+    },
+    {
+      "name": "Sam's Club",
+      "domain": "samsclub.com",
+      "website": "https://samsclub.com",
+      "category": "membership",
+      "category_label": "会员 / Membership",
+      "slug": "samsclub_com",
+      "icon": "/api/icons/library/samsclub_com.png"
+    },
+    {
+      "name": "ESPN+",
+      "domain": "espn.com",
+      "website": "https://espn.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "espn_com",
+      "icon": "/api/icons/library/espn_com.png"
+    },
+    {
+      "name": "Discovery+",
+      "domain": "discoveryplus.com",
+      "website": "https://discoveryplus.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "discoveryplus_com",
+      "icon": "/api/icons/library/discoveryplus_com.png"
+    },
+    {
+      "name": "MUBI",
+      "domain": "mubi.com",
+      "website": "https://mubi.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "mubi_com",
+      "icon": "/api/icons/library/mubi_com.png"
+    },
+    {
+      "name": "BritBox",
+      "domain": "britbox.com",
+      "website": "https://britbox.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "britbox_com",
+      "icon": "/api/icons/library/britbox_com.png"
+    },
+    {
+      "name": "Starz",
+      "domain": "starz.com",
+      "website": "https://starz.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "starz_com",
+      "icon": "/api/icons/library/starz_com.png"
+    },
+    {
+      "name": "Showtime",
+      "domain": "showtime.com",
+      "website": "https://showtime.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "showtime_com",
+      "icon": "/api/icons/library/showtime_com.png"
+    },
+    {
+      "name": "fuboTV",
+      "domain": "fubo.tv",
+      "website": "https://fubo.tv",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "fubo_tv",
+      "icon": "/api/icons/library/fubo_tv.png"
+    },
+    {
+      "name": "Sling TV",
+      "domain": "sling.com",
+      "website": "https://sling.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "sling_com",
+      "icon": "/api/icons/library/sling_com.png"
+    },
+    {
+      "name": "Plex",
+      "domain": "plex.tv",
+      "website": "https://plex.tv",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "plex_tv",
+      "icon": "/api/icons/library/plex_tv.png"
+    },
+    {
+      "name": "Twitch",
+      "domain": "twitch.tv",
+      "website": "https://twitch.tv",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "twitch_tv",
+      "icon": "/api/icons/library/twitch_tv.png"
+    },
+    {
+      "name": "Rakuten Viki",
+      "domain": "viki.com",
+      "website": "https://viki.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "viki_com",
+      "icon": "/api/icons/library/viki_com.png"
+    },
+    {
+      "name": "WeTV",
+      "domain": "wetv.vip",
+      "website": "https://wetv.vip",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "wetv_vip",
+      "icon": "/api/icons/library/wetv_vip.png"
+    },
+    {
+      "name": "iQIYI International",
+      "domain": "iq.com",
+      "website": "https://iq.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "iq_com",
+      "icon": "/api/icons/library/iq_com.png"
+    },
+    {
+      "name": "Hotstar / JioHotstar",
+      "domain": "hotstar.com",
+      "website": "https://hotstar.com",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "hotstar_com",
+      "icon": "/api/icons/library/hotstar_com.png"
+    },
+    {
+      "name": "ABEMA",
+      "domain": "abema.tv",
+      "website": "https://abema.tv",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "abema_tv",
+      "icon": "/api/icons/library/abema_tv.png"
+    },
+    {
+      "name": "U-NEXT",
+      "domain": "unext.jp",
+      "website": "https://unext.jp",
+      "category": "streaming",
+      "category_label": "流媒体 / Streaming",
+      "slug": "unext_jp",
+      "icon": "/api/icons/library/unext_jp.png"
+    },
+    {
+      "name": "Pandora",
+      "domain": "pandora.com",
+      "website": "https://pandora.com",
+      "category": "music",
+      "category_label": "音乐 / Music",
+      "slug": "pandora_com",
+      "icon": "/api/icons/library/pandora_com.png"
+    },
+    {
+      "name": "iHeartRadio",
+      "domain": "iheart.com",
+      "website": "https://iheart.com",
+      "category": "music",
+      "category_label": "音乐 / Music",
+      "slug": "iheart_com",
+      "icon": "/api/icons/library/iheart_com.png"
+    },
+    {
+      "name": "KKBOX",
+      "domain": "kkbox.com",
+      "website": "https://kkbox.com",
+      "category": "music",
+      "category_label": "音乐 / Music",
+      "slug": "kkbox_com",
+      "icon": "/api/icons/library/kkbox_com.png"
+    },
+    {
+      "name": "酷狗音乐",
+      "domain": "kugou.com",
+      "website": "https://kugou.com",
+      "category": "music",
+      "category_label": "音乐 / Music",
+      "slug": "kugou_com",
+      "icon": "/api/icons/library/kugou_com.png"
+    },
+    {
+      "name": "酷我音乐",
+      "domain": "kuwo.cn",
+      "website": "https://kuwo.cn",
+      "category": "music",
+      "category_label": "音乐 / Music",
+      "slug": "kuwo_cn",
+      "icon": "/api/icons/library/kuwo_cn.png"
+    },
+    {
+      "name": "咪咕音乐",
+      "domain": "music.migu.cn",
+      "website": "https://music.migu.cn",
+      "category": "music",
+      "category_label": "音乐 / Music",
+      "slug": "music_migu_cn",
+      "icon": "/api/icons/library/music_migu_cn.png"
+    },
+    {
+      "name": "Character.AI",
+      "domain": "character.ai",
+      "website": "https://character.ai",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "character_ai",
+      "icon": "/api/icons/library/character_ai.png"
+    },
+    {
+      "name": "You.com",
+      "domain": "you.com",
+      "website": "https://you.com",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "you_com",
+      "icon": "/api/icons/library/you_com.png"
+    },
+    {
+      "name": "Jasper",
+      "domain": "jasper.ai",
+      "website": "https://jasper.ai",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "jasper_ai",
+      "icon": "/api/icons/library/jasper_ai.png"
+    },
+    {
+      "name": "Leonardo.ai",
+      "domain": "leonardo.ai",
+      "website": "https://leonardo.ai",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "leonardo_ai",
+      "icon": "/api/icons/library/leonardo_ai.png"
+    },
+    {
+      "name": "Ideogram",
+      "domain": "ideogram.ai",
+      "website": "https://ideogram.ai",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "ideogram_ai",
+      "icon": "/api/icons/library/ideogram_ai.png"
+    },
+    {
+      "name": "HeyGen",
+      "domain": "heygen.com",
+      "website": "https://heygen.com",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "heygen_com",
+      "icon": "/api/icons/library/heygen_com.png"
+    },
+    {
+      "name": "Descript",
+      "domain": "descript.com",
+      "website": "https://descript.com",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "descript_com",
+      "icon": "/api/icons/library/descript_com.png"
+    },
+    {
+      "name": "Luma AI",
+      "domain": "lumalabs.ai",
+      "website": "https://lumalabs.ai",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "lumalabs_ai",
+      "icon": "/api/icons/library/lumalabs_ai.png"
+    },
+    {
+      "name": "NotebookLM",
+      "domain": "notebooklm.google.com",
+      "website": "https://notebooklm.google.com",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "notebooklm_google_com",
+      "icon": "/api/icons/library/notebooklm_google_com.png"
+    },
+    {
+      "name": "智谱清言 GLM",
+      "domain": "chatglm.cn",
+      "website": "https://chatglm.cn",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "chatglm_cn",
+      "icon": "/api/icons/library/chatglm_cn.png"
+    },
+    {
+      "name": "豆包 Doubao",
+      "domain": "doubao.com",
+      "website": "https://doubao.com",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "doubao_com",
+      "icon": "/api/icons/library/doubao_com.png"
+    },
+    {
+      "name": "腾讯元宝",
+      "domain": "yuanbao.tencent.com",
+      "website": "https://yuanbao.tencent.com",
+      "category": "ai",
+      "category_label": "AI 服务 / AI",
+      "slug": "yuanbao_tencent_com",
+      "icon": "/api/icons/library/yuanbao_tencent_com.png"
+    },
+    {
+      "name": "Humble Bundle",
+      "domain": "humblebundle.com",
+      "website": "https://humblebundle.com",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "humblebundle_com",
+      "icon": "/api/icons/library/humblebundle_com.png"
+    },
+    {
+      "name": "Discord Nitro",
+      "domain": "discord.com",
+      "website": "https://discord.com",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "discord_com",
+      "icon": "/api/icons/library/discord_com.png"
+    },
+    {
+      "name": "Roblox Premium",
+      "domain": "roblox.com",
+      "website": "https://roblox.com",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "roblox_com",
+      "icon": "/api/icons/library/roblox_com.png"
+    },
+    {
+      "name": "Riot Games",
+      "domain": "riotgames.com",
+      "website": "https://riotgames.com",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "riotgames_com",
+      "icon": "/api/icons/library/riotgames_com.png"
+    },
+    {
+      "name": "Minecraft",
+      "domain": "minecraft.net",
+      "website": "https://minecraft.net",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "minecraft_net",
+      "icon": "/api/icons/library/minecraft_net.png"
+    },
+    {
+      "name": "World of Warcraft",
+      "domain": "worldofwarcraft.com",
+      "website": "https://worldofwarcraft.com",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "worldofwarcraft_com",
+      "icon": "/api/icons/library/worldofwarcraft_com.png"
+    },
+    {
+      "name": "Final Fantasy XIV",
+      "domain": "finalfantasyxiv.com",
+      "website": "https://finalfantasyxiv.com",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "finalfantasyxiv_com",
+      "icon": "/api/icons/library/finalfantasyxiv_com.png"
+    },
+    {
+      "name": "HoYoverse 米哈游",
+      "domain": "hoyoverse.com",
+      "website": "https://hoyoverse.com",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "hoyoverse_com",
+      "icon": "/api/icons/library/hoyoverse_com.png"
+    },
+    {
+      "name": "Amazon Luna",
+      "domain": "luna.amazon.com",
+      "website": "https://luna.amazon.com",
+      "category": "gaming",
+      "category_label": "游戏 / Gaming",
+      "slug": "luna_amazon_com",
+      "icon": "/api/icons/library/luna_amazon_com.png"
+    },
+    {
+      "name": "Servers.com",
+      "domain": "servers.com",
+      "website": "https://servers.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "servers_com",
+      "icon": "/api/icons/library/servers_com.png"
+    },
+    {
+      "name": "InterServer",
+      "domain": "interserver.net",
+      "website": "https://interserver.net",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "interserver_net",
+      "icon": "/api/icons/library/interserver_net.png"
+    },
+    {
+      "name": "A2 Hosting",
+      "domain": "a2hosting.com",
+      "website": "https://a2hosting.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "a2hosting_com",
+      "icon": "/api/icons/library/a2hosting_com.png"
+    },
+    {
+      "name": "GreenGeeks",
+      "domain": "greengeeks.com",
+      "website": "https://greengeeks.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "greengeeks_com",
+      "icon": "/api/icons/library/greengeeks_com.png"
+    },
+    {
+      "name": "Time4VPS",
+      "domain": "time4vps.com",
+      "website": "https://time4vps.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "time4vps_com",
+      "icon": "/api/icons/library/time4vps_com.png"
+    },
+    {
+      "name": "Aeza",
+      "domain": "aeza.net",
+      "website": "https://aeza.net",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "aeza_net",
+      "icon": "/api/icons/library/aeza_net.png"
+    },
+    {
+      "name": "PQ.Hosting",
+      "domain": "pq.hosting",
+      "website": "https://pq.hosting",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "pq_hosting",
+      "icon": "/api/icons/library/pq_hosting.png"
+    },
+    {
+      "name": "Nexus Bytes",
+      "domain": "nexusbytes.com",
+      "website": "https://nexusbytes.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "nexusbytes_com",
+      "icon": "/api/icons/library/nexusbytes_com.png"
+    },
+    {
+      "name": "Advin Servers",
+      "domain": "advinservers.com",
+      "website": "https://advinservers.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "advinservers_com",
+      "icon": "/api/icons/library/advinservers_com.png"
+    },
+    {
+      "name": "HostBrr",
+      "domain": "hostbrr.com",
+      "website": "https://hostbrr.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "hostbrr_com",
+      "icon": "/api/icons/library/hostbrr_com.png"
+    },
+    {
+      "name": "QuadraNet",
+      "domain": "quadranet.com",
+      "website": "https://quadranet.com",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "quadranet_com",
+      "icon": "/api/icons/library/quadranet_com.png"
+    },
+    {
+      "name": "BuyVM Frantech",
+      "domain": "frantech.ca",
+      "website": "https://frantech.ca",
+      "category": "vps",
+      "category_label": "VPS / 服务器",
+      "slug": "frantech_ca",
+      "icon": "/api/icons/library/frantech_ca.png"
+    },
+    {
+      "name": "Proton Drive",
+      "domain": "proton.me",
+      "website": "https://proton.me",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "proton_me",
+      "icon": "/api/icons/library/proton_me.png"
+    },
+    {
+      "name": "Sync.com",
+      "domain": "sync.com",
+      "website": "https://sync.com",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "sync_com",
+      "icon": "/api/icons/library/sync_com.png"
+    },
+    {
+      "name": "Koofr",
+      "domain": "koofr.net",
+      "website": "https://koofr.net",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "koofr_net",
+      "icon": "/api/icons/library/koofr_net.png"
+    },
+    {
+      "name": "Icedrive",
+      "domain": "icedrive.net",
+      "website": "https://icedrive.net",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "icedrive_net",
+      "icon": "/api/icons/library/icedrive_net.png"
+    },
+    {
+      "name": "Filen",
+      "domain": "filen.io",
+      "website": "https://filen.io",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "filen_io",
+      "icon": "/api/icons/library/filen_io.png"
+    },
+    {
+      "name": "Jottacloud",
+      "domain": "jottacloud.com",
+      "website": "https://jottacloud.com",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "jottacloud_com",
+      "icon": "/api/icons/library/jottacloud_com.png"
+    },
+    {
+      "name": "阿里云盘",
+      "domain": "alipan.com",
+      "website": "https://alipan.com",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "alipan_com",
+      "icon": "/api/icons/library/alipan_com.png"
+    },
+    {
+      "name": "腾讯微云",
+      "domain": "weiyun.com",
+      "website": "https://weiyun.com",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "weiyun_com",
+      "icon": "/api/icons/library/weiyun_com.png"
+    },
+    {
+      "name": "115网盘",
+      "domain": "115.com",
+      "website": "https://115.com",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "115_com",
+      "icon": "/api/icons/library/115_com.png"
+    },
+    {
+      "name": "天翼云盘",
+      "domain": "cloud.189.cn",
+      "website": "https://cloud.189.cn",
+      "category": "cloud",
+      "category_label": "云存储 / Cloud",
+      "slug": "cloud_189_cn",
+      "icon": "/api/icons/library/cloud_189_cn.png"
+    },
+    {
+      "name": "Obsidian",
+      "domain": "obsidian.md",
+      "website": "https://obsidian.md",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "obsidian_md",
+      "icon": "/api/icons/library/obsidian_md.png"
+    },
+    {
+      "name": "Raycast",
+      "domain": "raycast.com",
+      "website": "https://raycast.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "raycast_com",
+      "icon": "/api/icons/library/raycast_com.png"
+    },
+    {
+      "name": "Parallels",
+      "domain": "parallels.com",
+      "website": "https://parallels.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "parallels_com",
+      "icon": "/api/icons/library/parallels_com.png"
+    },
+    {
+      "name": "CleanMyMac",
+      "domain": "cleanmymac.com",
+      "website": "https://cleanmymac.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "cleanmymac_com",
+      "icon": "/api/icons/library/cleanmymac_com.png"
+    },
+    {
+      "name": "Tailscale",
+      "domain": "tailscale.com",
+      "website": "https://tailscale.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "tailscale_com",
+      "icon": "/api/icons/library/tailscale_com.png"
+    },
+    {
+      "name": "NordVPN",
+      "domain": "nordvpn.com",
+      "website": "https://nordvpn.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "nordvpn_com",
+      "icon": "/api/icons/library/nordvpn_com.png"
+    },
+    {
+      "name": "ExpressVPN",
+      "domain": "expressvpn.com",
+      "website": "https://expressvpn.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "expressvpn_com",
+      "icon": "/api/icons/library/expressvpn_com.png"
+    },
+    {
+      "name": "Surfshark",
+      "domain": "surfshark.com",
+      "website": "https://surfshark.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "surfshark_com",
+      "icon": "/api/icons/library/surfshark_com.png"
+    },
+    {
+      "name": "Proton VPN",
+      "domain": "protonvpn.com",
+      "website": "https://protonvpn.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "protonvpn_com",
+      "icon": "/api/icons/library/protonvpn_com.png"
+    },
+    {
+      "name": "Mullvad VPN",
+      "domain": "mullvad.net",
+      "website": "https://mullvad.net",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "mullvad_net",
+      "icon": "/api/icons/library/mullvad_net.png"
+    },
+    {
+      "name": "Dashlane",
+      "domain": "dashlane.com",
+      "website": "https://dashlane.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "dashlane_com",
+      "icon": "/api/icons/library/dashlane_com.png"
+    },
+    {
+      "name": "Airtable",
+      "domain": "airtable.com",
+      "website": "https://airtable.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "airtable_com",
+      "icon": "/api/icons/library/airtable_com.png"
+    },
+    {
+      "name": "ClickUp",
+      "domain": "clickup.com",
+      "website": "https://clickup.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "clickup_com",
+      "icon": "/api/icons/library/clickup_com.png"
+    },
+    {
+      "name": "Linear",
+      "domain": "linear.app",
+      "website": "https://linear.app",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "linear_app",
+      "icon": "/api/icons/library/linear_app.png"
+    },
+    {
+      "name": "Slack",
+      "domain": "slack.com",
+      "website": "https://slack.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "slack_com",
+      "icon": "/api/icons/library/slack_com.png"
+    },
+    {
+      "name": "Trello",
+      "domain": "trello.com",
+      "website": "https://trello.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "trello_com",
+      "icon": "/api/icons/library/trello_com.png"
+    },
+    {
+      "name": "Evernote",
+      "domain": "evernote.com",
+      "website": "https://evernote.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "evernote_com",
+      "icon": "/api/icons/library/evernote_com.png"
+    },
+    {
+      "name": "DeepL",
+      "domain": "deepl.com",
+      "website": "https://deepl.com",
+      "category": "software",
+      "category_label": "软件 / Software",
+      "slug": "deepl_com",
+      "icon": "/api/icons/library/deepl_com.png"
+    },
+    {
+      "name": "Name.com",
+      "domain": "name.com",
+      "website": "https://name.com",
+      "category": "domain",
+      "category_label": "域名 / Domain",
+      "slug": "name_com",
+      "icon": "/api/icons/library/name_com.png"
+    },
+    {
+      "name": "Hover",
+      "domain": "hover.com",
+      "website": "https://hover.com",
+      "category": "domain",
+      "category_label": "域名 / Domain",
+      "slug": "hover_com",
+      "icon": "/api/icons/library/hover_com.png"
+    },
+    {
+      "name": "NameSilo",
+      "domain": "namesilo.com",
+      "website": "https://namesilo.com",
+      "category": "domain",
+      "category_label": "域名 / Domain",
+      "slug": "namesilo_com",
+      "icon": "/api/icons/library/namesilo_com.png"
+    },
+    {
+      "name": "Spaceship",
+      "domain": "spaceship.com",
+      "website": "https://spaceship.com",
+      "category": "domain",
+      "category_label": "域名 / Domain",
+      "slug": "spaceship_com",
+      "icon": "/api/icons/library/spaceship_com.png"
+    },
+    {
+      "name": "Squarespace Domains",
+      "domain": "domains.squarespace.com",
+      "website": "https://domains.squarespace.com",
+      "category": "domain",
+      "category_label": "域名 / Domain",
+      "slug": "domains_squarespace_com",
+      "icon": "/api/icons/library/domains_squarespace_com.png"
+    },
+    {
+      "name": "阿里云 / 万网",
+      "domain": "wanwang.aliyun.com",
+      "website": "https://wanwang.aliyun.com",
+      "category": "domain",
+      "category_label": "域名 / Domain",
+      "slug": "wanwang_aliyun_com",
+      "icon": "/api/icons/library/wanwang_aliyun_com.png"
+    },
+    {
+      "name": "DNSPod / 腾讯云",
+      "domain": "dnspod.cn",
+      "website": "https://dnspod.cn",
+      "category": "domain",
+      "category_label": "域名 / Domain",
+      "slug": "dnspod_cn",
+      "icon": "/api/icons/library/dnspod_cn.png"
+    },
+    {
+      "name": "西部数码 West.cn",
+      "domain": "west.cn",
+      "website": "https://west.cn",
+      "category": "domain",
+      "category_label": "域名 / Domain",
+      "slug": "west_cn",
+      "icon": "/api/icons/library/west_cn.png"
+    },
+    {
+      "name": "Khan Academy",
+      "domain": "khanacademy.org",
+      "website": "https://khanacademy.org",
+      "category": "education",
+      "category_label": "教育 / Education",
+      "slug": "khanacademy_org",
+      "icon": "/api/icons/library/khanacademy_org.png"
+    },
+    {
+      "name": "edX",
+      "domain": "edx.org",
+      "website": "https://edx.org",
+      "category": "education",
+      "category_label": "教育 / Education",
+      "slug": "edx_org",
+      "icon": "/api/icons/library/edx_org.png"
+    },
+    {
+      "name": "Pluralsight",
+      "domain": "pluralsight.com",
+      "website": "https://pluralsight.com",
+      "category": "education",
+      "category_label": "教育 / Education",
+      "slug": "pluralsight_com",
+      "icon": "/api/icons/library/pluralsight_com.png"
+    },
+    {
+      "name": "Codecademy",
+      "domain": "codecademy.com",
+      "website": "https://codecademy.com",
+      "category": "education",
+      "category_label": "教育 / Education",
+      "slug": "codecademy_com",
+      "icon": "/api/icons/library/codecademy_com.png"
+    },
+    {
+      "name": "DataCamp",
+      "domain": "datacamp.com",
+      "website": "https://datacamp.com",
+      "category": "education",
+      "category_label": "教育 / Education",
+      "slug": "datacamp_com",
+      "icon": "/api/icons/library/datacamp_com.png"
+    },
+    {
+      "name": "Babbel",
+      "domain": "babbel.com",
+      "website": "https://babbel.com",
+      "category": "education",
+      "category_label": "教育 / Education",
+      "slug": "babbel_com",
+      "icon": "/api/icons/library/babbel_com.png"
+    },
+    {
+      "name": "Busuu",
+      "domain": "busuu.com",
+      "website": "https://busuu.com",
+      "category": "education",
+      "category_label": "教育 / Education",
+      "slug": "busuu_com",
+      "icon": "/api/icons/library/busuu_com.png"
+    },
+    {
+      "name": "Quizlet",
+      "domain": "quizlet.com",
+      "website": "https://quizlet.com",
+      "category": "education",
+      "category_label": "教育 / Education",
+      "slug": "quizlet_com",
+      "icon": "/api/icons/library/quizlet_com.png"
+    },
+    {
+      "name": "得到",
+      "domain": "dedao.cn",
+      "website": "https://dedao.cn",
+      "category": "education",
+      "category_label": "教育 / Education",
+      "slug": "dedao_cn",
+      "icon": "/api/icons/library/dedao_cn.png"
+    },
+    {
+      "name": "网易云课堂",
+      "domain": "study.163.com",
+      "website": "https://study.163.com",
+      "category": "education",
+      "category_label": "教育 / Education",
+      "slug": "study_163_com",
+      "icon": "/api/icons/library/study_163_com.png"
+    },
+    {
+      "name": "The Washington Post",
+      "domain": "washingtonpost.com",
+      "website": "https://washingtonpost.com",
+      "category": "news",
+      "category_label": "新闻 / News",
+      "slug": "washingtonpost_com",
+      "icon": "/api/icons/library/washingtonpost_com.png"
+    },
+    {
+      "name": "The Guardian",
+      "domain": "theguardian.com",
+      "website": "https://theguardian.com",
+      "category": "news",
+      "category_label": "新闻 / News",
+      "slug": "theguardian_com",
+      "icon": "/api/icons/library/theguardian_com.png"
+    },
+    {
+      "name": "Financial Times",
+      "domain": "ft.com",
+      "website": "https://ft.com",
+      "category": "news",
+      "category_label": "新闻 / News",
+      "slug": "ft_com",
+      "icon": "/api/icons/library/ft_com.png"
+    },
+    {
+      "name": "The Atlantic",
+      "domain": "theatlantic.com",
+      "website": "https://theatlantic.com",
+      "category": "news",
+      "category_label": "新闻 / News",
+      "slug": "theatlantic_com",
+      "icon": "/api/icons/library/theatlantic_com.png"
+    },
+    {
+      "name": "Reuters",
+      "domain": "reuters.com",
+      "website": "https://reuters.com",
+      "category": "news",
+      "category_label": "新闻 / News",
+      "slug": "reuters_com",
+      "icon": "/api/icons/library/reuters_com.png"
+    },
+    {
+      "name": "The New Yorker",
+      "domain": "newyorker.com",
+      "website": "https://newyorker.com",
+      "category": "news",
+      "category_label": "新闻 / News",
+      "slug": "newyorker_com",
+      "icon": "/api/icons/library/newyorker_com.png"
+    },
+    {
+      "name": "Wired",
+      "domain": "wired.com",
+      "website": "https://wired.com",
+      "category": "news",
+      "category_label": "新闻 / News",
+      "slug": "wired_com",
+      "icon": "/api/icons/library/wired_com.png"
+    },
+    {
+      "name": "Substack",
+      "domain": "substack.com",
+      "website": "https://substack.com",
+      "category": "news",
+      "category_label": "新闻 / News",
+      "slug": "substack_com",
+      "icon": "/api/icons/library/substack_com.png"
+    },
+    {
+      "name": "财新 Caixin",
+      "domain": "caixin.com",
+      "website": "https://caixin.com",
+      "category": "news",
+      "category_label": "新闻 / News",
+      "slug": "caixin_com",
+      "icon": "/api/icons/library/caixin_com.png"
+    },
+    {
+      "name": "Nike Training Club",
+      "domain": "nike.com",
+      "website": "https://nike.com",
+      "category": "fitness",
+      "category_label": "健身 / Fitness",
+      "slug": "nike_com",
+      "icon": "/api/icons/library/nike_com.png"
+    },
+    {
+      "name": "Calm",
+      "domain": "calm.com",
+      "website": "https://calm.com",
+      "category": "fitness",
+      "category_label": "健身 / Fitness",
+      "slug": "calm_com",
+      "icon": "/api/icons/library/calm_com.png"
+    },
+    {
+      "name": "Headspace",
+      "domain": "headspace.com",
+      "website": "https://headspace.com",
+      "category": "fitness",
+      "category_label": "健身 / Fitness",
+      "slug": "headspace_com",
+      "icon": "/api/icons/library/headspace_com.png"
+    },
+    {
+      "name": "Fitbit Premium",
+      "domain": "fitbit.com",
+      "website": "https://fitbit.com",
+      "category": "fitness",
+      "category_label": "健身 / Fitness",
+      "slug": "fitbit_com",
+      "icon": "/api/icons/library/fitbit_com.png"
+    },
+    {
+      "name": "Garmin Connect+",
+      "domain": "garmin.com",
+      "website": "https://garmin.com",
+      "category": "fitness",
+      "category_label": "健身 / Fitness",
+      "slug": "garmin_com",
+      "icon": "/api/icons/library/garmin_com.png"
+    },
+    {
+      "name": "Zwift",
+      "domain": "zwift.com",
+      "website": "https://zwift.com",
+      "category": "fitness",
+      "category_label": "健身 / Fitness",
+      "slug": "zwift_com",
+      "icon": "/api/icons/library/zwift_com.png"
+    },
+    {
+      "name": "Freeletics",
+      "domain": "freeletics.com",
+      "website": "https://freeletics.com",
+      "category": "fitness",
+      "category_label": "健身 / Fitness",
+      "slug": "freeletics_com",
+      "icon": "/api/icons/library/freeletics_com.png"
+    },
+    {
+      "name": "Keep",
+      "domain": "gotokeep.com",
+      "website": "https://gotokeep.com",
+      "category": "fitness",
+      "category_label": "健身 / Fitness",
+      "slug": "gotokeep_com",
+      "icon": "/api/icons/library/gotokeep_com.png"
+    },
+    {
+      "name": "Walmart+",
+      "domain": "walmart.com",
+      "website": "https://walmart.com",
+      "category": "membership",
+      "category_label": "会员 / Membership",
+      "slug": "walmart_com",
+      "icon": "/api/icons/library/walmart_com.png"
+    },
+    {
+      "name": "Instacart+",
+      "domain": "instacart.com",
+      "website": "https://instacart.com",
+      "category": "membership",
+      "category_label": "会员 / Membership",
+      "slug": "instacart_com",
+      "icon": "/api/icons/library/instacart_com.png"
+    },
+    {
+      "name": "DoorDash DashPass",
+      "domain": "doordash.com",
+      "website": "https://doordash.com",
+      "category": "membership",
+      "category_label": "会员 / Membership",
+      "slug": "doordash_com",
+      "icon": "/api/icons/library/doordash_com.png"
+    },
+    {
+      "name": "Uber One",
+      "domain": "uber.com",
+      "website": "https://uber.com",
+      "category": "membership",
+      "category_label": "会员 / Membership",
+      "slug": "uber_com",
+      "icon": "/api/icons/library/uber_com.png"
+    },
+    {
+      "name": "京东 PLUS",
+      "domain": "jd.com",
+      "website": "https://jd.com",
+      "category": "membership",
+      "category_label": "会员 / Membership",
+      "slug": "jd_com",
+      "icon": "/api/icons/library/jd_com.png"
+    },
+    {
+      "name": "淘宝 88VIP",
+      "domain": "taobao.com",
+      "website": "https://taobao.com",
+      "category": "membership",
+      "category_label": "会员 / Membership",
+      "slug": "taobao_com",
+      "icon": "/api/icons/library/taobao_com.png"
+    },
+    {
+      "name": "美团会员",
+      "domain": "meituan.com",
+      "website": "https://meituan.com",
+      "category": "membership",
+      "category_label": "会员 / Membership",
+      "slug": "meituan_com",
+      "icon": "/api/icons/library/meituan_com.png"
+    },
+    {
+      "name": "知乎盐选",
+      "domain": "zhihu.com",
+      "website": "https://zhihu.com",
+      "category": "membership",
+      "category_label": "会员 / Membership",
+      "slug": "zhihu_com",
+      "icon": "/api/icons/library/zhihu_com.png"
+    }
+  ]
+}

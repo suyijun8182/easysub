@@ -186,11 +186,11 @@
     <!-- 删除确认（需验证密码；单个 / 批量） -->
     <BaseModal v-if="delTarget || delBulk" style="width:420px" @close="closeDelete" v-slot="{ titleId }">
         <h3 :id="titleId">{{ t('sub.deleteTitle') }}</h3>
-        <p id="del-tip" style="font-size:14px;line-height:1.6">{{ delBulk
+        <p id="del-tip" style="font-size:14px;line-height:1.6">{{ androidPreview ? t('sync.deleteConfirmation', { count: delBulk ? selected.size : 1 }) : delBulk
           ? t('sub.bulkDeleteTip', { n: selected.size })
           : t('sub.deletePwdTip', { name: delTarget.name }) }}</p>
-        <input v-model="delPwd" type="password" autocomplete="current-password" :aria-label="t('sub.pwdPh')"
-               aria-describedby="del-tip" :placeholder="t('sub.pwdPh')" @keyup.enter="confirmDelete" />
+        <input v-model="delPwd" :type="androidPreview ? 'text' : 'password'" :autocomplete="androidPreview ? 'off' : 'current-password'" :aria-label="t(androidPreview ? 'sync.confirmationText' : 'sub.pwdPh')"
+               aria-describedby="del-tip" :placeholder="androidPreview ? 'preview' : t('sub.pwdPh')" @keyup.enter="confirmDelete" />
         <p v-if="delErr" class="err" role="alert">{{ delErr }}</p>
         <div class="row" style="justify-content:flex-end;margin-top:16px">
           <button class="btn ghost" @click="closeDelete">{{ t('sub.cancel') }}</button>
@@ -199,8 +199,8 @@
     </BaseModal>
 
     <!-- 添加/编辑订阅 -->
-    <BaseModal v-if="showForm" @close="showForm = false" v-slot="{ titleId }">
-        <h3 :id="titleId">{{ form.id ? t('sub.edit') : t('sub.add') }}</h3>
+    <BaseModal v-if="showForm" :page="!!androidPreview" :heading="androidPreview ? (form.id ? t('sub.edit') : t('sub.add')) : undefined" :submit-label="androidPreview ? t('sub.save') : undefined" :busy="saving" @submit="save" @close="closeForm" v-slot="{ titleId }">
+        <h3 v-if="!androidPreview" :id="titleId">{{ form.id ? t('sub.edit') : t('sub.add') }}</h3>
 
         <div class="block">
           <div class="block-t">{{ t('sub.secService') }}</div>
@@ -401,7 +401,7 @@
 
         <p v-if="formErr" ref="formErrEl" class="err" role="alert" tabindex="-1">{{ formErr }}</p>
         <div class="row" style="justify-content:flex-end;margin-top:16px">
-          <button class="btn ghost" @click="showForm = false">{{ t('sub.cancel') }}</button>
+          <button class="btn ghost" @click="closeForm">{{ t('sub.cancel') }}</button>
           <button class="btn" :disabled="saving" @click="save">{{ t('sub.save') }}</button>
         </div>
     </BaseModal>
@@ -433,7 +433,8 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { computed, inject, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import api from '../api'
 import { useAuth } from '../stores/auth'
@@ -452,6 +453,15 @@ const bundles = ref([])
 const iconLib = ref([])
 const filter = ref('')
 const showForm = ref(false)
+const androidPreview = inject('preview', null)
+const route = useRoute()
+let initialForm = ''
+function confirmFormExit() {
+  return !androidPreview || !showForm.value || formSnapshot() === initialForm || window.confirm(t('mobile.unsaved'))
+}
+function closeForm() { if (confirmFormExit()) showForm.value = false }
+onBeforeRouteLeave(() => confirmFormExit())
+onBeforeRouteUpdate(() => confirmFormExit())
 const formErr = ref('')
 const formErrEl = ref(null)
 const saving = ref(false)
@@ -460,6 +470,7 @@ const newMember = ref('')
 const iconUrl = ref('')
 const bundleMode = ref('none')
 const newBundleName = ref('')
+function formSnapshot() { return JSON.stringify({ form: form.value, bundleMode: bundleMode.value, newBundleName: newBundleName.value, newMember: newMember.value, iconUrl: iconUrl.value }) }
 const suggestions = ref([])
 
 const showBrowser = ref(false)
@@ -721,15 +732,19 @@ function setFilter(f) { filter.value = f; load() }
 function openNew() {
   form.value = blank(); formErr.value = ''; bundleMode.value = 'none'
   newBundleName.value = ''; suggestions.value = []; showForm.value = true
+  newMember.value = ''; iconUrl.value = ''
   recomputeNext()
+  initialForm = formSnapshot()
 }
 function openEdit(s) {
   suppressAuto = true
-  form.value = { ...s, next_renewal_date: s.next_renewal_date || '', family_members: s.family_members || [] }
+  form.value = { ...s, next_renewal_date: s.next_renewal_date || '', family_members: [...(s.family_members || [])] }
   formErr.value = ''; suggestions.value = []
   bundleMode.value = s.bundle_id ? 'join' : 'none'
   newBundleName.value = ''
+  newMember.value = ''; iconUrl.value = ''
   showForm.value = true
+  initialForm = formSnapshot()
   nextTick(() => { suppressAuto = false })
 }
 
@@ -995,7 +1010,12 @@ onMounted(async () => {
   methods.value = m.data
   bundles.value = b.data
   iconLib.value = lib.data
-  load()
+  await load()
+  if (androidPreview) {
+    const target = subs.value.find(s => s.id === Number(route.query.edit || route.query.renew))
+    if (target && route.query.edit) openEdit(target)
+    else if (target && route.query.renew) askRenew(target)
+  }
 })
 </script>
 

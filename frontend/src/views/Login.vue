@@ -126,7 +126,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '../stores/auth'
 import { icon } from '../icons'
 
@@ -135,7 +135,7 @@ const router = useRouter()
 const auth = useAuth()
 
 const step = ref('form')      // form | verify | pending | forgot | reset
-const mode = ref('login')
+const mode = ref(useRoute().query.mode === 'register' ? 'register' : 'login')
 const username = ref('')
 const email = ref('')
 const password = ref('')

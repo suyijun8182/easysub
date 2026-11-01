@@ -43,18 +43,21 @@
         <div class="card">
           <h3>{{ t('reports.byCategory') }}</h3>
           <div v-if="segments.length" class="donut-wrap">
-            <div class="donut" :style="donutStyle" role="img" :aria-label="t('reports.byCategory')">
+            <div v-if="!androidPreview || segments.length <= 4" class="donut" :style="donutStyle" role="img" :aria-label="t('reports.byCategory')">
               <div class="donut-hole">
                 <div class="dh-v num">{{ (insights.monthly_total || 0).toFixed(0) }}</div>
                 <div class="dh-l">{{ cur }} {{ t('reports.monthly') }}</div>
               </div>
             </div>
-            <div class="legend">
+            <div v-if="!androidPreview || segments.length <= 4" class="legend">
               <div v-for="(b, i) in insights.breakdown" :key="b.category" class="lg">
                 <span class="sw" :style="{ background: color(i) }"></span>
                 <span class="lg-n">{{ b.category }}</span>
                 <span class="lg-p num">{{ b.percent }}%</span>
               </div>
+            </div>
+            <div v-else class="ranked-categories">
+              <div v-for="b in insights.breakdown" :key="b.category"><div class="category-line"><span>{{ b.category }}</span><span class="category-value">{{ cur }} {{ b.monthly.toFixed(2) }} · {{ b.percent }}%</span></div><div class="category-track"><i :style="{ width: barW(b) + '%' }"></i></div></div>
             </div>
           </div>
           <div v-else class="empty">
@@ -231,7 +234,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, inject, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '../api'
 import { useAuth } from '../stores/auth'
@@ -240,6 +243,7 @@ import { statusOf } from '../lifeline'
 import SubIcon from '../components/SubIcon.vue'
 
 const { t } = useI18n()
+const androidPreview = inject('preview', null)
 const auth = useAuth()
 const tabs = ['overview', 'insights', 'categoryDetail', 'recentPayments']
 const active = ref('overview')

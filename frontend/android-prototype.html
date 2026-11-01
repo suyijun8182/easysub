@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EasySub · 完整预览入口</title></head><body><p>正在打开补齐功能后的安卓交互预览…</p><p><a id="previewLink">如果没有跳转，点击这里</a></p><script>
+const target = new URL(location.href);
+target.port = '5174';
+target.pathname = '/android-features.html';
+target.hash = '/dashboard';
+document.getElementById('previewLink').href = target.href;
+location.replace(target.href);
+</script></body></html>

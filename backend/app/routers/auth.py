@@ -125,12 +125,15 @@ def verify_email(payload: VerifyEmailIn, db: Session = Depends(get_db)):
 def login(
     form: OAuth2PasswordRequestForm = Depends(),
     otp: str | None = Form(default=None),
+    sync_client: bool = Form(default=False),
     db: Session = Depends(get_db),
 ):
     _check_lock(form.username)
     user = db.scalar(select(User).where(User.username == form.username))
     if not user or not verify_password(form.password, user.password_hash):
         _record_fail(form.username)
+        if sync_client and not user:
+            raise HTTPException(401, {"code": "ACCOUNT_NOT_REGISTERED", "message": "该账号尚未在此服务器注册", "registration": True})
         raise HTTPException(401, "用户名或密码错误")
     if not user.email_verified:
         raise HTTPException(403, "请先完成邮箱验证")
@@ -142,6 +145,8 @@ def login(
     # 两步验证
     if user.totp_enabled and user.totp_secret:
         if not otp:
+            if sync_client:
+                raise HTTPException(401, {"code": "OTP_REQUIRED", "message": "请输入网页账号的两步验证码"})
             raise HTTPException(401, "需要两步验证码", headers={"X-2FA-Required": "1"})
         if not pyotp.TOTP(user.totp_secret).verify(otp.strip(), valid_window=1):
             _record_fail(form.username)
@@ -205,8 +210,11 @@ def reset_password(payload: ResetIn, db: Session = Depends(get_db)):
 @router.post("/refresh", response_model=TokenOut)
 def refresh(payload: "RefreshIn", db: Session = Depends(get_db)):
     user_id = decode_token(payload.refresh_token, "refresh")
-    if user_id is None or db.get(User, user_id) is None:
+    user = db.get(User, user_id) if user_id is not None else None
+    if user is None:
         raise HTTPException(401, "刷新令牌无效")
+    if not user.is_active or not user.email_verified or (settings.require_admin_approval and not user.is_approved):
+        raise HTTPException(403, "账号已禁用或尚未完成验证")
     return TokenOut(
         access_token=create_access_token(user_id),
         refresh_token=create_refresh_token(user_id),

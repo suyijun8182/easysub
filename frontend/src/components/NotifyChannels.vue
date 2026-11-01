@@ -1,5 +1,8 @@
 <template>
   <div class="card sect notify">
+    <p v-if="androidPreview" class="muted">{{ t('mobile.limited') }}</p>
+    <p v-if="androidPreview && dirty" class="unsaved-note" role="status">{{ t('mobile.unsavedBadge') }}</p>
+    <div class="secret-actions" v-if="androidPreview"><button type="button" class="btn ghost" :aria-pressed="showSecrets" @click="showSecrets = !showSecrets">{{ t(showSecrets ? 'mobile.hideSecrets' : 'mobile.showSecrets') }}</button></div>
     <div class="nc-head">
       <div class="nc-title">
         <h3><span class="hi" v-html="icon('notifyCfg')"></span>{{ t('notifyCfg.title') }}</h3>
@@ -20,45 +23,45 @@
       <div class="ch-head">
         <h4>{{ enableLabel }}</h4>
         <div class="ch-actions">
-          <button class="btn ghost sm" :disabled="testing" @click="test(tab)"><span class="bi" v-html="icon('send')"></span>{{ t('notifyCfg.test') }}</button>
+          <button class="btn ghost sm" :disabled="testing || !!androidPreview" @click="test(tab)"><span class="bi" v-html="icon('send')"></span>{{ t('notifyCfg.test') }}</button>
           <label class="switch" :title="enableLabel"><input type="checkbox" v-model="cfg[tab].enabled" :aria-label="enableLabel" /><span class="track"></span></label>
         </div>
       </div>
 
       <!-- Telegram -->
       <div v-if="tab === 'telegram'" class="fields">
-        <div class="f"><label>BOT TOKEN</label><input v-model="cfg.telegram.bot_token" placeholder="123456:ABC-..." /></div>
+        <div class="f"><label :for="`${fieldId}-cfg-telegram-bot_token`">BOT TOKEN</label><input :type="androidPreview && !showSecrets ? 'password' : 'text'" :id="`${fieldId}-cfg-telegram-bot_token`" v-model="cfg.telegram.bot_token" placeholder="123456:ABC-..." /></div>
         <div class="two">
-          <div class="f"><label>CHAT ID</label><input v-model="cfg.telegram.chat_id" placeholder="-100xxxx / 数字" /></div>
-          <div class="f"><label>ADMIN ID</label><input v-model="cfg.telegram.admin_id" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-telegram-chat_id`">CHAT ID</label><input :id="`${fieldId}-cfg-telegram-chat_id`" v-model="cfg.telegram.chat_id" placeholder="-100xxxx / 数字" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-telegram-admin_id`">ADMIN ID</label><input :id="`${fieldId}-cfg-telegram-admin_id`" v-model="cfg.telegram.admin_id" /></div>
         </div>
-        <div class="f"><label>{{ t('notifyCfg.tgApiBase') }}</label><input v-model="cfg.telegram.api_base" placeholder="api.telegram.org" /></div>
-        <div class="f"><label>{{ t('notifyCfg.httpProxy') }}</label><input v-model="cfg.telegram.proxy" placeholder="http://127.0.0.1:7890" /></div>
+        <div class="f"><label :for="`${fieldId}-cfg-telegram-api_base`">{{ t('notifyCfg.tgApiBase') }}</label><input :id="`${fieldId}-cfg-telegram-api_base`" v-model="cfg.telegram.api_base" placeholder="api.telegram.org" /></div>
+        <div class="f"><label :for="`${fieldId}-cfg-telegram-proxy`">{{ t('notifyCfg.httpProxy') }}</label><input :id="`${fieldId}-cfg-telegram-proxy`" v-model="cfg.telegram.proxy" placeholder="http://127.0.0.1:7890" /></div>
         <div class="row">
-          <button class="btn ghost sm" @click="tgAction('me')">{{ t('settings.checkBot') }}</button>
-          <button class="btn ghost sm" @click="tgAction('updates')">{{ t('settings.getUpdates') }}</button>
+          <button class="btn ghost sm" :disabled="!!androidPreview" @click="tgAction('me')">{{ t('settings.checkBot') }}</button>
+          <button class="btn ghost sm" :disabled="!!androidPreview" @click="tgAction('updates')">{{ t('settings.getUpdates') }}</button>
         </div>
       </div>
 
       <!-- 飞书 -->
       <div v-else-if="tab === 'feishu'" class="fields">
         <div class="two">
-          <div class="f"><label>APP ID</label><input v-model="cfg.feishu.app_id" placeholder="cli_xxxx" /></div>
-          <div class="f"><label>APP SECRET</label><input v-model="cfg.feishu.app_secret" type="password" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-feishu-app_id`">APP ID</label><input :id="`${fieldId}-cfg-feishu-app_id`" v-model="cfg.feishu.app_id" placeholder="cli_xxxx" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-feishu-app_secret`">APP SECRET</label><input :type="androidPreview && showSecrets ? 'text' : 'password'" :id="`${fieldId}-cfg-feishu-app_secret`" v-model="cfg.feishu.app_secret" /></div>
         </div>
-        <div class="f"><label>CHAT IDS</label><input v-model="cfg.feishu.chat_ids" placeholder="oc_xxxx，多个逗号分隔" />
+        <div class="f"><label :for="`${fieldId}-cfg-feishu-chat_ids`">CHAT IDS</label><input :id="`${fieldId}-cfg-feishu-chat_ids`" v-model="cfg.feishu.chat_ids" placeholder="oc_xxxx，多个逗号分隔" />
           <small class="muted">{{ t('notifyCfg.feishuHint') }}</small></div>
       </div>
 
       <!-- QQ -->
       <div v-else-if="tab === 'qq'" class="fields">
         <div class="two">
-          <div class="f"><label>APP ID</label><input v-model="cfg.qq.app_id" placeholder="QQ Bot App ID" /></div>
-          <div class="f"><label>APP SECRET</label><input v-model="cfg.qq.app_secret" type="password" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-qq-app_id`">APP ID</label><input :id="`${fieldId}-cfg-qq-app_id`" v-model="cfg.qq.app_id" placeholder="QQ Bot App ID" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-qq-app_secret`">APP SECRET</label><input :type="androidPreview && showSecrets ? 'text' : 'password'" :id="`${fieldId}-cfg-qq-app_secret`" v-model="cfg.qq.app_secret" /></div>
         </div>
         <div class="two">
-          <div class="f"><label>{{ t('notifyCfg.qqGroups') }}</label><input v-model="cfg.qq.group_ids" placeholder="群聊 OpenID，多个逗号分隔" /></div>
-          <div class="f"><label>{{ t('notifyCfg.qqUsers') }}</label><input v-model="cfg.qq.user_ids" placeholder="用户 OpenID，多个逗号分隔" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-qq-group_ids`">{{ t('notifyCfg.qqGroups') }}</label><input :id="`${fieldId}-cfg-qq-group_ids`" v-model="cfg.qq.group_ids" placeholder="群聊 OpenID，多个逗号分隔" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-qq-user_ids`">{{ t('notifyCfg.qqUsers') }}</label><input :id="`${fieldId}-cfg-qq-user_ids`" v-model="cfg.qq.user_ids" placeholder="用户 OpenID，多个逗号分隔" /></div>
         </div>
         <small class="muted">{{ t('notifyCfg.qqHint') }}</small>
       </div>
@@ -70,43 +73,43 @@
             <button class="btn ghost sm" @click="cfg.bark.urls.push('')"><span class="bi" v-html="icon('plus')"></span>URL</button></div>
           <p v-if="!cfg.bark.urls.length" class="none">{{ t('notifyCfg.noBarkUrl') }}</p>
           <div v-for="(u, i) in cfg.bark.urls" :key="i" class="list-row">
-            <input v-model="cfg.bark.urls[i]" placeholder="https://api.day.app/你的Key" />
+            <input :aria-label="`${t('notifyCfg.targetUrls')} ${i + 1}`" v-model="cfg.bark.urls[i]" placeholder="https://api.day.app/你的Key" />
             <button class="x" aria-label="✕" @click="cfg.bark.urls.splice(i, 1)"><span v-html="icon('x')"></span></button>
           </div>
         </div>
         <div class="two">
-          <div class="f"><label>{{ t('notifyCfg.barkGroup') }}</label><input v-model="cfg.bark.group" placeholder="EasySub" /></div>
-          <div class="f"><label>{{ t('notifyCfg.barkLevel') }}</label>
-            <select v-model="cfg.bark.level">
+          <div class="f"><label :for="`${fieldId}-cfg-bark-group`">{{ t('notifyCfg.barkGroup') }}</label><input :id="`${fieldId}-cfg-bark-group`" v-model="cfg.bark.group" placeholder="EasySub" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-bark-level`">{{ t('notifyCfg.barkLevel') }}</label>
+            <select :id="`${fieldId}-cfg-bark-level`" v-model="cfg.bark.level">
               <option value="active">active</option><option value="timeSensitive">timeSensitive</option>
               <option value="passive">passive</option><option value="critical">critical</option>
             </select></div>
         </div>
-        <div class="f"><label>ICON</label><input v-model="cfg.bark.icon" placeholder="图标 URL，可选" /></div>
+        <div class="f"><label :for="`${fieldId}-cfg-bark-icon`">ICON</label><input :id="`${fieldId}-cfg-bark-icon`" v-model="cfg.bark.icon" placeholder="图标 URL，可选" /></div>
       </div>
 
       <!-- Email -->
       <div v-else-if="tab === 'email'" class="fields">
         <div class="three">
-          <div class="f"><label>SMTP {{ t('notifyCfg.host') }}</label><input v-model="cfg.email.host" placeholder="smtp.example.com" /></div>
-          <div class="f"><label>SMTP {{ t('notifyCfg.port') }}</label><input v-model.number="cfg.email.port" type="number" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-email-host`">SMTP {{ t('notifyCfg.host') }}</label><input :id="`${fieldId}-cfg-email-host`" v-model="cfg.email.host" placeholder="smtp.example.com" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-email-port`">SMTP {{ t('notifyCfg.port') }}</label><input :id="`${fieldId}-cfg-email-port`" v-model.number="cfg.email.port" type="number" /></div>
           <div class="f sw"><label>SSL/TLS</label><label class="switch"><input type="checkbox" v-model="cfg.email.ssl" aria-label="SSL/TLS" /><span class="track"></span></label></div>
         </div>
         <div class="two">
-          <div class="f"><label>{{ t('notifyCfg.username') }}</label><input v-model="cfg.email.username" placeholder="邮箱账号" /></div>
-          <div class="f"><label>{{ t('notifyCfg.password') }}</label><input v-model="cfg.email.password" type="password" placeholder="密码或授权码" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-email-username`">{{ t('notifyCfg.username') }}</label><input :id="`${fieldId}-cfg-email-username`" v-model="cfg.email.username" placeholder="邮箱账号" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-email-password`">{{ t('notifyCfg.password') }}</label><input :type="androidPreview && showSecrets ? 'text' : 'password'" :id="`${fieldId}-cfg-email-password`" v-model="cfg.email.password" placeholder="密码或授权码" /></div>
         </div>
-        <div class="f"><label>{{ t('notifyCfg.from') }}</label><input v-model="cfg.email.from" placeholder="noreply@example.com" /></div>
-        <div class="f"><label>{{ t('notifyCfg.to') }}</label><input v-model="cfg.email.to" placeholder="多个收件人用英文逗号分隔" /></div>
+        <div class="f"><label :for="`${fieldId}-cfg-email-from`">{{ t('notifyCfg.from') }}</label><input :id="`${fieldId}-cfg-email-from`" v-model="cfg.email.from" placeholder="noreply@example.com" /></div>
+        <div class="f"><label :for="`${fieldId}-cfg-email-to`">{{ t('notifyCfg.to') }}</label><input :id="`${fieldId}-cfg-email-to`" v-model="cfg.email.to" placeholder="多个收件人用英文逗号分隔" /></div>
       </div>
 
       <!-- Pushplus -->
       <div v-else-if="tab === 'pushplus'" class="fields">
-        <div class="f"><label>TOKEN</label><input v-model="cfg.pushplus.token" placeholder="Pushplus 用户 Token" /></div>
+        <div class="f"><label :for="`${fieldId}-cfg-pushplus-token`">TOKEN</label><input :type="androidPreview && !showSecrets ? 'password' : 'text'" :id="`${fieldId}-cfg-pushplus-token`" v-model="cfg.pushplus.token" placeholder="Pushplus 用户 Token" /></div>
         <div class="two">
-          <div class="f"><label>{{ t('notifyCfg.ppTopic') }}</label><input v-model="cfg.pushplus.topic" placeholder="群组编码，不填发给个人" /></div>
-          <div class="f"><label>{{ t('notifyCfg.ppChannel') }}</label>
-            <select v-model="cfg.pushplus.channel">
+          <div class="f"><label :for="`${fieldId}-cfg-pushplus-topic`">{{ t('notifyCfg.ppTopic') }}</label><input :id="`${fieldId}-cfg-pushplus-topic`" v-model="cfg.pushplus.topic" placeholder="群组编码，不填发给个人" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-pushplus-channel`">{{ t('notifyCfg.ppChannel') }}</label>
+            <select :id="`${fieldId}-cfg-pushplus-channel`" v-model="cfg.pushplus.channel">
               <option value="wechat">微信 (wechat)</option><option value="mail">邮件 (mail)</option>
               <option value="webhook">Webhook</option><option value="cp">企业微信 (cp)</option>
             </select></div>
@@ -115,7 +118,7 @@
 
       <!-- Server酱 -->
       <div v-else-if="tab === 'serverchan'" class="fields">
-        <div class="f"><label>SENDKEY</label><input v-model="cfg.serverchan.sendkey" placeholder="SCT... / SendKey" />
+        <div class="f"><label :for="`${fieldId}-cfg-serverchan-sendkey`">SENDKEY</label><input :type="androidPreview && !showSecrets ? 'password' : 'text'" :id="`${fieldId}-cfg-serverchan-sendkey`" v-model="cfg.serverchan.sendkey" placeholder="SCT... / SendKey" />
           <small class="muted">{{ t('notifyCfg.serverchanHint') }}</small></div>
       </div>
 
@@ -136,46 +139,46 @@
 
         <!-- 群机器人 -->
         <template v-if="wecomMode === 'webhook'">
-          <div class="f"><label>{{ t('notifyCfg.robotUrl') }}</label>
-            <input v-model="cfg.wecom.url" placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..." />
+          <div class="f"><label :for="`${fieldId}-cfg-wecom-url`">{{ t('notifyCfg.robotUrl') }}</label>
+            <input :id="`${fieldId}-cfg-wecom-url`" v-model="cfg.wecom.url" placeholder="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..." />
             <small class="muted">{{ t('notifyCfg.wecomHint') }}</small></div>
         </template>
 
         <!-- 自建应用 -->
         <template v-else>
-          <div class="f"><label>{{ t('notifyCfg.wecomCorpId') }}</label>
-            <input v-model="cfg.wecom.corp_id" placeholder="ww1234567890abcdef" />
+          <div class="f"><label :for="`${fieldId}-cfg-wecom-corp_id`">{{ t('notifyCfg.wecomCorpId') }}</label>
+            <input :id="`${fieldId}-cfg-wecom-corp_id`" v-model="cfg.wecom.corp_id" placeholder="ww1234567890abcdef" />
             <small class="muted">{{ t('notifyCfg.wecomCorpIdHint') }}</small></div>
           <div class="two">
-            <div class="f"><label>{{ t('notifyCfg.wecomAgentId') }}</label>
-              <input v-model="cfg.wecom.agent_id" placeholder="1000002" /></div>
-            <div class="f"><label>{{ t('notifyCfg.wecomSecret') }}</label>
-              <input v-model="cfg.wecom.secret" type="password" placeholder="应用 Secret" /></div>
+            <div class="f"><label :for="`${fieldId}-cfg-wecom-agent_id`">{{ t('notifyCfg.wecomAgentId') }}</label>
+              <input :id="`${fieldId}-cfg-wecom-agent_id`" v-model="cfg.wecom.agent_id" placeholder="1000002" /></div>
+            <div class="f"><label :for="`${fieldId}-cfg-wecom-secret`">{{ t('notifyCfg.wecomSecret') }}</label>
+              <input :type="androidPreview && showSecrets ? 'text' : 'password'" :id="`${fieldId}-cfg-wecom-secret`" v-model="cfg.wecom.secret" placeholder="应用 Secret" /></div>
           </div>
           <small class="muted pull-up">{{ t('notifyCfg.wecomAgentHint') }}</small>
-          <div class="f"><label>{{ t('notifyCfg.wecomProxy') }}</label>
-            <input v-model="cfg.wecom.proxy_base" placeholder="https://qyapi.weixin.qq.com（留空用官方域名）" />
+          <div class="f"><label :for="`${fieldId}-cfg-wecom-proxy_base`">{{ t('notifyCfg.wecomProxy') }}</label>
+            <input :id="`${fieldId}-cfg-wecom-proxy_base`" v-model="cfg.wecom.proxy_base" placeholder="https://qyapi.weixin.qq.com（留空用官方域名）" />
             <small class="muted">{{ t('notifyCfg.wecomProxyHint') }}</small></div>
           <div class="three-e">
-            <div class="f"><label>{{ t('notifyCfg.wecomToUser') }}</label>
-              <input v-model="cfg.wecom.to_user" placeholder="@all 或 UserID，多个用 | 分隔" /></div>
-            <div class="f"><label>{{ t('notifyCfg.wecomToParty') }}</label>
-              <input v-model="cfg.wecom.to_party" placeholder="部门ID，可选" /></div>
-            <div class="f"><label>{{ t('notifyCfg.wecomToTag') }}</label>
-              <input v-model="cfg.wecom.to_tag" placeholder="标签ID，可选" /></div>
+            <div class="f"><label :for="`${fieldId}-cfg-wecom-to_user`">{{ t('notifyCfg.wecomToUser') }}</label>
+              <input :id="`${fieldId}-cfg-wecom-to_user`" v-model="cfg.wecom.to_user" placeholder="@all 或 UserID，多个用 | 分隔" /></div>
+            <div class="f"><label :for="`${fieldId}-cfg-wecom-to_party`">{{ t('notifyCfg.wecomToParty') }}</label>
+              <input :id="`${fieldId}-cfg-wecom-to_party`" v-model="cfg.wecom.to_party" placeholder="部门ID，可选" /></div>
+            <div class="f"><label :for="`${fieldId}-cfg-wecom-to_tag`">{{ t('notifyCfg.wecomToTag') }}</label>
+              <input :id="`${fieldId}-cfg-wecom-to_tag`" v-model="cfg.wecom.to_tag" placeholder="标签ID，可选" /></div>
           </div>
           <div class="two">
-            <div class="f"><label>{{ t('notifyCfg.wecomMsgType') }}</label>
-              <select v-model="cfg.wecom.msg_type">
+            <div class="f"><label :for="`${fieldId}-cfg-wecom-msg_type`">{{ t('notifyCfg.wecomMsgType') }}</label>
+              <select :id="`${fieldId}-cfg-wecom-msg_type`" v-model="cfg.wecom.msg_type">
                 <option value="text">{{ t('notifyCfg.wecomMsgText') }}</option>
                 <option value="markdown">{{ t('notifyCfg.wecomMsgMd') }}</option>
                 <option value="textcard">{{ t('notifyCfg.wecomMsgCard') }}</option>
               </select></div>
-            <div class="f" v-if="cfg.wecom.msg_type === 'textcard'"><label>{{ t('notifyCfg.wecomCardUrl') }}</label>
-              <input v-model="cfg.wecom.card_url" placeholder="点击卡片跳转地址，如 http://你的域名/subs" /></div>
+            <div class="f" v-if="cfg.wecom.msg_type === 'textcard'"><label :for="`${fieldId}-cfg-wecom-card_url`">{{ t('notifyCfg.wecomCardUrl') }}</label>
+              <input :id="`${fieldId}-cfg-wecom-card_url`" v-model="cfg.wecom.card_url" placeholder="点击卡片跳转地址，如 http://你的域名/subs" /></div>
           </div>
           <div class="row">
-            <button class="btn ghost sm" :disabled="checking" @click="wecomCheck">
+            <button class="btn ghost sm" :disabled="checking || !!androidPreview" @click="wecomCheck">
               <span class="bi" v-html="icon('search')"></span>{{ t('notifyCfg.wecomCheck') }}
             </button>
           </div>
@@ -210,40 +213,40 @@
 
       <!-- 钉钉 -->
       <div v-else-if="tab === 'dingtalk'" class="fields">
-        <div class="f"><label>{{ t('notifyCfg.robotUrl') }}</label><input v-model="cfg.dingtalk.url" placeholder="https://oapi.dingtalk.com/robot/send?access_token=..." /></div>
-        <div class="f"><label>{{ t('notifyCfg.signSecret') }}</label><input v-model="cfg.dingtalk.secret" placeholder="SEC... 加签密钥，选填" />
+        <div class="f"><label :for="`${fieldId}-cfg-dingtalk-url`">{{ t('notifyCfg.robotUrl') }}</label><input :id="`${fieldId}-cfg-dingtalk-url`" v-model="cfg.dingtalk.url" placeholder="https://oapi.dingtalk.com/robot/send?access_token=..." /></div>
+        <div class="f"><label :for="`${fieldId}-cfg-dingtalk-secret`">{{ t('notifyCfg.signSecret') }}</label><input :type="androidPreview && !showSecrets ? 'password' : 'text'" :id="`${fieldId}-cfg-dingtalk-secret`" v-model="cfg.dingtalk.secret" placeholder="SEC... 加签密钥，选填" />
           <small class="muted">{{ t('notifyCfg.dingtalkHint') }}</small></div>
       </div>
 
       <!-- Discord -->
       <div v-else-if="tab === 'discord'" class="fields">
-        <div class="f"><label>Webhook URL</label><input v-model="cfg.discord.url" placeholder="https://discord.com/api/webhooks/..." />
+        <div class="f"><label :for="`${fieldId}-cfg-discord-url`">Webhook URL</label><input :id="`${fieldId}-cfg-discord-url`" v-model="cfg.discord.url" placeholder="https://discord.com/api/webhooks/..." />
           <small class="muted">{{ t('notifyCfg.discordHint') }}</small></div>
       </div>
 
       <!-- Slack -->
       <div v-else-if="tab === 'slack'" class="fields">
-        <div class="f"><label>Webhook URL</label><input v-model="cfg.slack.url" placeholder="https://hooks.slack.com/services/..." />
+        <div class="f"><label :for="`${fieldId}-cfg-slack-url`">Webhook URL</label><input :id="`${fieldId}-cfg-slack-url`" v-model="cfg.slack.url" placeholder="https://hooks.slack.com/services/..." />
           <small class="muted">{{ t('notifyCfg.slackHint') }}</small></div>
       </div>
 
       <!-- ntfy -->
       <div v-else-if="tab === 'ntfy'" class="fields">
         <div class="two">
-          <div class="f"><label>{{ t('notifyCfg.server') }}</label><input v-model="cfg.ntfy.server" placeholder="https://ntfy.sh" /></div>
-          <div class="f"><label>Topic</label><input v-model="cfg.ntfy.topic" placeholder="your-topic" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-ntfy-server`">{{ t('notifyCfg.server') }}</label><input :id="`${fieldId}-cfg-ntfy-server`" v-model="cfg.ntfy.server" placeholder="https://ntfy.sh" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-ntfy-topic`">Topic</label><input :id="`${fieldId}-cfg-ntfy-topic`" v-model="cfg.ntfy.topic" placeholder="your-topic" /></div>
         </div>
-        <div class="f"><label>{{ t('notifyCfg.tokenOptional') }}</label><input v-model="cfg.ntfy.token" placeholder="tk_... 访问令牌，选填" />
+        <div class="f"><label :for="`${fieldId}-cfg-ntfy-token`">{{ t('notifyCfg.tokenOptional') }}</label><input :type="androidPreview && !showSecrets ? 'password' : 'text'" :id="`${fieldId}-cfg-ntfy-token`" v-model="cfg.ntfy.token" placeholder="tk_... 访问令牌，选填" />
           <small class="muted">{{ t('notifyCfg.ntfyHint') }}</small></div>
       </div>
 
       <!-- Gotify -->
       <div v-else-if="tab === 'gotify'" class="fields">
         <div class="two">
-          <div class="f"><label>{{ t('notifyCfg.server') }}</label><input v-model="cfg.gotify.server" placeholder="https://gotify.example.com" /></div>
-          <div class="f"><label>App Token</label><input v-model="cfg.gotify.token" placeholder="应用 Token" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-gotify-server`">{{ t('notifyCfg.server') }}</label><input :id="`${fieldId}-cfg-gotify-server`" v-model="cfg.gotify.server" placeholder="https://gotify.example.com" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-gotify-token`">App Token</label><input :type="androidPreview && !showSecrets ? 'password' : 'text'" :id="`${fieldId}-cfg-gotify-token`" v-model="cfg.gotify.token" placeholder="应用 Token" /></div>
         </div>
-        <div class="f narrow"><label>{{ t('notifyCfg.priority') }}</label><input v-model.number="cfg.gotify.priority" type="number" /></div>
+        <div class="f narrow"><label :for="`${fieldId}-cfg-gotify-priority`">{{ t('notifyCfg.priority') }}</label><input :id="`${fieldId}-cfg-gotify-priority`" v-model.number="cfg.gotify.priority" type="number" /></div>
       </div>
 
       <!-- Webhook -->
@@ -253,27 +256,27 @@
             <button class="btn ghost sm" @click="cfg.webhook.urls.push('')"><span class="bi" v-html="icon('plus')"></span>URL</button></div>
           <p v-if="!cfg.webhook.urls.length" class="none">{{ t('notifyCfg.noWebhookUrl') }}</p>
           <div v-for="(u, i) in cfg.webhook.urls" :key="i" class="list-row">
-            <input v-model="cfg.webhook.urls[i]" placeholder="https://example.com/hook" />
+            <input :aria-label="`${t('notifyCfg.targetUrls')} ${i + 1}`" v-model="cfg.webhook.urls[i]" placeholder="https://example.com/hook" />
             <button class="x" aria-label="✕" @click="cfg.webhook.urls.splice(i, 1)"><span v-html="icon('x')"></span></button>
           </div>
         </div>
-        <div class="f"><label>{{ t('notifyCfg.whSecret') }}</label><input v-model="cfg.webhook.secret" placeholder="HMAC-SHA256 签名密钥，选填" />
+        <div class="f"><label :for="`${fieldId}-cfg-webhook-secret`">{{ t('notifyCfg.whSecret') }}</label><input :type="androidPreview && !showSecrets ? 'password' : 'text'" :id="`${fieldId}-cfg-webhook-secret`" v-model="cfg.webhook.secret" placeholder="HMAC-SHA256 签名密钥，选填" />
           <small class="muted">{{ t('notifyCfg.whSecretHint') }}</small></div>
         <div class="f">
           <div class="f-h"><label>{{ t('notifyCfg.whHeaders') }}</label>
             <button class="btn ghost sm" @click="cfg.webhook.headers.push({ key: '', value: '' })"><span class="bi" v-html="icon('plus')"></span>Header</button></div>
           <div v-for="(h, i) in cfg.webhook.headers" :key="i" class="list-row hdr">
-            <input v-model="h.key" placeholder="Authorization" class="hk" />
-            <input v-model="h.value" placeholder="值" class="hv" />
+            <input :aria-label="`${t('notifyCfg.whHeaders')} ${i + 1} key`" v-model="h.key" placeholder="Authorization" class="hk" />
+            <input :type="androidPreview && !showSecrets ? 'password' : 'text'" :aria-label="`${t('notifyCfg.whHeaders')} ${i + 1} value`" v-model="h.value" placeholder="值" class="hv" />
             <button class="x" aria-label="✕" @click="cfg.webhook.headers.splice(i, 1)"><span v-html="icon('x')"></span></button>
           </div>
         </div>
-        <div class="f"><label>{{ t('notifyCfg.whTemplate') }}</label>
-          <textarea v-model="cfg.webhook.template" rows="2" class="mono" :placeholder="tplPlaceholder"></textarea>
+        <div class="f"><label :for="`${fieldId}-cfg-webhook-template`">{{ t('notifyCfg.whTemplate') }}</label>
+          <textarea :id="`${fieldId}-cfg-webhook-template`" v-model="cfg.webhook.template" rows="2" class="mono" :placeholder="tplPlaceholder"></textarea>
           <small class="muted">{{ t('notifyCfg.whTemplateHint') }}</small></div>
         <div class="two">
-          <div class="f"><label>{{ t('notifyCfg.whTimeout') }}</label><input v-model.number="cfg.webhook.timeout_ms" type="number" /></div>
-          <div class="f"><label>{{ t('notifyCfg.whRetries') }}</label><input v-model.number="cfg.webhook.max_retries" type="number" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-webhook-timeout_ms`">{{ t('notifyCfg.whTimeout') }}</label><input :id="`${fieldId}-cfg-webhook-timeout_ms`" v-model.number="cfg.webhook.timeout_ms" type="number" /></div>
+          <div class="f"><label :for="`${fieldId}-cfg-webhook-max_retries`">{{ t('notifyCfg.whRetries') }}</label><input :id="`${fieldId}-cfg-webhook-max_retries`" v-model.number="cfg.webhook.max_retries" type="number" /></div>
         </div>
       </div>
 
@@ -286,7 +289,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, inject, onMounted, ref, useId } from 'vue'
+import { useUnsavedChanges } from '../android-preview/useUnsavedChanges.js'
 import { useI18n } from 'vue-i18n'
 import api from '../api'
 import { icon } from '../icons'
@@ -299,6 +303,12 @@ const testing = ref(false)
 const msg = ref('')
 const ok = ref(false)
 const cfg = ref(defaults())
+const androidPreview = inject('preview', null)
+const showSecrets = ref(false)
+const fieldId = useId()
+const savedConfig = ref('')
+const dirty = computed(() => loaded.value && JSON.stringify(cfg.value) !== savedConfig.value)
+useUnsavedChanges(() => !!androidPreview && dirty.value, () => t('mobile.unsaved'))
 const tplPlaceholder = '{{subject}} {{text}}'
 const checking = ref(false)
 const wecomHelp = ref(false)
@@ -373,6 +383,7 @@ async function load() {
     }
   } catch { /* 用默认值 */ }
   cfg.value = base
+  savedConfig.value = JSON.stringify(base)
   loaded.value = true
 }
 
@@ -380,6 +391,7 @@ async function save() {
   saving.value = true
   try {
     await api.put('/api/notifications/config', { config: cfg.value })
+    savedConfig.value = JSON.stringify(cfg.value)
     flash(true, t('notifyCfg.saved'))
   } catch (e) { flash(false, e.response?.data?.detail || 'Error') } finally { saving.value = false }
 }
@@ -405,6 +417,7 @@ async function tgAction(kind) {
   msg.value = ''
   try {
     await api.put('/api/notifications/config', { config: cfg.value })
+    savedConfig.value = JSON.stringify(cfg.value)
     if (kind === 'me') {
       const { data } = await api.get('/api/notifications/telegram/me')
       flash(true, `${t('settings.botOk')}: @${data.result?.username}`)

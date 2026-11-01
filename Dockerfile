@@ -1,8 +1,8 @@
 # ---------- 阶段 1：构建前端 ----------
-FROM node:20-alpine AS frontend
+FROM node:24-alpine AS frontend
 WORKDIR /fe
 COPY frontend/package*.json ./
-RUN npm ci || npm install
+RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 

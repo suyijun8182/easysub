@@ -7,12 +7,13 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { isImg } from '../lifeline'
 
 // 订阅图标：上传/图库图片、用户填的 emoji，或取名称首字作为占位
 const props = defineProps({ icon: String, name: String, size: { type: Number, default: 40 } })
 const broken = ref(false)
+watch(() => props.icon, () => { broken.value = false })
 const initial = computed(() => (props.name || '?').trim().charAt(0).toUpperCase())
 </script>
 

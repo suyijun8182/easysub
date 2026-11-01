@@ -1,0 +1,167 @@
+/* Android preview uses the existing Countdown tokens and component vocabulary. */
+.android-preview {
+  --touch: 48px;
+  --motion-press: 100ms;
+  --motion-enter: 180ms;
+  --motion-exit: 120ms;
+  --ease-ui: cubic-bezier(.2, 0, 0, 1);
+  --danger-fill: #b62f27;
+  --danger-on: #ffffff;
+  --ok: #0f7352;
+  max-width: 520px;
+  margin: auto;
+  min-height: 100dvh;
+  color: var(--text);
+  background: var(--bg);
+  border-inline: 1px solid var(--border);
+  font-size: 16px;
+  line-height: 1.55;
+}
+[data-theme="dark"] .android-preview { --danger-fill: #af352b; --ok: #3dd68c; }
+.preview-info { padding: 0 16px; border-bottom: 1px solid var(--border); color: var(--text-soft); font-size: 14px; }
+.preview-info summary { display: flex; justify-content: space-between; align-items: center; min-height: 48px; cursor: pointer; }
+.preview-info p { margin: 0 0 14px; }
+.preview-info summary span { color: var(--text); font-weight: 650; }
+.preview-notice { padding: 12px 16px; border-radius: var(--radius-sm); background: var(--soon-soft); color: var(--soon); font-size: 14px; line-height: 1.6; }
+.app-content { padding: 20px 16px calc(var(--mobile-nav-height, 84px) + 24px + env(safe-area-inset-bottom)); min-width: 0; overflow-wrap: anywhere; }
+.sync-shortcut { margin: 12px 16px 0; }
+.settings-fields { border: 0; margin: 0; padding: 0; min-inline-size: 0; }
+.settings-busy { color: var(--text-soft); }
+body:has(.android-preview) :is(input, select, textarea, button, summary, a, [tabindex]) { scroll-margin-block: 24px calc(112px + env(safe-area-inset-bottom)); }
+.app-content:focus { outline: none; }
+.app-content h1 { font-size: 26px; }
+.app-content h2 { font-size: 19px; }
+.app-content h1:focus, .app-content h2:focus { outline: none; }
+.app-bottom { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: min(100%,520px); display: flex; background: var(--surface); border-top: 1px solid var(--border); z-index: 60; padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
+.app-bottom a { flex: 1; min-width: 0; min-height: 56px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; padding: 4px 2px; font-size: 14px; line-height: 1.25; text-decoration: none; color: var(--text-soft); text-align: center; overflow-wrap: anywhere; }
+.app-bottom svg { width: 23px; height: 23px; }
+.app-bottom .router-link-active { color: var(--ok); background: var(--ok-soft); border-radius: 10px; font-weight: 650; }
+:root body .android-preview button, :root body .android-preview .btn, :root body .android-preview select, :root body .android-preview input:not([type=checkbox]):not([type=radio]):not([type=color]) { min-height: var(--touch); touch-action: manipulation; }
+:root body .android-preview button, :root body .android-preview .btn { min-width: var(--touch); }
+:root body .android-preview .btn { white-space: normal; text-align: center; padding-block: 8px; }
+:root body .android-preview .btn.icon, :root body .android-preview .btn.sm.icon, :root body .android-preview .cal-nav .btn.icon { width: var(--touch); min-width: var(--touch); flex-shrink: 0; }
+:root body .android-preview .btn.danger { background: var(--danger-fill); color: var(--danger-on); }
+:root body .android-preview .btn.danger.ghost { background: var(--surface); color: var(--late); }
+:root body .android-preview .btn:disabled { opacity: .65; }
+:root body .android-preview .btn, :root body .android-preview .sub-card, :root body .android-preview .svc, :root body .android-preview .lib-ico { transform: none !important; }
+:root body .android-preview .btn:hover, :root body .android-preview .sub-card:hover { box-shadow: none; }
+:root body .android-preview .btn:active, :root body .android-preview .svc:active { background: var(--primary-soft); color: var(--text); }
+:root body .android-preview .btn.danger:active { background: var(--danger-fill); color: var(--danger-on); }
+:root body .android-preview .btn.danger:not(:disabled):active { opacity: .85; }
+:root body .android-preview :is(.setting-link, .app-bottom a, .lib-ico, summary):active { background-color: var(--primary-soft); }
+:root body .android-preview :is(.btn, .setting-link, .app-bottom a, .lib-ico, summary) { transition: background-color var(--motion-press) ease-out, color var(--motion-press) ease-out, opacity var(--motion-press) ease-out; }
+:root body .android-preview :is(button, a, summary, input, select, textarea):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+:root body .android-preview input, :root body .android-preview select, :root body .android-preview textarea { font-size: 16px; }
+:root body .android-preview input::placeholder, :root body .android-preview textarea::placeholder { color: var(--text-soft); opacity: 1; }
+:root body .android-preview .muted, :root body .android-preview small, :root body .android-preview label, :root body .android-preview .tag { font-size: 14px; }
+:root body .android-preview .card { padding: 16px; }
+:root body .android-preview .page-head { gap: 14px; align-items: flex-start; }
+:root body .android-preview .toolbar, :root body .android-preview .tb-right { flex-wrap: wrap; }
+:root body .android-preview .toolbar .search { flex: 1 1 100%; }
+:root body .android-preview .tb-right { display: flex; gap: 8px; }
+:root body .android-preview .bulk-bar { left: 8px; right: 8px; bottom: calc(84px + env(safe-area-inset-bottom)); flex-wrap: wrap; max-width: 500px; max-height: 38dvh; overflow: auto; margin: auto; }
+:root body .android-preview .seg { overflow: auto; max-width: 100%; }
+:root body .android-preview .seg button { white-space: normal; font-size: 14px; }
+:root body .android-preview .two, :root body .android-preview .grid.two, :root body .android-preview .three, :root body .android-preview .three-e, :root body .android-preview .pair, :root body .android-preview .trio, :root body .android-preview .split, :root body .android-preview .cat-cols, :root body .android-preview .recent, :root body .android-preview .subs .sub-grid { grid-template-columns: minmax(0,1fr); }
+:root body .android-preview .figures, :root body .android-preview .stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
+:root body .android-preview .stats .stat { padding: 16px 12px; }
+:root body .android-preview .stats .stat-v, :root body .android-preview .figures .fig-v { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+:root body .android-preview .stats .stat-v small { display: block; font-size: 14px; }
+:root body .android-preview .figures .fig { min-width: 0; padding-inline: 12px; }
+:root body .android-preview .sc-name, :root body .android-preview .sc-plan, :root body .android-preview .lr-name, :root body .android-preview .lr-sub, :root body .android-preview .lr-remark, :root body .android-preview .lg-n, :root body .android-preview .bar-label, :root body .android-preview .ag-name, :root body .android-preview .ag-remark, :root body .android-preview .cc-n, :root body .android-preview .svc span { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+:root body .android-preview .sc-plan, :root body .android-preview .sc-count-t, :root body .android-preview .sc-facts, :root body .android-preview .mono, :root body .android-preview .opt-d, :root body .android-preview .stat-l, :root body .android-preview .fig-l, :root body .android-preview .dh-l, :root body .android-preview .lr-sub, :root body .android-preview .lr-remark, :root body .android-preview .lr-date, :root body .android-preview .ag-remark, :root body .android-preview .ag-date span, :root body .android-preview .days, :root body .android-preview .time, :root body .android-preview .f label, :root body .android-preview .tile, :root body .android-preview .total { font-size: 14px; }
+:root body .android-preview .lr-row, :root body .android-preview .ag-row { flex-wrap: wrap; }
+:root body .android-preview .lr-main, :root body .android-preview .ag-main { min-width: 100px; }
+:root body .android-preview .lr-side, :root body .android-preview .ag-side { max-width: 100%; margin-left: auto; }
+:root body .android-preview .lr-amt, :root body .android-preview .ag-amt { white-space: normal; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+:root body .android-preview .bar-top { flex-wrap: wrap; }
+:root body .android-preview .bar-fill, :root body .android-preview .lr-bar i { transition: none; }
+:root body .android-preview .life i, :root body .android-preview .life, :root body .android-preview .sub-card { animation: none; }
+:root body .android-preview .cal-page .cal-card { padding: 0; }
+:root body .android-preview .cal .cell { min-height: 52px; min-width: 0; padding: 4px 2px; display: flex; align-items: center; flex-direction: column; border-radius: 0; font: inherit; color: var(--text); background: var(--surface); }
+:root body .android-preview .cal .cell.sel { background: var(--primary-soft); }
+:root body .android-preview .cal .cell.out .num { color: var(--text-soft); }
+:root body .android-preview .cal .dnum, :root body .android-preview .cal .dow { text-align: center; }
+:root body .android-preview .cal .dow { padding-inline: 2px; color: var(--text-soft); font-size: 14px; }
+:root body .android-preview .cal .evs { display: none; }
+:root body .android-preview .cal .dots { display: flex; justify-content: center; gap: 3px; margin-top: 4px; }
+:root body .android-preview .cal-page .agenda { display: block; margin-top: 16px; }
+:root body .android-preview .cal-nav { width: 100%; }
+:root body .android-preview .cal-nav .btn:not(.icon) { flex: 1; }
+:root body .android-preview .cal .cell:focus-visible { outline: 2px solid var(--primary); outline-offset: -3px; }
+:root body .android-preview .notify .tiles { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+:root body .android-preview .notify .tile { min-height: 56px; padding: 10px; }
+:root body .android-preview .notify .tile-n { white-space: normal; overflow: visible; text-overflow: clip; }
+:root body .android-preview .notify .panel { padding: 14px; }
+:root body .android-preview .notify .switch { min-height: var(--touch); min-width: var(--touch); justify-content: center; }
+:root body .android-preview .notify .x { min-width: var(--touch); width: var(--touch); height: var(--touch); }
+:root body .android-preview .notify .ch-actions { flex-wrap: wrap; }
+:root body .android-preview .secret-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+:root body .android-preview .unsaved-note { color: var(--soon); font-size: 14px; }
+.mobile-settings label { display: block; margin: 16px 0; color: var(--text-soft); font-size: 14px; }
+.mobile-settings .check-label { display: flex; gap: 12px; align-items: center; min-height: var(--touch); }
+.mobile-settings .check-label input { width: 24px; height: 24px; }
+.mobile-settings .btn { margin: 6px 8px 6px 0; }
+.mobile-settings .setting-link { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 56px; padding: 12px 0; text-decoration: none; border-bottom: 1px solid var(--border); font-size: 16px; }
+.mobile-settings .setting-link:last-child { border: 0; }
+.mobile-settings .card+.card { margin-top: 16px; }
+.mobile-settings .setting-group { margin-top: 24px; }
+.mobile-settings .setting-group h2 { margin: 0 0 8px; font-size: 16px; color: var(--text-soft); }
+.entity-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.entity-name { flex: 1; min-width: 100px; }
+.entity-row small { display: block; color: var(--text-soft); }
+.preview-result { position: sticky; bottom: calc(84px + env(safe-area-inset-bottom)); background: var(--surface); border: 1px solid var(--ok); padding: 14px; border-radius: 12px; color: var(--text); box-shadow: var(--shadow-lg); z-index: 65; }
+.preview-result.error { border-color: var(--late); background: var(--late-soft); color: var(--late); }
+.preview-result.info { border-color: var(--border-strong); }
+body:has(.android-preview) .modal-mask { z-index: 100; align-items: center; padding: 16px; animation: none; }
+body:has(.android-preview) .modal::before { display: none; }
+body:has(.android-preview) .modal { width: min(100%,488px) !important; max-width: 100%; max-height: calc(var(--preview-viewport-height,100dvh) - 32px); height: auto; border-radius: 18px; padding: 16px; overflow: auto; overscroll-behavior: contain; animation: none; }
+body:has(.android-preview) .modal.android-page { width: min(100%,520px) !important; height: var(--preview-viewport-height,100dvh); max-height: var(--preview-viewport-height,100dvh); border-radius: 0; }
+body:has(.android-preview):has(.android-page) .modal-mask:has(.android-page) { padding: 0; }
+:root body .android-preview .mobile-modal-header { position: sticky; top: -16px; display: flex; align-items: center; gap: 8px; margin: -16px -16px 16px; padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--surface); z-index: 3; }
+:root body .android-preview .mobile-modal-header h3 { flex: 1; min-width: 0; margin: 0; font-size: 16px; line-height: 1.4; overflow-wrap: anywhere; }
+:root body .android-preview .mobile-modal-header .btn { flex-shrink: 0; }
+:root body .android-preview .modal .row { flex-wrap: wrap; }
+:root body .android-preview .modal .row>div { min-width: 0; }
+:root body .android-preview .modal.android-page .row>div[style*="flex"] { flex: 1 1 100% !important; }
+:root body .android-preview .modal .lib-grid { grid-template-columns: repeat(auto-fill,minmax(48px,1fr)); gap: 8px; max-height: 224px; padding: 2px; }
+:root body .android-preview .modal .lib-ico { width: 100%; min-width: 48px; height: 48px; min-height: 48px; }
+:root body .android-preview .modal .chip-x { width: 48px; min-width: 48px; height: 48px; min-height: 48px; justify-content: center; align-items: center; padding: 14px; }
+:root body .android-preview .modal .rb, :root body .android-preview .modal .icon-lib summary { min-height: 48px; }
+:root body .android-preview .modal .svc { min-height: 60px; font-size: 14px; }
+:root body .android-preview .modal .svc-grid { grid-template-columns: repeat(auto-fill,minmax(140px,1fr)); }
+:root body .android-preview .modal .ico { object-fit: contain; }
+:root body .android-preview .ranked-categories { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; width: 100%; }
+:root body .android-preview .category-line { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 12px; font-size: 14px; }
+:root body .android-preview .category-line span:first-child { min-width: 0; overflow-wrap: anywhere; }
+:root body .android-preview .category-value { flex-shrink: 0; max-width: 100%; overflow-wrap: anywhere; text-align: right; font-variant-numeric: tabular-nums; }
+:root body .android-preview .category-track { height: 6px; margin-top: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; }
+:root body .android-preview .category-track i { display: block; height: 100%; background: var(--primary); }
+:root body .android-preview .ag-list .ag-row { text-decoration: none; color: var(--text); min-height: 64px; }
+:root body .android-preview .detail-summary { display: flex; align-items: flex-start; gap: 16px; }
+:root body .android-preview .detail-summary>div { min-width: 0; }
+:root body .android-preview .detail-summary h2 { margin: 0; overflow-wrap: anywhere; }
+:root body .android-preview .detail-amount { display: block; font-size: 26px; overflow-wrap: anywhere; }
+:root body .android-preview .detail-fields { margin: 0; }
+:root body .android-preview .detail-fields>div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+:root body .android-preview .detail-fields dt { color: var(--text-soft); }
+:root body .android-preview .detail-fields dd { margin: 0; overflow-wrap: anywhere; max-width: 100%; }
+:root body .android-preview .detail-notes { white-space: pre-wrap; }
+:root body .android-preview .detail-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+:root body .android-preview .bulk-bar, :root body .android-preview .preview-result { bottom: calc(var(--mobile-nav-height, 84px) + 12px); }
+@media (max-width:359px) {
+  :root body .android-preview .figures, :root body .android-preview .stats { grid-template-columns: minmax(0,1fr); }
+  :root body .android-preview .notify .tiles { grid-template-columns: minmax(0,1fr); }
+}
+@media (prefers-reduced-motion:reduce) {
+  body:has(.android-preview) *, body:has(.android-preview) *::before, body:has(.android-preview) *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+@media (prefers-reduced-motion:no-preference) {
+  .android-preview .app-page-enter-active { transition: opacity var(--motion-enter) var(--ease-ui); }
+  .android-preview .app-page-leave-active { transition: opacity var(--motion-exit) ease-in; }
+  .android-preview :is(.app-page-enter-from, .app-page-leave-to) { opacity: 0; }
+  body:has(.android-preview) .modal-mask { animation: mobile-scrim 120ms ease-out; }
+  body:has(.android-preview) .modal { animation: mobile-dialog 180ms cubic-bezier(.2, 0, 0, 1); }
+}
+@keyframes mobile-scrim { from { opacity: 0; } to { opacity: 1; } }
+@keyframes mobile-dialog { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
