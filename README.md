@@ -18,7 +18,7 @@ docker run -d -p 8842:8000 -v easysub_data:/app/data suyijun8182/easysub:latest
 
 </div>
 
-**v1.14.0：Android App 同步后端与 Alpha 客户端。** 升级前备份数据并保留原 `JWT_SECRET`、MySQL 和 `/app/data`。固定版本镜像及回滚步骤见 [更新方案](docs/update-v1.14.0.md)。Android 原生通知和后台任务仍在开发，Alpha 不代表完整 App 已完成。
+**v1.14.1：修复 Android 首次连接同步。** 固定版本镜像、APK 和回滚步骤见 [更新方案](docs/update-v1.14.1.md)。Android 仍为 Alpha，原生通知和后台任务仍在开发。
 
 > 🌐 **在线体验**：<https://easysub.vviip.dpdns.org:8443/>
 > 测试账号 `guest` / `guest123`；也可自行注册，注册后即可直接登录使用。

@@ -15,6 +15,17 @@
 
 ---
 
+## [1.14.1]
+
+### Fixed
+- Android 首次连接网页账号时，将表单代理包装的令牌转换为普通对象，避免 `structuredClone` 失败；连接后无需重启即可开始合并和同步。
+
+### Upgrade
+- 无数据库结构变更。若已运行 v1.14.0，可直接将现有 app 容器更新到 `suyijun8182/easysub:v1.14.1`，保留原配置、MySQL、数据卷和 `JWT_SECRET`。
+- Android Alpha 更新包为 `EasySub-0.1.1-alpha-debug.apk`，可覆盖安装同签名的 0.1.0 Alpha。
+
+---
+
 ## [1.14.0]
 
 ### Added

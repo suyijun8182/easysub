@@ -42,6 +42,16 @@ test('real local entry starts empty, merges full local entities, survives reload
   assert.equal(Object.values(f.records).find(r => r.kind === 'subscriptions').data.name, 'Offline edited')
   assert.equal(Object.keys(reloaded.status.pending).length, 0)
 })
+test('first connection copies reactive credentials into serializable local state', async () => {
+  const f = fixture(), store = createPreviewStore(), local = await createLocal(store, f.storage, () => {}, f.transport)
+  const tokens = new Proxy({ access_token: 'access', refresh_token: 'refresh' }, {})
+  const candidate = new Proxy({ ...f.candidate, tokens }, {})
+  await local.connect(candidate)
+  assert.equal(local.status.link.username, 'alice')
+  assert.equal(local.status.enabled, true)
+  assert.equal(Object.keys(local.status.pending).length, 0)
+  assert.equal(f.saved.tokens.access_token, 'access')
+})
 test('initial currency code collision leaves local data and mapping untouched', async () => {
   const f = fixture([{ kind: 'currencies', data: { code: 'ABC', name: 'server', is_custom: true, rate_to_base: 2 } }])
   const store = createPreviewStore(), local = await createLocal(store, f.storage, () => {}, f.transport)

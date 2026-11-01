@@ -166,7 +166,9 @@ export async function createLocal(store, storage, changed, transportFactory = cr
       if (doc.link && doc.sync.epoch !== candidate.caps.epoch) throw new Error('服务器资料库已恢复，需导出本地备份后重新建立资料库，避免旧记录回写')
       const previous = clone(doc)
       doc.link = { server: candidate.server, username: candidate.username, account_id: candidate.account_id }
-      doc.tokens = candidate.tokens
+      // Vue wraps values assigned to template refs in proxies; keep persisted
+      // credentials as plain serializable data so later structuredClone works.
+      doc.tokens = { ...candidate.tokens }
       if (!doc.sync.epoch) {
         // Read the account first; never treat absence in the initial snapshot as deletion.
         doc.sync.epoch = candidate.caps.epoch
