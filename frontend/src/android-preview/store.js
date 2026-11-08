@@ -61,7 +61,9 @@ function normalize(s, today) {
   return out
 }
 
-export function createPreviewStore(today = isoToday()) {
+export function createPreviewStore(fixedDay = null) {
+  const currentDay = () => fixedDay ?? isoToday()
+  const today = currentDay()
   let next = 1000
   let state = {
     user: { id: 1, username: '本地用户', email: '', is_admin: false, locale: 'zh', theme: 'light', base_currency: 'CNY', monthly_budget: 600, category_order: [], notify_settings: { quiet_start: '22:00', quiet_end: '08:00', digest_enabled: false, digest_weekday: 0 }, totp_enabled: false },
@@ -94,6 +96,7 @@ export function createPreviewStore(today = isoToday()) {
   }
   const backup = () => copy({ app: 'EasySub', export_version: 2, exported_at: new Date().toISOString(), user: { ...state.user, notify_config: state.config }, ...Object.fromEntries(['subscriptions', 'categories', 'payment_methods', 'currencies', 'bundles', 'rates', 'rates_updated_at', 'logs', 'notifications'].map(k => [k, state[k]])) })
   function restore(data, replace = false) {
+    const today = currentDay()
     if (!data || !Array.isArray(data.subscriptions)) throw new Error('备份缺少 subscriptions，整站文件请先选择用户')
     const candidate = copy(state)
     if (replace) { candidate.subscriptions = []; candidate.notifications = [] }
@@ -109,7 +112,9 @@ export function createPreviewStore(today = isoToday()) {
         maps[key].set(entity.id, target.id)
       }
     }
-    for (const c of data.currencies || []) if (!candidate.currencies.some(e => e.code === c.code)) candidate.currencies.push(copy(c))
+    for (const c of data.currencies || []) if (!candidate.currencies.some(e => e.code === c.code)) {
+      candidate.currencies.push({ ...copy(c), is_custom: c.is_custom ?? !seed.CURRENCIES.some(([code]) => code === c.code) })
+    }
     let skipped = 0
     const subscriptionIds = new Map()
     for (const source of data.subscriptions) {
@@ -135,6 +140,7 @@ export function createPreviewStore(today = isoToday()) {
     return { ok: true, imported: data.subscriptions.length - skipped, skipped }
   }
   async function request(method, path, body = {}, params = {}) {
+    const today = currentDay()
     method = method.toLowerCase(); path = path.split('?')[0]
     if (path === '/api/auth/me') return copy(state.user)
     if (path === '/api/me' && method === 'patch') { Object.assign(state.user, body); log('preferences.update', '更新偏好'); return copy(state.user) }
