@@ -1,5 +1,7 @@
 # EasySub · 省心订阅
 
+v2.0.0 增加账号会话撤销、整站加密灾备和通知出站限制；升级前请阅读 [升级说明](https://github.com/suyijun8182/easysub/blob/v2.0.0/docs/update-v2.0.0.md)。自动备份需配置 `BACKUP_PASSWORD`，内网通知需配置 `OUTBOUND_PRIVATE_ALLOWLIST`。
+
 Self-hosted subscription / renewal manager with **14 notification channels** so you never let a subscription — or a SIM keep-alive plan — expire.
 
 自托管的订阅 / 续费 / 保号管理系统，**14 种通知渠道**（Telegram / 飞书 / QQ / Bark / Email / Pushplus / Server酱 / 企业微信 / 钉钉 / Discord / Slack / ntfy / Gotify / Webhook）提醒续费，防止忘记导致过期。

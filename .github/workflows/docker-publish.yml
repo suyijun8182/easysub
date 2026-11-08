@@ -35,7 +35,7 @@ jobs:
           EASYSUB_TEST_MYSQL_URL: mysql+pymysql://root:ci-test-password@127.0.0.1:3306/easysub_ci_test
         run: |
           pip install -r requirements.txt
-          python -m unittest discover -s tests -p 'test_sync*.py'
+          python -m unittest discover -s tests -p 'test_*.py'
       - name: Test and build website and Android assets
         working-directory: frontend
         run: |
@@ -136,3 +136,10 @@ jobs:
           repository: suyijun8182/easysub
           readme-filepath: ./DOCKERHUB.md
           short-description: "Self-hosted subscription & renewal manager, 14 notify channels. 自托管订阅续费保号管理."
+
+  release:
+    needs: build-and-push
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release.yml

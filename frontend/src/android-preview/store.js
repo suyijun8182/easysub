@@ -239,6 +239,7 @@ export function createPreviewStore(fixedDay = null) {
   log('preview.start', '打开完整功能预览；刷新重置，不连接正式 API')
   function loadState(value) {
     state = copy(value)
+    for (const currency of state.currencies) currency.is_custom ??= !seed.CURRENCIES.some(([code]) => code === currency.code)
     next = Math.max(1000, ...['subscriptions', 'categories', 'payment_methods', 'bundles', 'logs', 'notifications'].flatMap(k => (state[k] || []).map(r => Number(r.id) + 1)))
   }
   return { get state() { return state }, request, backup, restore, loadState }

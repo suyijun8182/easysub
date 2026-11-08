@@ -55,6 +55,16 @@ test('website backup custom currency and manual rate survive first sync and rest
   assert.equal(reloaded.state.rates.ABC, 3)
 })
 
+test('upgrading an unsynced legacy local database repairs missing custom-currency flags', async () => {
+  const f = fixture(), original = createPreviewStore(), local = await createLocal(original, f.storage, () => {}, f.transport)
+  await local.restore({ subscriptions: [], currencies: [{ code: 'ABC', name: 'Legacy', symbol: 'A' }], rates: { CNY: 1, ABC: 3 } })
+  delete f.saved.local.currencies.find(c => c.code === 'ABC').is_custom
+  const store = createPreviewStore(), upgraded = await createLocal(store, f.storage, () => {}, f.transport)
+  await upgraded.connect(f.candidate)
+  assert.equal(store.state.currencies.find(c => c.code === 'ABC')?.name, 'Legacy')
+  assert.equal(store.state.rates.ABC, 3)
+})
+
 test('first connection copies reactive credentials into serializable local state', async () => {
   const f = fixture(), store = createPreviewStore(), local = await createLocal(store, f.storage, () => {}, f.transport)
   const tokens = new Proxy({ access_token: 'access', refresh_token: 'refresh' }, {})

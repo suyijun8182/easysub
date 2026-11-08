@@ -15,7 +15,7 @@ from app.models import Subscription, User
 
 router = APIRouter(prefix="/api/system", tags=["system"])
 
-APP_VERSION = "1.14.1"
+APP_VERSION = "2.0.0"
 GITHUB_REPO = "suyijun8182/easysub"
 
 # 版本检查结果缓存（避免频繁请求 GitHub，未认证限流 60 次/小时）

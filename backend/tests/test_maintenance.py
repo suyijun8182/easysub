@@ -20,9 +20,12 @@ class AccountSafetyTests(unittest.TestCase):
     def setUpClass(cls):
         cls.password_hash = hash_password('test-password')
 
+    def make_engine(self):
+        return create_engine('sqlite://', connect_args={'check_same_thread': False}, poolclass=StaticPool)
+
     def setUp(self):
         auth._FAILS.clear()
-        self.engine = create_engine('sqlite://', connect_args={'check_same_thread': False}, poolclass=StaticPool)
+        self.engine = self.make_engine()
         Base.metadata.create_all(self.engine)
         with Session(self.engine) as db:
             db.add(User(id=1, username='alice', email='alice@example.com', password_hash=self.password_hash, is_admin=True))
@@ -142,20 +145,19 @@ class AccountSafetyTests(unittest.TestCase):
 
     def test_notification_failure_does_not_expose_secret_urls(self):
         import httpx
-        from app.models import ActivityLog
         from app.services import notify
-        from sqlalchemy import select
         request = httpx.Request('POST', 'https://provider.example/FAKE_SECRET')
         error = httpx.HTTPStatusError('FAKE_SECRET', request=request, response=httpx.Response(400, request=request))
-        with patch.object(notify, 'send_one', side_effect=error):
+        with patch.object(notify, 'send_one', side_effect=error), patch('app.activity.log') as logged:
             response = self.client.post('/api/notifications/test', headers=self.headers, json={'channel': 'telegram'})
         self.assertEqual(response.status_code, 502)
         self.assertNotIn('FAKE_SECRET', response.text)
-        with Session(self.engine) as db:
-            self.assertFalse(any('FAKE_SECRET' in (row.detail or '') for row in db.scalars(select(ActivityLog))))
+        logged.assert_called_once()
+        self.assertNotIn('FAKE_SECRET', logged.call_args.args[1])
 
 
 class DisasterRecoveryTests(unittest.TestCase):
+    make_engine = AccountSafetyTests.make_engine
     setUpClass = classmethod(AccountSafetyTests.setUpClass.__func__)
     setUp = AccountSafetyTests.setUp
     tearDown = AccountSafetyTests.tearDown

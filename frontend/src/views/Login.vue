@@ -98,6 +98,7 @@
           <label for="au-vcode">{{ t('auth.code') }}</label>
           <input id="au-vcode" v-model="code" class="code" :placeholder="t('auth.codePh')" maxlength="6"
             inputmode="numeric" autocomplete="one-time-code" />
+          <p v-if="info" class="note soon" role="status">{{ info }}</p>
           <p v-if="error" class="note late" role="alert">{{ error }}</p>
           <button type="submit" class="btn block" :disabled="busy">
             {{ t('auth.verifyBtn') }}
