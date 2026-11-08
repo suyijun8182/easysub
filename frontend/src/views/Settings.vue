@@ -100,6 +100,8 @@
       <section class="card sect">
         <h3 class="sh"><span class="hi" v-html="icon('check')"></span>{{ t('sec.title') }}</h3>
         <!-- 2FA -->
+        <input v-model="twofa.password" type="password" autocomplete="current-password" :placeholder="t('sec.enterPwd')" />
+        <input v-if="auth.user?.totp_enabled" v-model="twofa.code" :placeholder="t('auth.otpPh')" maxlength="6" inputmode="numeric" />
         <div class="sec-row">
           <div class="sec-l">
             <b>{{ t('sec.twofa') }}</b>
@@ -348,7 +350,7 @@ const prefs = reactive({
   digest_enabled: !!ns.digest_enabled,
   digest_weekday: ns.digest_weekday ?? 0
 })
-const twofa = reactive({ qr: '', secret: '', code: '' })
+const twofa = reactive({ qr: '', secret: '', code: '', password: '' })
 const secMsg = ref('')
 const secOk = ref(false)
 const tokens = ref([])
@@ -357,20 +359,20 @@ const createdToken = ref('')
 
 async function twofaSetup() {
   secMsg.value = ''
-  try { const { data } = await api.post('/api/me/2fa/setup'); twofa.qr = data.qr; twofa.secret = data.secret }
+  try { const { data } = await api.post('/api/me/2fa/setup', { password: twofa.password, code: twofa.code }); twofa.qr = data.qr; twofa.secret = data.secret }
   catch (e) { secOk.value = false; secMsg.value = e.response?.data?.detail || 'Error' }
 }
 async function twofaEnable() {
   try {
-    await api.post('/api/me/2fa/enable', { code: twofa.code })
+    const { data } = await api.post('/api/me/2fa/enable', { code: twofa.code, password: twofa.password })
+    auth.acceptSession(data); twofa.password = ''
     twofa.qr = ''; twofa.secret = ''; twofa.code = ''
     await auth.fetchMe(); secOk.value = true; secMsg.value = t('sec.enabledOk')
   } catch (e) { secOk.value = false; secMsg.value = e.response?.data?.detail || 'Error' }
 }
 async function twofaDisable() {
-  const pw = window.prompt(t('sec.enterPwd'))
-  if (!pw) return
-  try { await api.post('/api/me/2fa/disable', { password: pw }); await auth.fetchMe(); secOk.value = true; secMsg.value = t('sec.disabledOk') }
+  if (!twofa.password) return
+  try { const { data } = await api.post('/api/me/2fa/disable', { password: twofa.password, code: twofa.code }); auth.acceptSession(data); twofa.password = ''; twofa.code = ''; await auth.fetchMe(); secOk.value = true; secMsg.value = t('sec.disabledOk') }
   catch (e) { secOk.value = false; secMsg.value = e.response?.data?.detail || 'Error' }
 }
 async function loadTokens() { try { tokens.value = (await api.get('/api/me/tokens')).data } catch { /* ignore */ } }
@@ -521,7 +523,8 @@ async function saveAccount() {
 async function changePwd() {
   accMsg.value = ''
   try {
-    await api.post('/api/me/password', pwd)
+    const { data } = await api.post('/api/me/password', pwd)
+    auth.acceptSession(data)
     pwd.old_password = ''; pwd.new_password = ''
     accOk.value = true; accMsg.value = t('account.pwdOk')
   } catch (e) { accOk.value = false; accMsg.value = e.response?.data?.detail || 'Error' }

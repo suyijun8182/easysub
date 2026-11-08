@@ -6,6 +6,10 @@ export const useAuth = defineStore('auth', {
   state: () => ({ user: null }),
   getters: { isLoggedIn: () => !!localStorage.getItem('access_token') },
   actions: {
+    acceptSession(data) {
+      localStorage.setItem('access_token', data.access_token)
+      localStorage.setItem('refresh_token', data.refresh_token)
+    },
     async login(username, password, otp) {
       const form = new URLSearchParams()
       form.append('username', username)

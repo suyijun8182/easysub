@@ -16,7 +16,7 @@ from app.database import get_db
 from app.deps import get_current_user
 from app.models import ApiToken, User
 from app.schemas import UserOut, UserUpdate
-from app.security import hash_password, verify_password
+from app.security import hash_password, verify_password, session_tokens
 
 router = APIRouter(prefix="/api/me", tags=["me"])
 
@@ -75,26 +75,36 @@ def change_password(
     if len(payload.new_password) < 6:
         raise HTTPException(400, "新密码至少 6 位")
     user.password_hash = hash_password(payload.new_password)
+    user.auth_version += 1
     db.commit()
     activity.log("account.password", "修改了登录密码", user=user, level="warn")
-    return {"ok": True}
+    return session_tokens(user)
 
 
 # ---------- 两步验证（TOTP）----------
 class OtpIn(BaseModel):
+    password: str
     code: str
 
 
 class PwdIn(BaseModel):
     password: str
+    code: str = ""
+
+
+def _step_up(user, payload, require_otp=True):
+    if not verify_password(payload.password, user.password_hash):
+        raise HTTPException(400, "密码不正确")
+    if require_otp and user.totp_enabled and (not user.totp_secret or not pyotp.TOTP(user.totp_secret).verify(payload.code.strip(), valid_window=1)):
+        raise HTTPException(400, "两步验证码不正确")
 
 
 @router.post("/2fa/setup")
-def twofa_setup(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def twofa_setup(payload: PwdIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """生成新的 TOTP 密钥（尚未启用），返回 otpauth 链接与二维码 PNG（data-uri）。"""
+    _step_up(user, payload)
     secret = pyotp.random_base32()
-    user.totp_secret = secret
-    user.totp_enabled = False
+    user.totp_pending_secret = secret
     db.commit()
     issuer = "EasySub"
     uri = pyotp.TOTP(secret).provisioning_uri(name=user.username, issuer_name=issuer)
@@ -107,25 +117,30 @@ def twofa_setup(user: User = Depends(get_current_user), db: Session = Depends(ge
 
 @router.post("/2fa/enable")
 def twofa_enable(payload: OtpIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if not user.totp_secret:
+    _step_up(user, payload, require_otp=False)
+    if not user.totp_pending_secret:
         raise HTTPException(400, "请先生成密钥")
-    if not pyotp.TOTP(user.totp_secret).verify(payload.code.strip(), valid_window=1):
+    if not pyotp.TOTP(user.totp_pending_secret).verify(payload.code.strip(), valid_window=1):
         raise HTTPException(400, "验证码不正确")
+    user.totp_secret = user.totp_pending_secret
+    user.totp_pending_secret = None
     user.totp_enabled = True
+    user.auth_version += 1
     db.commit()
     activity.log("account.2fa_enable", "开启了两步验证", user=user, level="warn")
-    return {"ok": True}
+    return session_tokens(user)
 
 
 @router.post("/2fa/disable")
 def twofa_disable(payload: PwdIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if not verify_password(payload.password, user.password_hash):
-        raise HTTPException(400, "密码不正确")
+    _step_up(user, payload)
+    user.totp_pending_secret = None
+    user.auth_version += 1
     user.totp_enabled = False
     user.totp_secret = None
     db.commit()
     activity.log("account.2fa_disable", "关闭了两步验证", user=user, level="warn")
-    return {"ok": True}
+    return session_tokens(user)
 
 
 # ---------- API Token ----------

@@ -35,6 +35,14 @@ class User(Base):
     email_code: Mapped[str | None] = mapped_column(String(16), nullable=True)
     email_code_expires: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
+    auth_version: Mapped[int] = mapped_column(Integer, default=0)
+    totp_pending_secret: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    reset_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    reset_code_expires: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    reset_code_sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    reset_code_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    email_code_attempts: Mapped[int] = mapped_column(Integer, default=0)
+
     # 偏好
     locale: Mapped[str] = mapped_column(String(8), default="zh")        # zh | en | ru
     theme: Mapped[str] = mapped_column(String(32), default="light")

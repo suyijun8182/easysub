@@ -9,6 +9,13 @@ from sqlalchemy.engine import Engine
 
 # (表名, 列名, 列定义) —— 仅追加，不删除/改名，确保安全幂等
 _COLUMNS = [
+    ("users", "auth_version", "INTEGER NOT NULL DEFAULT 0"),
+    ("users", "totp_pending_secret", "VARCHAR(64) NULL"),
+    ("users", "reset_code", "VARCHAR(64) NULL"),
+    ("users", "reset_code_expires", "DATETIME NULL"),
+    ("users", "reset_code_sent_at", "DATETIME NULL"),
+    ("users", "reset_code_attempts", "INTEGER NOT NULL DEFAULT 0"),
+    ("users", "email_code_attempts", "INTEGER NOT NULL DEFAULT 0"),
     ("subscriptions", "sort", "INT NOT NULL DEFAULT 0"),
     ("subscriptions", "last_renewed_at", "DATE NULL"),
     ("subscriptions", "remark", "VARCHAR(255) NULL"),

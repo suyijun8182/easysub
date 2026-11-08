@@ -1,9 +1,10 @@
+import hashlib
 import secrets
 import time
 from datetime import datetime, timedelta, timezone
 
 import pyotp
-from fastapi import APIRouter, Depends, Form, HTTPException
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import select
@@ -21,6 +22,7 @@ from app.security import (
     decode_token,
     hash_password,
     verify_password,
+    token_version,
 )
 from app.services import email as email_svc
 
@@ -99,15 +101,19 @@ def register(payload: RegisterIn, db: Session = Depends(get_db)):
 
 @router.post("/verify-email")
 def verify_email(payload: VerifyEmailIn, db: Session = Depends(get_db)):
-    user = db.scalar(select(User).where(User.email == payload.email))
+    user = db.scalar(select(User).where(User.email == payload.email).with_for_update())
     if not user or not user.email_code:
         raise HTTPException(400, "无效的验证请求")
+    if user.email_code_attempts >= 5:
+        raise HTTPException(429, "验证码尝试过多")
     expires = user.email_code_expires
     if expires and expires.tzinfo is None:
         expires = expires.replace(tzinfo=timezone.utc)
     if expires and datetime.now(timezone.utc) > expires:
         raise HTTPException(400, "验证码已过期，请重新注册")
     if payload.code.strip() != user.email_code:
+        user.email_code_attempts += 1
+        db.commit()
         raise HTTPException(400, "验证码不正确")
 
     user.email_verified = True
@@ -154,8 +160,8 @@ def login(
     _clear_fail(form.username)
     activity.log("auth.login", f"用户 {user.username} 登录", user=user)
     return TokenOut(
-        access_token=create_access_token(user.id),
-        refresh_token=create_refresh_token(user.id),
+        access_token=create_access_token(user.id, user.auth_version),
+        refresh_token=create_refresh_token(user.id, user.auth_version),
     )
 
 
@@ -170,37 +176,54 @@ class ResetIn(BaseModel):
 
 
 @router.post("/forgot")
-def forgot_password(payload: ForgotIn, db: Session = Depends(get_db)):
+def forgot_password(payload: ForgotIn, request: Request, db: Session = Depends(get_db)):
     """发起找回密码：向邮箱发送重置码。为防用户枚举，无论是否存在都返回成功。"""
-    user = db.scalar(select(User).where(User.email == payload.email))
+    source = "reset-source:" + (request.client.host if request.client else "unknown")
+    _check_lock(source)
+    user = db.scalar(select(User).where(User.email == payload.email).with_for_update())
+    now = datetime.now(timezone.utc)
     if user and email_svc.smtp_configured():
-        user.email_code = _gen_code()
-        user.email_code_expires = datetime.now(timezone.utc) + timedelta(minutes=15)
+        last = user.reset_code_sent_at
+        if last and (now - last.replace(tzinfo=timezone.utc)).total_seconds() < 60:
+            return {"ok": True, "message": "若该邮箱已注册，重置码已发送，请查收邮件"}
+        code = _gen_code()
+        user.reset_code = hashlib.sha256(code.encode()).hexdigest()
+        user.reset_code_expires = now + timedelta(minutes=15)
+        user.reset_code_sent_at = now
+        user.reset_code_attempts = 0
         db.commit()
         try:
-            email_svc.send_reset(user.email, user.email_code)
-        except Exception:  # noqa: BLE001
+            email_svc.send_reset(user.email, code)
+        except Exception:
             pass
+    _record_fail(source)
     return {"ok": True, "message": "若该邮箱已注册，重置码已发送，请查收邮件"}
 
 
 @router.post("/reset")
-def reset_password(payload: ResetIn, db: Session = Depends(get_db)):
-    user = db.scalar(select(User).where(User.email == payload.email))
-    if not user or not user.email_code:
+def reset_password(payload: ResetIn, request: Request, db: Session = Depends(get_db)):
+    source = "reset-attempt:" + (request.client.host if request.client else "unknown")
+    _check_lock(source)
+    user = db.scalar(select(User).where(User.email == payload.email).with_for_update())
+    if not user or not user.reset_code:
+        _record_fail(source)
         raise HTTPException(400, "无效的重置请求")
-    expires = user.email_code_expires
-    if expires and expires.tzinfo is None:
-        expires = expires.replace(tzinfo=timezone.utc)
-    if expires and datetime.now(timezone.utc) > expires:
+    if user.reset_code_attempts >= 5:
+        raise HTTPException(429, "验证码尝试过多，请重新申请验证码")
+    expires = user.reset_code_expires
+    if not expires or datetime.now(timezone.utc) > expires.replace(tzinfo=timezone.utc):
         raise HTTPException(400, "重置码已过期，请重新发起")
-    if payload.code.strip() != user.email_code:
+    if not secrets.compare_digest(hashlib.sha256(payload.code.strip().encode()).hexdigest(), user.reset_code):
+        user.reset_code_attempts += 1
+        db.commit()
+        _record_fail(source)
         raise HTTPException(400, "重置码不正确")
     if len(payload.new_password) < 6:
         raise HTTPException(400, "新密码至少 6 位")
     user.password_hash = hash_password(payload.new_password)
-    user.email_code = None
-    user.email_code_expires = None
+    user.auth_version += 1
+    user.reset_code = None
+    user.reset_code_expires = None
     db.commit()
     _clear_fail(user.username)
     activity.log("auth.reset_password", f"{user.username} 通过邮箱重置了密码", user=user, level="warn")
@@ -211,13 +234,13 @@ def reset_password(payload: ResetIn, db: Session = Depends(get_db)):
 def refresh(payload: "RefreshIn", db: Session = Depends(get_db)):
     user_id = decode_token(payload.refresh_token, "refresh")
     user = db.get(User, user_id) if user_id is not None else None
-    if user is None:
+    if user is None or token_version(payload.refresh_token) != user.auth_version:
         raise HTTPException(401, "刷新令牌无效")
     if not user.is_active or not user.email_verified or (settings.require_admin_approval and not user.is_approved):
         raise HTTPException(403, "账号已禁用或尚未完成验证")
     return TokenOut(
-        access_token=create_access_token(user_id),
-        refresh_token=create_refresh_token(user_id),
+        access_token=create_access_token(user_id, user.auth_version),
+        refresh_token=create_refresh_token(user_id, user.auth_version),
     )
 
 

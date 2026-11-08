@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import ApiToken, User
-from app.security import decode_token
+from app.security import decode_token, token_version
 from app.config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
@@ -31,6 +31,7 @@ def get_current_user(
             detail="无效或过期的凭证",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    is_session = user_id is not None and decode_token(token, "access") is not None
     if request.method not in {"GET", "HEAD", "OPTIONS"}:
         from app.services.sync import lock_account
         user = lock_account(db, user_id)
@@ -38,6 +39,8 @@ def get_current_user(
         user = db.get(User, user_id)
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="用户不存在")
+    if is_session and token_version(token) != user.auth_version:
+        raise HTTPException(401, "登录已失效，请重新登录")
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="账户已被禁用")
     if not user.email_verified or (settings.require_admin_approval and not user.is_approved):
