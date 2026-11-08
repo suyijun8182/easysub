@@ -12,6 +12,7 @@ services:
     restart: unless-stopped
     environment:
       JWT_SECRET: please-change-this-to-a-random-secret   # 务必改成随机串：openssl rand -hex 32
+      BACKUP_PASSWORD: ""                # 12+ characters; empty pauses automatic full backups
       TZ: Asia/Shanghai
       ADMIN_USERNAME: admin
       ADMIN_PASSWORD: admin123          # 首次初始化后请在网页里改密码

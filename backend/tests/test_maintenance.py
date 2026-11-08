@@ -11,7 +11,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.database import Base, get_db
 from app.models import ApiToken, User
-from app.routers import auth, users, admin
+from app.routers import auth, users, admin, backup
 from app.security import create_access_token, create_refresh_token, hash_password
 
 
@@ -30,7 +30,7 @@ class AccountSafetyTests(unittest.TestCase):
             db.add(ApiToken(user_id=2, name='script', token='api-test-token'))
             db.commit()
         app = FastAPI()
-        for router in (auth.router, users.router, admin.router):
+        for router in (auth.router, users.router, admin.router, backup.router):
             app.include_router(router)
         def local_db():
             with Session(self.engine) as db:
@@ -111,3 +111,50 @@ class AccountSafetyTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200, response.text)
         self.assertEqual(self.client.get('/api/auth/me', headers=self.headers).status_code, 401)
         self.assertEqual(self.client.post('/api/auth/refresh', json={'refresh_token': create_refresh_token(2)}).status_code, 401)
+
+
+class DisasterRecoveryTests(unittest.TestCase):
+    setUpClass = classmethod(AccountSafetyTests.setUpClass.__func__)
+    setUp = AccountSafetyTests.setUp
+    tearDown = AccountSafetyTests.tearDown
+
+    def test_full_backup_is_password_encrypted_and_restores_2fa_without_old_sessions(self):
+        secret = pyotp.random_base32()
+        with Session(self.engine) as db:
+            user = db.get(User, 2); user.totp_secret = secret; user.totp_enabled = True; db.commit()
+        self.assertNotEqual(self.client.get('/api/backup/export-all', headers=self.admin_headers).status_code, 200)
+        response = self.client.post('/api/backup/export-all', headers=self.admin_headers, json={'password': 'backup-password-123'})
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertNotIn(secret, response.text)
+        self.assertNotIn(self.password_hash, response.text)
+        envelope = response.json()
+        before = self.client.get('/api/auth/me', headers=self.headers).json()
+        wrong = self.client.post('/api/backup/import-all', headers=self.admin_headers, json={'data': envelope, 'password': 'wrong-password', 'replace': True})
+        self.assertEqual(wrong.status_code, 400, wrong.text)
+        self.assertEqual(self.client.get('/api/auth/me', headers=self.headers).json(), before)
+        with Session(self.engine) as db:
+            db.get(User, 2).totp_secret = None; db.get(User, 2).totp_enabled = False; db.commit()
+        restored = self.client.post('/api/backup/import-all', headers=self.admin_headers, json={'data': envelope, 'password': 'backup-password-123', 'replace': True})
+        self.assertEqual(restored.status_code, 200, restored.text)
+        with Session(self.engine) as db:
+            self.assertTrue(db.get(User, 2).totp_enabled)
+            self.assertEqual(db.get(User, 2).totp_secret, secret)
+        self.assertEqual(self.client.get('/api/auth/me', headers=self.headers).status_code, 401)
+        self.assertEqual(self.client.post('/api/auth/refresh', json={'refresh_token': create_refresh_token(2)}).status_code, 401)
+
+    def test_old_backup_does_not_disable_existing_2fa(self):
+        secret = pyotp.random_base32()
+        with Session(self.engine) as db:
+            user = db.get(User, 2); user.totp_secret = secret; user.totp_enabled = True; db.commit()
+        data = {'users': [{'user': {'username': 'bob'}, 'subscriptions': []}]}
+        restored = self.client.post('/api/backup/import-all', headers=self.admin_headers, json={'data': data})
+        self.assertEqual(restored.status_code, 200, restored.text)
+        with Session(self.engine) as db:
+            self.assertTrue(db.get(User, 2).totp_enabled)
+            self.assertEqual(db.get(User, 2).totp_secret, secret)
+
+    def test_auto_backup_never_falls_back_to_plaintext(self):
+        from app.services import autobackup
+        with patch.object(autobackup.settings, 'backup_password', ''), patch.object(autobackup.database, 'SessionLocal') as sessions:
+            self.assertIn('skipped', autobackup.run_auto_backup())
+            sessions.assert_not_called()

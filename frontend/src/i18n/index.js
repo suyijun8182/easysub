@@ -157,6 +157,7 @@ const zh = {
     exportOk: '备份已下载', importOk: '已成功导入 {n} 个订阅', importFail: '导入失败：文件格式不正确', notJson: '导入失败：这不是有效的 JSON 备份文件', httpFail: '导入失败：服务器返回 {s} {m}', netFail: '导入失败：无法连接服务器，请检查网络或反向代理'
   },
   backupAll: {
+    passwordLabel: '整站备份密码', passwordHint: '至少 12 位。导出和恢复使用同一密码，请另行妥善保存。', passwordRequired: '自动备份已暂停：请由管理员配置 BACKUP_PASSWORD（至少 12 位）。',
     title: '整站备份与恢复（管理员）',
     tip: '导出全部成员的账户与数据为一个 JSON 文件；重新部署后导入即可整站恢复所有用户的订阅、分类等。',
     export: '导出整站备份', import: '导入整站恢复', replace: '每个用户导入前清空其现有订阅',
@@ -350,6 +351,7 @@ const en = {
     exportOk: 'Backup downloaded', importOk: 'Imported {n} subscriptions', importFail: 'Import failed: invalid file', notJson: 'Import failed: not a valid JSON backup', httpFail: 'Import failed: server returned {s} {m}', netFail: 'Import failed: cannot reach the server; check the network or reverse proxy'
   },
   backupAll: {
+    passwordLabel: 'Full backup password', passwordHint: 'At least 12 characters. Keep this password separately; it is required to restore the backup.', passwordRequired: 'Automatic backups are paused. Set BACKUP_PASSWORD to at least 12 characters.',
     title: 'Full Site Backup & Restore (Admin)',
     tip: 'Export every member\'s account and data as one JSON file. After a redeploy, import it to restore all users\' subscriptions, categories and more.',
     export: 'Export full backup', import: 'Import full backup', replace: 'Clear each user\'s subscriptions first',
@@ -543,6 +545,7 @@ const ru = {
     exportOk: 'Файл скачан', importOk: 'Импортировано подписок: {n}', importFail: 'Ошибка импорта: неверный файл', notJson: 'Ошибка импорта: это не JSON-резервная копия', httpFail: 'Ошибка импорта: сервер вернул {s} {m}', netFail: 'Ошибка импорта: сервер недоступен, проверьте сеть или прокси'
   },
   backupAll: {
+    passwordLabel: 'Пароль полной резервной копии', passwordHint: 'Не менее 12 символов. Храните пароль отдельно: он потребуется для восстановления.', passwordRequired: 'Автоматическое копирование приостановлено. Задайте BACKUP_PASSWORD длиной от 12 символов.',
     title: 'Полная резервная копия сайта (админ)',
     tip: 'Экспортируйте аккаунты и данные всех участников в один JSON-файл. После переустановки импортируйте его, чтобы восстановить подписки, категории и т.д. всех пользователей.',
     export: 'Экспорт полной копии', import: 'Импорт полной копии', replace: 'Сначала очистить подписки каждого пользователя',

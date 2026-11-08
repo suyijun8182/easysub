@@ -214,6 +214,9 @@
       <section class="card sect" v-if="auth.user?.is_admin">
         <h3 class="sh"><span class="hi" v-html="icon('library')"></span>{{ t('backupAll.title') }}</h3>
         <p class="muted desc">{{ t('backupAll.tip') }}</p>
+        <label>{{ t('backupAll.passwordLabel') }}</label>
+        <input v-model="backupPassword" type="password" autocomplete="off" minlength="12" :placeholder="t('backupAll.passwordLabel')" />
+        <p class="muted hint">{{ t('backupAll.passwordHint') }}</p>
         <div class="actions">
           <button class="btn ghost" @click="exportAll"><span v-html="icon('download')"></span>{{ t('backupAll.export') }}</button>
           <label class="btn ghost file-btn"><span v-html="icon('upload')"></span>{{ t('backupAll.import') }}
@@ -230,6 +233,7 @@
         <hr />
         <h4 class="sub-h"><span class="hi" v-html="icon('clock')"></span>{{ t('autobk.title') }}</h4>
         <p class="muted desc">{{ t('autobk.tip') }}</p>
+        <p v-if="autobk && !autobk.enabled" class="msg err">{{ t('backupAll.passwordRequired') }}</p>
         <div class="actions">
           <button class="btn ghost sm" @click="runAutoBackup"><span v-html="icon('package')"></span>{{ t('autobk.run') }}</button>
           <span class="muted hint" v-if="autobk">{{ t('autobk.keep', { n: autobk.keep }) }}</span>
@@ -411,6 +415,7 @@ const importReplace = ref(false)
 const backupAllMsg = ref('')
 const backupAllOk = ref(false)
 const importAllReplace = ref(false)
+const backupPassword = ref('')
 
 async function exportData() {
   backupMsg.value = ''
@@ -472,7 +477,7 @@ async function importData(e) {
 async function exportAll() {
   backupAllMsg.value = ''
   try {
-    const { data } = await api.get('/api/backup/export-all')
+    const { data } = await api.post('/api/backup/export-all', { password: backupPassword.value })
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -484,7 +489,7 @@ async function exportAll() {
     a.remove()
     URL.revokeObjectURL(url)
     backupAllOk.value = true
-    backupAllMsg.value = t('backupAll.exportOk', { n: data.users?.length || 0 })
+    backupAllMsg.value = t('backupAll.exportOk', { n: data.users_count || 0 })
   } catch (e) {
     backupAllOk.value = false
     backupAllMsg.value = e.response?.data?.detail || 'Error'
@@ -501,7 +506,7 @@ async function importAll(e) {
   }
   try {
     const json = await readBackupJson(file)
-    const { data } = await api.post('/api/backup/import-all', { data: json, replace: importAllReplace.value })
+    const { data } = await api.post('/api/backup/import-all', { data: json, replace: importAllReplace.value, password: backupPassword.value })
     backupAllOk.value = true
     backupAllMsg.value = t('backupAll.importOk', { users: data.users, created: data.created_users, n: data.imported })
   } catch (err) {
@@ -570,7 +575,7 @@ async function loadAutoBackups() {
   try { autobk.value = (await api.get('/api/backup/auto')).data } catch { /* 非管理员忽略 */ }
 }
 async function runAutoBackup() {
-  try { await api.post('/api/backup/auto/run'); await loadAutoBackups() }
+  try { const { data } = await api.post('/api/backup/auto/run'); if (data.skipped) { backupAllOk.value = false; backupAllMsg.value = data.skipped }; await loadAutoBackups() }
   catch (e) { calMsg.value = e.response?.data?.detail || 'Error' }
 }
 

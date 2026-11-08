@@ -6,12 +6,15 @@
 """
 from datetime import date, datetime
 import math
+import secrets
+import pyotp
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import delete, or_, select
 from sqlalchemy.orm import Session
 
+from app.backup_crypto import encrypt_backup, decrypt_backup
 from app import activity
 from app.config import settings
 from app.billing import compute_next_renewal
@@ -369,6 +372,8 @@ def _user_meta(u: User) -> dict:
         "username": u.username,
         "email": u.email,
         "password_hash": u.password_hash,
+        "totp_enabled": u.totp_enabled,
+        "totp_secret": u.totp_secret,
         "is_admin": u.is_admin,
         "is_active": u.is_active,
         "is_approved": u.is_approved,
@@ -400,21 +405,28 @@ def build_full_backup(db: Session) -> dict:
     }
 
 
-@router.get("/export-all")
-def export_all(admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
+class BackupPasswordIn(BaseModel):
+    password: str = Field(min_length=12, max_length=1024)
+
+
+@router.post("/export-all")
+def export_all(body: BackupPasswordIn, admin: User = Depends(get_admin_user), db: Session = Depends(get_db)):
     """管理员：导出全部成员的账户与数据（整站备份）。"""
     payload = build_full_backup(db)
     activity.log(
         "backup.export_all", f"管理员导出整站备份（{len(payload['users'])} 个用户）", user=admin
     )
-    return payload
+    try:
+        return encrypt_backup(payload, body.password)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
 
 
 @router.get("/auto")
 def list_auto_backups(admin: User = Depends(get_admin_user)):
     """管理员：查看服务器本地的每日自动备份文件列表。"""
     from app.services import autobackup  # 延迟导入避免循环
-    return {"dir": autobackup.BACKUP_DIR, "keep": autobackup.KEEP, "files": autobackup.list_backups()}
+    return {"dir": autobackup.BACKUP_DIR, "keep": autobackup.KEEP, "enabled": len(settings.backup_password) >= 12, "files": autobackup.list_backups()}
 
 
 @router.post("/auto/run")
@@ -428,6 +440,7 @@ def run_auto_backup_now(admin: User = Depends(get_admin_user)):
 
 class ImportAllIn(BaseModel):
     data: dict
+    password: str | None = Field(default=None, max_length=1024)
     replace: bool = False  # True：每个用户导入前先清空其现有订阅
 
 
@@ -442,9 +455,23 @@ def import_all(
     按用户名匹配现有账户；账户不存在则用备份中的账户信息（含密码哈希）新建。
     """
     data = payload.data or {}
+    if "format" in data:
+        try:
+            data = decrypt_backup(data, payload.password)
+        except ValueError as exc:
+            raise HTTPException(400, str(exc))
     users_in = data.get("users")
     if not isinstance(users_in, list):
         raise HTTPException(400, "备份文件格式不正确：缺少 users（请使用整站备份文件）")
+
+    # Validate all authentication material before changing any account.
+    for block in users_in:
+        meta = block.get("user") or {}
+        if meta.get("totp_enabled"):
+            try:
+                pyotp.TOTP(meta["totp_secret"]).now()
+            except Exception:
+                raise HTTPException(400, "备份中的两步验证密钥无效，原数据未更改")
 
     existing_users = {u.username: u for u in db.scalars(select(User)).all()}
     from app.services.sync import lock_account
@@ -463,7 +490,7 @@ def import_all(
         target = existing_users.get(username)
         if not target:
             # 新建账户：优先沿用备份的密码哈希，缺失则给一个需重置的占位密码
-            pwd_hash = meta.get("password_hash") or hash_password(username + "@reset")
+            pwd_hash = meta.get("password_hash") or hash_password(secrets.token_urlsafe(32))
             target = User(
                 username=username,
                 email=meta.get("email") or f"{username}@example.com",
@@ -483,6 +510,14 @@ def import_all(
             created_users += 1
 
         lock_account(db, target.id)
+        if "totp_enabled" in meta:
+            target.totp_enabled = bool(meta["totp_enabled"])
+            target.totp_secret = meta.get("totp_secret") if target.totp_enabled else None
+        target.totp_pending_secret = None
+        target.reset_code = None
+        target.email_code = None
+        # Never restore a backed-up session version, even for recreated user IDs.
+        target.auth_version = secrets.randbelow(2**31 - 1) + 1
         # 恢复该用户的通知渠道配置（旧备份无此字段则跳过）
         if isinstance(meta.get("notify_config"), dict):
             notify.apply_config(target, meta["notify_config"])
