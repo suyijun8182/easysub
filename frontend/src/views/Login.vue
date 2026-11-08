@@ -94,6 +94,7 @@
         <form v-else-if="step === 'verify'" novalidate @submit.prevent="doVerify">
           <h2 class="step-t"><span class="ico" v-html="icon('mail')"></span>{{ t('auth.verifyTitle') }}</h2>
           <p class="hint">{{ t('auth.verifyTip', { email }) }}</p>
+          <button type="button" class="btn ghost" @click="resendCode">{{ t('auth.resendCode') }}</button>
           <label for="au-vcode">{{ t('auth.code') }}</label>
           <input id="au-vcode" v-model="code" class="code" :placeholder="t('auth.codePh')" maxlength="6"
             inputmode="numeric" autocomplete="one-time-code" />
@@ -133,6 +134,11 @@ import { icon } from '../icons'
 const { t, locale } = useI18n()
 const router = useRouter()
 const auth = useAuth()
+
+async function resendCode() {
+  try { await auth.resendVerification(email.value); error.value = ''; info.value = t('auth.resendSent'); }
+  catch (e) { error.value = e.response?.data?.detail || 'Error' }
+}
 
 const step = ref('form')      // form | verify | pending | forgot | reset
 const mode = ref(useRoute().query.mode === 'register' ? 'register' : 'login')
@@ -195,7 +201,9 @@ async function submit() {
     }
   } catch (e) {
     // 需要两步验证：显示 OTP 输入
-    if (e.response?.status === 401 && (e.response?.headers?.['x-2fa-required'] || /两步|2fa|OTP/i.test(e.response?.data?.detail || ''))) {
+    if (e.response?.data?.detail?.code === 'EMAIL_VERIFICATION_REQUIRED') {
+      email.value = e.response.data.detail.email; step.value = 'verify'
+    } else if (e.response?.status === 401 && (e.response?.headers?.['x-2fa-required'] || /两步|2fa|OTP/i.test(e.response?.data?.detail || ''))) {
       need2fa.value = true
       error.value = otp.value ? (e.response?.data?.detail || '') : ''
     } else {

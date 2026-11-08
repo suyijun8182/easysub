@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app import activity
+from app import activity, outbound
 from app.database import get_db
 from app.deps import get_current_user
 from app.models import NotificationLog, User
@@ -57,6 +57,7 @@ def test_notify(payload: NotifyTestIn, user: User = Depends(get_current_user)):
     try:
         notify.send_one(payload.channel, conf, subject, text)
     except Exception as e:  # noqa: BLE001
+        e = outbound.error_summary(e)
         activity.log("notify.test", f"{payload.channel} 测试发送失败：{e}", user=user, level="error")
         raise HTTPException(502, f"发送失败：{e}")
     activity.log("notify.test", f"发送了 {payload.channel} 测试通知", user=user)
@@ -76,6 +77,7 @@ def wecom_check(payload: WecomCheckIn, user: User = Depends(get_current_user)):
     try:
         info = notify.wecom_agent_info(conf)
     except Exception as e:  # noqa: BLE001
+        e = outbound.error_summary(e)
         activity.log("notify.wecom.check", f"企业微信应用校验失败：{e}", user=user, level="error")
         raise HTTPException(502, str(e))
     activity.log("notify.wecom.check", f"校验企业微信应用「{info.get('name')}」成功", user=user)
@@ -98,6 +100,7 @@ def telegram_me(user: User = Depends(get_current_user)):
     try:
         return telegram.get_me(**_tg_args(user))
     except Exception as e:  # noqa: BLE001
+        e = outbound.error_summary(e)
         raise HTTPException(502, f"Telegram getMe 失败：{e}")
 
 
@@ -109,6 +112,7 @@ def telegram_updates(user: User = Depends(get_current_user)):
     try:
         return telegram.get_updates(**_tg_args(user))
     except Exception as e:  # noqa: BLE001
+        e = outbound.error_summary(e)
         raise HTTPException(502, f"Telegram getUpdates 失败：{e}")
 
 
@@ -137,6 +141,7 @@ def telegram_test(
             proxy=user.telegram_proxy,
         )
     except Exception as e:  # noqa: BLE001
+        e = outbound.error_summary(e)
         activity.log("telegram.test", f"测试消息发送失败：{e}", user=user, level="error")
         raise HTTPException(502, f"发送失败：{e}")
     activity.log("telegram.test", "发送了 Telegram 测试消息", user=user)

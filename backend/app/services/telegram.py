@@ -6,6 +6,7 @@
 - HTTP 代理（proxy，如 http://127.0.0.1:7890）
 """
 import httpx
+from app import outbound
 
 DEFAULT_API_BASE = "https://api.telegram.org"
 
@@ -14,7 +15,7 @@ def _client(proxy: str | None) -> httpx.Client:
     kwargs = {"timeout": 15}
     if proxy:
         kwargs["proxy"] = proxy
-    return httpx.Client(**kwargs)
+    return outbound.client(**kwargs)
 
 
 def _url(api_base: str | None, token: str, method: str) -> str:

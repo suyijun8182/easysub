@@ -11,7 +11,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.database import Base, get_db
 from app.models import ApiToken, User
-from app.routers import auth, users, admin, backup
+from app.routers import auth, users, admin, backup, notifications
 from app.security import create_access_token, create_refresh_token, hash_password
 
 
@@ -30,7 +30,7 @@ class AccountSafetyTests(unittest.TestCase):
             db.add(ApiToken(user_id=2, name='script', token='api-test-token'))
             db.commit()
         app = FastAPI()
-        for router in (auth.router, users.router, admin.router, backup.router):
+        for router in (auth.router, users.router, admin.router, backup.router, notifications.router):
             app.include_router(router)
         def local_db():
             with Session(self.engine) as db:
@@ -111,6 +111,48 @@ class AccountSafetyTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200, response.text)
         self.assertEqual(self.client.get('/api/auth/me', headers=self.headers).status_code, 401)
         self.assertEqual(self.client.post('/api/auth/refresh', json={'refresh_token': create_refresh_token(2)}).status_code, 401)
+
+    def test_private_webhook_is_rejected_before_network_request(self):
+        with patch('httpx.Client') as client:
+            response = self.client.post('/api/notifications/test', headers=self.headers, json={'channel': 'webhook', 'config': {'urls': ['http://127.0.0.1:8000/internal']}})
+            self.assertEqual(response.status_code, 502, response.text)
+            client.return_value.__enter__.return_value.post.assert_not_called()
+
+    def test_recovery_attempts_for_unknown_email_do_not_lock_another_account(self):
+        for _ in range(10):
+            self.client.post('/api/auth/reset', json={'email': 'missing@example.com', 'code': 'bad', 'new_password': 'new-password'})
+        response = self.client.post('/api/auth/reset', json={'email': 'bob@example.com', 'code': 'bad', 'new_password': 'new-password'})
+        self.assertEqual(response.status_code, 400)
+
+    def test_exhausted_email_verification_can_recover_via_throttled_resend(self):
+        with Session(self.engine) as db:
+            user = db.get(User, 2); user.email_verified = False; user.email_code = '123456'
+            user.email_code_expires = datetime.now(timezone.utc) + timedelta(minutes=10)
+            user.email_code_attempts = 5; db.commit()
+        login = self.client.post('/api/auth/login', data={'username': 'bob', 'password': 'test-password'})
+        self.assertEqual(login.json()['detail']['code'], 'EMAIL_VERIFICATION_REQUIRED')
+        self.assertEqual(login.json()['detail']['email'], 'bob@example.com')
+        with patch.object(auth.email_svc, 'smtp_configured', return_value=True), patch.object(auth.email_svc, 'send_code') as send:
+            self.assertEqual(self.client.post('/api/auth/resend-verification', json={'email': 'bob@example.com', 'code': ''}).status_code, 200)
+            code = send.call_args.args[1]
+            self.client.post('/api/auth/resend-verification', json={'email': 'bob@example.com', 'code': ''})
+            self.assertEqual(send.call_count, 1)
+        response = self.client.post('/api/auth/verify-email', json={'email': 'bob@example.com', 'code': code})
+        self.assertEqual(response.status_code, 200, response.text)
+
+    def test_notification_failure_does_not_expose_secret_urls(self):
+        import httpx
+        from app.models import ActivityLog
+        from app.services import notify
+        from sqlalchemy import select
+        request = httpx.Request('POST', 'https://provider.example/FAKE_SECRET')
+        error = httpx.HTTPStatusError('FAKE_SECRET', request=request, response=httpx.Response(400, request=request))
+        with patch.object(notify, 'send_one', side_effect=error):
+            response = self.client.post('/api/notifications/test', headers=self.headers, json={'channel': 'telegram'})
+        self.assertEqual(response.status_code, 502)
+        self.assertNotIn('FAKE_SECRET', response.text)
+        with Session(self.engine) as db:
+            self.assertFalse(any('FAKE_SECRET' in (row.detail or '') for row in db.scalars(select(ActivityLog))))
 
 
 class DisasterRecoveryTests(unittest.TestCase):

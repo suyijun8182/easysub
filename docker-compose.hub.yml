@@ -12,6 +12,7 @@ services:
     restart: unless-stopped
     environment:
       JWT_SECRET: please-change-this-to-a-random-secret   # 务必改成随机串：openssl rand -hex 32
+      OUTBOUND_PRIVATE_ALLOWLIST: ""     # e.g. nas.lan:5000,192.168.1.10:7890,api.telegram.org:443
       BACKUP_PASSWORD: ""                # 12+ characters; empty pauses automatic full backups
       TZ: Asia/Shanghai
       ADMIN_USERNAME: admin

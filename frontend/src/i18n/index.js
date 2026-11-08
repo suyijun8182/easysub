@@ -80,6 +80,8 @@ const zh = {
     pendingTab: '待审核 ({n})', allTab: '全部用户', noPending: '没有待审核的用户'
   },
   auth: {
+    resendSent: '若账号尚未验证，验证码将发送到邮箱，请查收（重发间隔 60 秒）。',
+    resendCode: '重新发送验证码（60 秒后可重发）',
     login: '登录', register: '注册', username: '用户名', email: '邮箱', password: '密码',
     loginBtn: '登录', registerBtn: '注册', noAccount: '没有账户？去注册', hasAccount: '已有账户？去登录',
     loginFail: '用户名或密码错误', welcome: '欢迎回来',
@@ -274,6 +276,8 @@ const en = {
     pendingTab: 'Pending ({n})', allTab: 'All users', noPending: 'No users awaiting approval'
   },
   auth: {
+    resendSent: 'If the account is unverified, a code will be emailed. Please wait 60 seconds before resending.',
+    resendCode: 'Resend code (60-second cooldown)',
     login: 'Login', register: 'Register', username: 'Username', email: 'Email', password: 'Password',
     loginBtn: 'Sign in', registerBtn: 'Sign up', noAccount: 'No account? Register', hasAccount: 'Have an account? Login',
     loginFail: 'Wrong username or password', welcome: 'Welcome back',
@@ -468,6 +472,8 @@ const ru = {
     pendingTab: 'Ожидают ({n})', allTab: 'Все', noPending: 'Нет ожидающих одобрения'
   },
   auth: {
+    resendSent: 'Если учётная запись не подтверждена, код придёт по почте. Повторная отправка доступна через 60 секунд.',
+    resendCode: 'Отправить код повторно (через 60 секунд)',
     login: 'Вход', register: 'Регистрация', username: 'Логин', email: 'Эл. почта', password: 'Пароль',
     loginBtn: 'Войти', registerBtn: 'Создать', noAccount: 'Нет аккаунта? Регистрация', hasAccount: 'Есть аккаунт? Войти',
     loginFail: 'Неверный логин или пароль', welcome: 'С возвращением',

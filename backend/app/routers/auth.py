@@ -83,6 +83,7 @@ def register(payload: RegisterIn, db: Session = Depends(get_db)):
     if need_email:
         user.email_code = _gen_code()
         user.email_code_expires = datetime.now(timezone.utc) + timedelta(minutes=10)
+        user.email_code_sent_at = datetime.now(timezone.utc)
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -97,6 +98,28 @@ def register(payload: RegisterIn, db: Session = Depends(get_db)):
     if need_approval:
         return {"status": "pending", "message": "注册成功，等待管理员审核通过后即可登录"}
     return {"status": "ok", "message": "注册成功，请登录"}
+
+
+@router.post("/resend-verification")
+def resend_verification(payload: VerifyEmailIn, request: Request, db: Session = Depends(get_db)):
+    source = "resend:" + (request.client.host if request.client else "unknown") + ":" + payload.email.lower()
+    _check_lock(source)
+    user = db.scalar(select(User).where(User.email == payload.email).with_for_update())
+    now = datetime.now(timezone.utc)
+    if user and not user.email_verified and email_svc.smtp_configured():
+        last = user.email_code_sent_at
+        if not last or (now - last.replace(tzinfo=timezone.utc)).total_seconds() >= 60:
+            user.email_code = _gen_code()
+            user.email_code_expires = now + timedelta(minutes=10)
+            user.email_code_sent_at = now
+            user.email_code_attempts = 0
+            db.commit()
+            try:
+                email_svc.send_code(user.email, user.email_code)
+            except Exception:
+                pass
+    _record_fail(source)
+    return {"ok": True}
 
 
 @router.post("/verify-email")
@@ -142,7 +165,7 @@ def login(
             raise HTTPException(401, {"code": "ACCOUNT_NOT_REGISTERED", "message": "该账号尚未在此服务器注册", "registration": True})
         raise HTTPException(401, "用户名或密码错误")
     if not user.email_verified:
-        raise HTTPException(403, "请先完成邮箱验证")
+        raise HTTPException(403, {"code": "EMAIL_VERIFICATION_REQUIRED", "message": "请先完成邮箱验证", "email": user.email})
     if not user.is_approved and settings.require_admin_approval:
         # 审核已关闭（debug19 起默认关闭）时，此前卡在「待审核」的账号也直接放行
         raise HTTPException(403, "账号正在等待管理员审核，请耐心等待")
@@ -178,7 +201,7 @@ class ResetIn(BaseModel):
 @router.post("/forgot")
 def forgot_password(payload: ForgotIn, request: Request, db: Session = Depends(get_db)):
     """发起找回密码：向邮箱发送重置码。为防用户枚举，无论是否存在都返回成功。"""
-    source = "reset-source:" + (request.client.host if request.client else "unknown")
+    source = "reset-source:" + (request.client.host if request.client else "unknown") + ":" + payload.email.lower()
     _check_lock(source)
     user = db.scalar(select(User).where(User.email == payload.email).with_for_update())
     now = datetime.now(timezone.utc)
@@ -202,7 +225,7 @@ def forgot_password(payload: ForgotIn, request: Request, db: Session = Depends(g
 
 @router.post("/reset")
 def reset_password(payload: ResetIn, request: Request, db: Session = Depends(get_db)):
-    source = "reset-attempt:" + (request.client.host if request.client else "unknown")
+    source = "reset-attempt:" + (request.client.host if request.client else "unknown") + ":" + payload.email.lower()
     _check_lock(source)
     user = db.scalar(select(User).where(User.email == payload.email).with_for_update())
     if not user or not user.reset_code:

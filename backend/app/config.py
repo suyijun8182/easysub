@@ -35,6 +35,7 @@ class Settings(BaseSettings):
 
     # Automatic full backups require a separate portable encryption password.
     backup_password: str = ""
+    outbound_private_allowlist: str = ""
 
     # 首个管理员
     admin_username: str = "admin"

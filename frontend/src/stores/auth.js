@@ -25,6 +25,9 @@ export const useAuth = defineStore('auth', {
       const { data } = await api.post('/api/auth/register', { username, email, password })
       return data || { status: 'ok' }
     },
+    async resendVerification(email) {
+      return api.post('/api/auth/resend-verification', { email, code: '' })
+    },
     async verifyEmail(email, code) {
       const { data } = await api.post('/api/auth/verify-email', { email, code })
       return data || { status: 'ok' }

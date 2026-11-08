@@ -1,6 +1,12 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { createPreviewStore, addCycle, encryptBackup, decryptBackup } from './store.js'
+import fullBackupFixture from '../../../backend/tests/fixtures/full-backup-v1.json' with { type: 'json' }
+
+test('Android decrypts the server full-backup format with authenticated metadata', async () => {
+  assert.deepEqual(await decryptBackup(fullBackupFixture, 'fixture-password-123'), { users: [{ user: { username: 'fixture' }, subscriptions: [] }] })
+  await assert.rejects(decryptBackup(fullBackupFixture, 'wrong-password'))
+})
 
 test('renewal reads the current day after midnight without recreating the store', async t => {
   t.mock.timers.enable({ apis: ['Date'], now: new Date('2026-11-08T12:00:00').getTime() })

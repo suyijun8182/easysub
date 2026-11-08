@@ -9,6 +9,7 @@ passlib[bcrypt]==1.7.4
 bcrypt==4.2.1
 python-multipart==0.0.20
 httpx==0.28.1
+httpcore==1.0.9
 apscheduler==3.11.0
 email-validator==2.2.0
 pymysql==1.1.1

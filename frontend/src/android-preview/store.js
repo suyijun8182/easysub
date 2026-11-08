@@ -262,9 +262,9 @@ export async function encryptBackup(data, password) {
 }
 export async function decryptBackup(envelope, password) {
   if (!globalThis.crypto?.subtle) throw new Error('当前 HTTP 手机预览不支持解密，请在电脑 http://localhost:5174 使用备份功能。')
-  if (envelope.format !== 'encrypted-preview-v1') throw new Error('不支持的加密格式')
+  if (!['encrypted-preview-v1', 'encrypted-full-v1'].includes(envelope.format)) throw new Error('不支持的加密格式')
   try {
-    const bytes = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: from64(envelope.iv) }, await backupKey(password, from64(envelope.salt)), from64(envelope.ciphertext))
+    const bytes = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: from64(envelope.iv), ...(envelope.format === 'encrypted-full-v1' ? { additionalData: new TextEncoder().encode(envelope.format) } : {}) }, await backupKey(password, from64(envelope.salt)), from64(envelope.ciphertext))
     return JSON.parse(new TextDecoder().decode(bytes))
   } catch { throw new Error('密码错误或备份文件损坏，原数据未更改') }
 }
