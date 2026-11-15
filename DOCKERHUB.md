@@ -1,6 +1,6 @@
 # EasySub · 省心订阅
 
-v2.0.0 增加账号会话撤销、整站加密灾备和通知出站限制；升级前请阅读 [升级说明](https://github.com/suyijun8182/easysub/blob/v2.0.0/docs/update-v2.0.0.md)。自动备份需配置 `BACKUP_PASSWORD`，内网通知需配置 `OUTBOUND_PRIVATE_ALLOWLIST`。
+v2.0.1 安全公告：修复匿名文件读取、公开 JWT 示例密钥、默认管理员凭据、安装接口探测、SVG 脚本执行、依赖漏洞、跨 IP 登录锁定及 API Token 明文存储。请阅读 [升级与回滚说明](https://github.com/suyijun8182/easysub/blob/main/docs/update-v2.0.1.md)。原来使用示例 JWT 密钥的设备需重新登录；自动密钥保存在 `data/jwt_secret`，必须保留数据卷。API Token 只在创建时显示一次。自动备份和内网出站配置沿用 v2.0.0。
 
 Self-hosted subscription / renewal manager with **14 notification channels** so you never let a subscription — or a SIM keep-alive plan — expire.
 
@@ -19,7 +19,6 @@ Self-hosted subscription / renewal manager with **14 notification channels** so 
 ```bash
 docker run -d --name easysub \
   -p 8842:8000 \
-  -e JWT_SECRET="$(openssl rand -hex 32)" \
   -e ADMIN_USERNAME=admin \
   -e TZ=Asia/Shanghai \
   -v easysub_data:/app/data \
@@ -27,7 +26,9 @@ docker run -d --name easysub \
   suyijun8182/easysub:latest
 ```
 
-Then open `http://<host>:8842`, finish the DB wizard, register the first administrator account, and log in.
+Then open `http://<host>:8842`, finish the DB wizard, register the first administrator account, and log in. Complete setup promptly; keep unconfigured instances off the public Internet.
+
+首次启动后请尽快完成安装向导，不要把未完成安装的实例暴露到公网。
 
 不再预置 `admin/admin123`。不设置 `ADMIN_PASSWORD` 时，第一个注册的账号就是管理员。如需预置账号，可取消注释示例 `# ADMIN_PASSWORD=your-strong-password` 并填写自己的强密码。
 
@@ -40,7 +41,7 @@ services:
     container_name: easysub
     restart: unless-stopped
     environment:
-      JWT_SECRET: change-me-to-a-random-secret
+      JWT_SECRET: ""  # Auto-generated in /app/data/jwt_secret; persist the volume
       TZ: Asia/Shanghai
       ADMIN_USERNAME: admin
       # ADMIN_PASSWORD: your-strong-password
@@ -57,7 +58,7 @@ volumes:
 
 | Var | Description |
 |-----|-------------|
-| `JWT_SECRET` | **Required.** Random secret for auth tokens. |
+| `JWT_SECRET` | Optional strong custom key. Empty or example values generate a persistent key in `/app/data/jwt_secret`; keep the volume. |
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD` / `ADMIN_EMAIL` | Optional initial admin. Without ADMIN_PASSWORD, the first registered account becomes admin. |
 | `TZ` | Timezone, e.g. `Asia/Shanghai`. |
 | `REMINDER_SCAN_TIME` | Daily scan time for reminders, e.g. `09:00`. |
@@ -67,13 +68,13 @@ volumes:
 
 ## Volumes
 
-- `/app/data` — DB connection config (`db_config.json`) + uploaded icons. Persist this.
+- `/app/data` — signing key (`jwt_secret`), DB connection config (`db_config.json`), uploaded icons and backups. Persist this.
 
 ## Upgrade / 升级
 
-**v1.14.0 / App 同步后端**：建议固定镜像 `suyijun8182/easysub:v1.14.0`。升级前备份 MySQL、原 Compose/.env 和 `/app/data`，保留原 `JWT_SECRET`，不要重新生成。启动会新增四张同步表，数据库账号需要 CREATE/ALTER 权限。
+**v2.0.1 安全更新**：发布后可固定镜像 `suyijun8182/easysub:v2.0.1` 或对应 GHCR 镜像。升级前保存 MySQL 快照、原 Compose/.env 和 `/app/data` 副本；保留强自定义 `JWT_SECRET`。自动密钥写入数据卷，旧示例密文和 API Token 启动时幂等迁移。
 
-保持原项目、端口、反向代理和数据卷；只更新 app 镜像并重建。`/api/health` 应显示 `version: 1.14.0`、`configured: true`、`sync_protocol: 1`。完整步骤和回滚：[v1.14.0 更新方案](https://github.com/suyijun8182/easysub/blob/main/docs/update-v1.14.0.md)。
+保持原项目、端口、反向代理和数据卷；只更新 app 镜像并重建。`/api/health` 应显示 `version: 2.0.1`、`configured: true`、`sync_protocol: 1`。回滚需配套恢复升级前的数据库、数据卷和配置，不能只换旧镜像。完整步骤：[v2.0.1 更新说明](https://github.com/suyijun8182/easysub/blob/main/docs/update-v2.0.1.md)。
 
 Data lives in **your MySQL**; upgrading only swaps the image and is non-destructive.
 数据都在**你自己的 MySQL** 里，升级只换镜像，不会动数据。
@@ -85,7 +86,7 @@ docker compose -f docker-compose.hub.yml pull && docker compose -f docker-compos
 # docker run
 docker pull suyijun8182/easysub:latest
 # 使用原来的环境、网络、端口和挂载配置重建，镜像改为固定版本。
-# 特别保留原 JWT_SECRET 和 /app/data，不要重新运行上方随机生成密钥的首次安装命令。
+# 保留强自定义 JWT_SECRET 和 /app/data（包含自动密钥 jwt_secret），不要重新生成或删除密钥。
 ```
 
 NAS 图形界面：重新拉取 `latest` 标签 → 重建容器，保持 `/app/data` 映射与环境变量不变。
@@ -95,6 +96,8 @@ NAS 图形界面：重新拉取 `latest` 标签 → 重建容器，保持 `/app/
 > Before upgrading, export a backup from **Settings → Data backup** (admins: full-site backup).
 
 ## What's new / 最近更新
+
+- **v2.0.1** — Security fixes for file traversal, signing secrets, default admin credentials, setup probes, SVG scripts, dependencies, login throttling and hashed API tokens. No default admin/admin123; the first registered account becomes admin when ADMIN_PASSWORD is unset.
 
 - **v1.13.0** — Bulk actions on subscriptions (renew / enable / disable / move / delete) and a button-based reorder mode; fixed login errors and the 2FA prompt vanishing on a fresh browser; keyboard & screen-reader fixes across forms and dialogs. 订阅批量操作与按钮排序；修复登录报错不显示、新浏览器下两步验证无法登录；表单与弹窗无障碍改进。
 - **v1.12.1** — Sign-up no longer needs admin approval; set `REQUIRE_ADMIN_APPROVAL=true` to keep it. 注册后直接可用，如需审核设 `REQUIRE_ADMIN_APPROVAL=true`。

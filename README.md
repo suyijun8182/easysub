@@ -22,7 +22,7 @@ docker run -d -p 8842:8000 -v easysub_data:/app/data suyijun8182/easysub:latest
 
 </div>
 
-**v2.0.0：账号安全与加密灾备。** 升级前请阅读 [升级与回滚步骤](docs/update-v2.0.0.md)，配置自动备份密码及需要放行的内网通知目标。Android 0.1.3 仍为 Alpha。
+**v2.0.1：安全修复。** 修复匿名文件读取、公开 JWT 示例密钥、默认管理员凭据、安装接口探测、SVG 脚本执行、依赖漏洞、跨 IP 登录锁定及 API Token 明文存储。请阅读 [升级与回滚步骤](docs/update-v2.0.1.md)。原来使用示例 JWT 密钥的设备需重新登录；自动密钥保存在 `data/jwt_secret`，必须保留数据卷。API Token 只在创建时显示一次。Android 0.1.3 仍为 Alpha。
 
 > 🌐 **在线体验**：<https://easysub.vviip.dpdns.org:8443/>
 > 测试账号 `guest` / `guest123`；也可自行注册，注册后即可直接登录使用。
@@ -64,7 +64,6 @@ docker run -d -p 8842:8000 -v easysub_data:/app/data suyijun8182/easysub:latest
 ```bash
 docker run -d --name easysub \
   -p 8842:8000 \
-  -e JWT_SECRET="$(openssl rand -hex 32)" \
   -e ADMIN_EMAIL=admin@example.com -e TZ=Asia/Shanghai \
   -v easysub_data:/app/data \
   --restart unless-stopped \
@@ -79,14 +78,14 @@ docker compose -f docker-compose.hub.yml up -d
 
 > 国内拉取慢可改用 GHCR 镜像：`ghcr.io/suyijun8182/easysub:latest`
 
-启动后访问 `http://<服务器IP>:8842` → 进入「数据库安装向导」→ 填入 MySQL 连接 → 测试 → 「保存并初始化」→ 用管理员账号登录。
+启动后访问 `http://<服务器IP>:8842` → 进入「数据库安装向导」→ 填入 MySQL 连接 → 测试 → 「保存并初始化」→ 注册第一个管理员账号 → 登录。
 
 ### 方式 B：从源码构建（自带 Caddy 自动 HTTPS）
 
 ```bash
 git clone https://github.com/suyijun8182/easysub.git
 cd easysub
-cp .env.example .env          # 编辑 JWT_SECRET、ADMIN_* 等
+cp .env.example .env          # 可选配置强 JWT_SECRET 和初始管理员；留空时自动生成密钥，首个注册用户为管理员
 vi Caddyfile                  # 可选：把 your-domain.com 改成你的域名
 docker compose up -d --build
 ```
@@ -113,7 +112,7 @@ docker pull suyijun8182/easysub:latest && docker rm -f easysub && docker run -d 
 git pull && docker compose up -d --build   # 或执行 ./update.sh
 ```
 
-NAS 图形界面：在镜像里重新拉取 `latest`，再重建容器（保持 `/app/data` 映射不变）。
+NAS 图形界面：在镜像里重新拉取 `latest`，再重建容器（保持 `/app/data` 映射不变）。保留强自定义 `JWT_SECRET`；自动密钥保存在 `/app/data/jwt_secret`。升级前保存 MySQL 快照、数据卷副本和环境配置，回滚时一并恢复，详见 [v2.0.1 升级说明](docs/update-v2.0.1.md)。
 
 > 💡 **升级前先备份**：网页 **设置 → 数据备份** 导出一份 JSON；管理员可用 **整站备份** 导出全部成员数据。
 > 旧版本导出的备份可安全导入新版本。
@@ -124,7 +123,7 @@ NAS 图形界面：在镜像里重新拉取 `latest`，再重建容器（保持 
 
 | 变量 | 必填 | 说明 |
 |------|:---:|------|
-| `JWT_SECRET` | ✅ | 登录令牌密钥，请用 `openssl rand -hex 32` 生成随机串 |
+| `JWT_SECRET` | | 可选强自定义密钥（`openssl rand -hex 32`）；未设置或为示例值时自动保存到 `data/jwt_secret`，必须保留数据卷 |
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD` / `ADMIN_EMAIL` | | 可选初始管理员；不设置密码时，第一个注册的账号就是管理员 |
 | `TZ` | | 时区，如 `Asia/Shanghai` |
 | `REMINDER_SCAN_TIME` | | 每天扫描到期订阅、发送提醒的时间，如 `09:00` |
@@ -224,12 +223,11 @@ Telegram [@Aiden_SU](https://t.me/Aiden_SU) · 📧 aidensu8182@gmail.com
 
 ```bash
 docker run -d --name easysub -p 8842:8000 \
-  -e JWT_SECRET="$(openssl rand -hex 32)" \
   -v easysub_data:/app/data --restart unless-stopped \
   suyijun8182/easysub:latest
 ```
 
-Open `http://<host>:8842` and finish the DB wizard (connect your MySQL 8). Build from source: `git clone https://github.com/suyijun8182/easysub.git && cd easysub && cp .env.example .env && docker compose up -d --build`.
+Open `http://<host>:8842`, finish the DB wizard (connect your MySQL 8), and register the first administrator. Without JWT_SECRET, a persistent key is generated in /app/data/jwt_secret; keep the data volume. Build from source: `git clone https://github.com/suyijun8182/easysub.git && cd easysub && cp .env.example .env && docker compose up -d --build`.
 NAS guides: [各厂家NAS安装教程.md](./各厂家NAS安装教程.md) · Docker Hub: [suyijun8182/easysub](https://hub.docker.com/r/suyijun8182/easysub) · License MIT · TG [@Aiden_SU](https://t.me/Aiden_SU).
 
 ---
@@ -244,10 +242,9 @@ NAS guides: [各厂家NAS安装教程.md](./各厂家NAS安装教程.md) · Dock
 
 ```bash
 docker run -d --name easysub -p 8842:8000 \
-  -e JWT_SECRET="$(openssl rand -hex 32)" \
   -v easysub_data:/app/data --restart unless-stopped \
   suyijun8182/easysub:latest
 ```
 
-Откройте `http://<host>:8842` и завершите мастер настройки БД (подключите ваш MySQL 8).
+Откройте `http://<host>:8842`, завершите мастер настройки БД (ваш MySQL 8) и зарегистрируйте первого администратора. Без JWT_SECRET ключ сохраняется в /app/data/jwt_secret; сохраняйте том данных.
 Инструкции для NAS: [各厂家NAS安装教程.md](./各厂家NAS安装教程.md) · Docker Hub: [suyijun8182/easysub](https://hub.docker.com/r/suyijun8182/easysub) · Лицензия MIT · TG [@Aiden_SU](https://t.me/Aiden_SU).

@@ -11,7 +11,7 @@ services:
     container_name: easysub
     restart: unless-stopped
     environment:
-      JWT_SECRET: please-change-this-to-a-random-secret   # 务必改成随机串：openssl rand -hex 32
+      JWT_SECRET: ""                   # 自动保存到 /app/data/jwt_secret；已有强自定义密钥请保留原值
       OUTBOUND_PRIVATE_ALLOWLIST: ""     # e.g. nas.lan:5000,192.168.1.10:7890,api.telegram.org:443
       BACKUP_PASSWORD: ""                # 12+ characters; empty pauses automatic full backups
       TZ: Asia/Shanghai
@@ -23,7 +23,7 @@ services:
       EXCHANGE_API_URL: https://open.er-api.com/v6/latest/
       TELEGRAM_BOT_TOKEN: ""            # 可留空，后续在网页「设置」里配置
     volumes:
-      - easysub_data:/app/data          # 持久化：数据库连接配置 + 上传的图标
+      - easysub_data:/app/data          # 持久化：JWT 密钥 + 数据库连接配置 + 图标 + 备份
     ports:
       - "8842:8000"                     # 浏览器访问 http://<服务器IP>:8842
 
