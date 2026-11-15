@@ -36,6 +36,9 @@ jobs:
         run: |
           pip install -r requirements.txt
           python -m unittest discover -s tests -p 'test_*.py'
+      - name: Audit backend dependencies
+        working-directory: backend
+        run: pip install pip-audit && pip-audit -r requirements.txt
       - name: Test and build website and Android assets
         working-directory: frontend
         run: |

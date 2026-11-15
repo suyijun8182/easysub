@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 
-from jose import JWTError, jwt
+import jwt
 from passlib.context import CryptContext
 
 from app.config import settings
@@ -46,7 +46,7 @@ def decode_token(token: str, expected_type: str = "access") -> int | None:
         if payload.get("type") != expected_type:
             return None
         return int(payload["sub"])
-    except (JWTError, ValueError, KeyError):
+    except (jwt.PyJWTError, ValueError, KeyError):
         return None
 
 
@@ -54,7 +54,7 @@ def token_version(token: str) -> int | None:
     try:
         payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
         return int(payload.get("av", 0))
-    except (JWTError, ValueError, TypeError):
+    except (jwt.PyJWTError, ValueError, TypeError):
         return None
 
 
