@@ -22,7 +22,9 @@ docker run -d -p 8842:8000 -v easysub_data:/app/data suyijun8182/easysub:latest
 
 </div>
 
-**Android 0.2.0 Alpha：** 删除改为确认弹窗加 5 秒撤销，新增下拉同步和触感反馈，订阅卡更紧凑，总览首屏突出本月支出。服务端与网页仍为 v2.0.1，无需升级镜像。详见 [Android 0.2.0 说明](docs/android-0.2.0.md)。
+**v2.0.2：** 修复中国大陆添加订阅时服务图标加载慢、页面卡顿的问题（[#2](https://github.com/suyijun8182/easysub/issues/2)）：镜像自带的服务图标直接从本地读取，下载不到时显示首字母占位图。直接更新镜像即可，无需改配置。
+
+**Android 0.2.0 Alpha：** 删除改为确认弹窗加 5 秒撤销，新增下拉同步和触感反馈，订阅卡更紧凑，总览首屏突出本月支出。详见 [Android 0.2.0 说明](docs/android-0.2.0.md)。
 
 **v2.0.1：安全修复。** 修复匿名文件读取、公开 JWT 示例密钥、默认管理员凭据、安装接口探测、SVG 脚本执行、依赖漏洞、跨 IP 登录锁定及 API Token 明文存储。请阅读 [升级与回滚步骤](docs/update-v2.0.1.md)。原来使用示例 JWT 密钥的设备需重新登录；自动密钥保存在 `data/jwt_secret`，必须保留数据卷。API Token 只在创建时显示一次。Android 0.1.3 仍为 Alpha。
 
