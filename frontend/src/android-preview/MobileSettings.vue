@@ -13,7 +13,7 @@
       <label>{{ t('mobile.language') }}<select v-model="prefs.locale"><option value="zh">中文</option><option value="en">English</option><option value="ru">Русский</option></select></label>
       <label>{{ t('mobile.theme') }}<select v-model="prefs.theme"><option v-for="th in ['light','dark','ocean','forest','purple','auto']" :key="th" :value="th">{{ t('mobile.' + th) }}</option></select></label>
       <label>{{ t('mobile.baseCurrency') }}<select v-model="prefs.base_currency"><option v-for="c in data.currencies" :key="c.code" :value="c.code">{{ currencyName(c, locale) }}</option></select></label>
-      <label>{{ t('mobile.budget') }}<input v-model.number="prefs.monthly_budget" type="number" min="0"></label>
+      <label>{{ t('mobile.budget') }}<span class="app-budget-field"><input v-model.number="prefs.monthly_budget" type="number" min="0" step="any" inputmode="decimal" :placeholder="t('mobile.budgetUnset')" aria-describedby="budget-currency"><span id="budget-currency">{{ prefs.base_currency }}</span></span></label>
       <button class="btn" type="submit">{{ t('common.save') }}</button>
     </form>
     <form v-else-if="section === 'reminders'" class="card" @submit.prevent="savePrefs">
@@ -106,7 +106,7 @@ async function act(fn) {
   catch (e) { messageKind.value = 'error'; message.value = e.message; await nextTick(); result.value?.focus() }
   finally { busy.value = false }
 }
-async function savePrefs() { await act(async () => { await auth.updateMe(clone(prefs.value)); locale.value = prefs.value.locale; applyTheme(prefs.value.theme); savedPrefs.value = JSON.stringify(prefs.value); message.value = t(preview.isLocal ? 'sync.localSaved' : 'mobile.saved'); await load() }) }
+async function savePrefs() { await act(async () => { await auth.updateMe({ ...clone(prefs.value), monthly_budget: prefs.value.monthly_budget === '' ? null : prefs.value.monthly_budget }); locale.value = prefs.value.locale; applyTheme(prefs.value.theme); savedPrefs.value = JSON.stringify(prefs.value); message.value = t(preview.isLocal ? 'sync.localSaved' : 'mobile.saved'); await load() }) }
 function editEntity(item) { entity.value = clone(item); savedEntity.value = JSON.stringify(entity.value); window.scrollTo({ top: 0, behavior: 'instant' }) }
 async function saveEntity() { await act(async () => { await preview.request(entity.value.id ? 'put' : 'post', '/api/' + section.value + (entity.value.id ? '/' + entity.value.id : ''), clone(entity.value)); resetEntity(); await load(); message.value = text("已保存") }) }
 async function removeEntity(item) { if (!confirm(locale.value === 'en' ? `Delete ${item.name}? Subscriptions will be kept.` : locale.value === 'ru' ? `Удалить ${item.name}? Подписки сохранятся.` : `确认删除「${item.name}」？相关订阅会保留。`)) return; await act(async () => { await preview.request('delete', '/api/' + section.value + '/' + (item.id || item.code)); await load(); message.value = locale.value === 'en' ? 'Deleted; subscriptions kept.' : locale.value === 'ru' ? 'Удалено; подписки сохранены.' : '已删除，关联已安全处理' }) }

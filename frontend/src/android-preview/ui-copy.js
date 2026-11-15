@@ -12,4 +12,5 @@ const syncStates = {
 }
 for (const language of Object.keys(syncStates)) for (const [state, label] of Object.entries(syncStates[language])) uiCopy[language]['syncStatus_' + state] = label
 for (const [language,label] of Object.entries({zh:'本周期已过 {n}%',en:'{n}% of this cycle elapsed',ru:'Прошло {n}% текущего периода'})) uiCopy[language].cycleElapsed=label
+for (const [language,label] of Object.entries({zh:'不设置',en:'Not set',ru:'Не задан'})) uiCopy[language].budgetUnset=label
 

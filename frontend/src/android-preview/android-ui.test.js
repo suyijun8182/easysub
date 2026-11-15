@@ -30,3 +30,7 @@ test('settings subpage top bar has a named back arrow and the page title',async(
  const html=await renderClass('./SettingsTopBar.vue','app-subpage-bar',{title:'Appearance',t,icon:()=>''})
  assert.match(html,/aria-label="mobile.back"/);assert.match(html,/href="\/settings"/);assert.match(html,/<h1>Appearance<\/h1>/)
 })
+test('monthly budget provides an unset hint, decimal keypad and base currency suffix',async()=>{
+ const html=await renderClass('./MobileSettings.vue','app-budget-field',{prefs:{monthly_budget:null,base_currency:'CNY'},t})
+ assert.match(html,/inputmode="decimal"/);assert.match(html,/placeholder="mobile.budgetUnset"/);assert.match(html,/CNY/)
+})
