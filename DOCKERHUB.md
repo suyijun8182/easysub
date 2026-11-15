@@ -1,5 +1,7 @@
 # EasySub · 省心订阅
 
+Android 0.2.0 Alpha 客户端已更新（删除可撤销、下拉同步、触感反馈），服务端镜像仍为 v2.0.1，无需重新拉取。详见 [Android 0.2.0 说明](https://github.com/suyijun8182/easysub/blob/main/docs/android-0.2.0.md)。
+
 v2.0.1 安全公告：修复匿名文件读取、公开 JWT 示例密钥、默认管理员凭据、安装接口探测、SVG 脚本执行、依赖漏洞、跨 IP 登录锁定及 API Token 明文存储。请阅读 [升级与回滚说明](https://github.com/suyijun8182/easysub/blob/main/docs/update-v2.0.1.md)。原来使用示例 JWT 密钥的设备需重新登录；自动密钥保存在 `data/jwt_secret`，必须保留数据卷。API Token 只在创建时显示一次。自动备份和内网出站配置沿用 v2.0.0。
 
 Self-hosted subscription / renewal manager with **14 notification channels** so you never let a subscription — or a SIM keep-alive plan — expire.

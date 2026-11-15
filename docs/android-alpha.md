@@ -1,5 +1,7 @@
 # Android Alpha 0.1.0
 
+> 这是 0.1.0 的历史记录。最新版本见 [Android 0.2.0](android-0.2.0.md)：从 0.2.0 起删除改为确认弹窗加 5 秒撤销，不再使用 `preview` 口令。
+
 首个独立 Android 调试安装包，包名 `com.easysub.app`，最低 Android 7，目标 Android 16。当前设备是 OPPO PFVM10 / Android 12。
 
 安装文件：`artifacts/android/EasySub-0.1.0-alpha-debug.apk`。使用本机 Android 调试签名，不是正式发布签名，也未上传 GitHub。不要卸载以测试升级；应使用覆盖安装保留本地资料。
