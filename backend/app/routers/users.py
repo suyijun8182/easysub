@@ -1,5 +1,6 @@
 import base64
 import io
+import hashlib
 import secrets as _secrets
 from datetime import datetime
 
@@ -153,7 +154,6 @@ def list_tokens(user: User = Depends(get_current_user), db: Session = Depends(ge
     rows = db.scalars(select(ApiToken).where(ApiToken.user_id == user.id).order_by(ApiToken.id.desc())).all()
     return [{
         "id": r.id, "name": r.name,
-        "masked": (r.token[:6] + "…" + r.token[-4:]) if r.token else "",
         "created_at": r.created_at, "last_used_at": r.last_used_at,
     } for r in rows]
 
@@ -161,7 +161,7 @@ def list_tokens(user: User = Depends(get_current_user), db: Session = Depends(ge
 @router.post("/tokens")
 def create_token(payload: TokenCreateIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     token = _secrets.token_urlsafe(32)
-    row = ApiToken(user_id=user.id, name=payload.name.strip() or "token", token=token)
+    row = ApiToken(user_id=user.id, name=payload.name.strip() or "token", token=hashlib.sha256(token.encode()).hexdigest())
     db.add(row)
     db.commit()
     db.refresh(row)

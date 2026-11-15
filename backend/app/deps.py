@@ -1,4 +1,5 @@
 from datetime import datetime
+import hashlib
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
@@ -20,7 +21,7 @@ def get_current_user(
     user_id = decode_token(token, "access")
     if user_id is None:
         # 回退：把 Bearer 当作 API Token 校验（供脚本/自动化访问）
-        row = db.scalar(select(ApiToken).where(ApiToken.token == token))
+        row = db.scalar(select(ApiToken).where(ApiToken.token == hashlib.sha256(token.encode()).hexdigest()))
         if row:
             row.last_used_at = datetime.utcnow()
             db.commit()

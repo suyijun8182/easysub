@@ -4,7 +4,10 @@ SQLAlchemy 的 create_all 只会创建缺失的「表」，不会给已存在的
 对接用户已有 MySQL 的场景，这里在启动/初始化时检查并按需 ALTER TABLE。
 MySQL 8 不支持 ADD COLUMN IF NOT EXISTS，因此先查 information_schema 再决定。
 """
-from sqlalchemy import text
+import hashlib
+import re
+
+from sqlalchemy import inspect, select, text, update
 from sqlalchemy.engine import Engine
 
 # (表名, 列名, 列定义) —— 仅追加，不删除/改名，确保安全幂等
@@ -66,8 +69,11 @@ def _table_exists(conn, table: str) -> bool:
 
 
 def run_migrations(engine: Engine) -> None:
-    """对 MySQL 执行幂等的列补齐。非 MySQL（如测试用 sqlite）直接跳过。"""
-    if engine is None or not engine.url.get_backend_name().startswith("mysql"):
+    """幂等补齐 MySQL 列，并迁移各数据库中的旧 API Token。"""
+    if engine is None:
+        return
+    if not engine.url.get_backend_name().startswith("mysql"):
+        _hash_legacy_api_tokens(engine)
         return
     with engine.begin() as conn:
         for table in ("sync_records", "sync_changes", "sync_receipts"):
@@ -89,3 +95,17 @@ def run_migrations(engine: Engine) -> None:
                 print(f"[migrate] 已为 {table} 添加列 {column}")
             except Exception as e:  # noqa: BLE001
                 print(f"[migrate] 跳过 {table}.{column}：{e}")
+    _hash_legacy_api_tokens(engine)
+
+
+def _hash_legacy_api_tokens(engine: Engine) -> None:
+    from app.models import ApiToken
+
+    with engine.begin() as conn:
+        if not inspect(conn).has_table("api_tokens"):
+            return
+        for identity, token in conn.execute(select(ApiToken.id, ApiToken.token)):
+            # Legacy token_urlsafe(32) values are 43 characters, never 64 hex.
+            if not re.fullmatch(r"[0-9a-fA-F]{64}", token):
+                conn.execute(update(ApiToken).where(ApiToken.id == identity).values(
+                    token=hashlib.sha256(token.encode()).hexdigest()))

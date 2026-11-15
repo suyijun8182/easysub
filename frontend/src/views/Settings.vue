@@ -144,7 +144,7 @@
           <li v-for="tk in tokens" :key="tk.id">
             <div class="il-main">
               <b>{{ tk.name }}</b>
-              <span class="muted">{{ tk.masked }} · {{ tk.last_used_at ? fmtTime(tk.last_used_at) : t('sec.neverUsed') }}</span>
+              <span class="muted">{{ fmtTime(tk.created_at) }} · {{ tk.last_used_at ? fmtTime(tk.last_used_at) : t('sec.neverUsed') }}</span>
             </div>
             <button class="btn ghost danger sm icon" :aria-label="t('sec.revoke')" :title="t('sec.revoke')" @click="revokeToken(tk.id)">
               <span v-html="icon('x')"></span>

@@ -1,4 +1,5 @@
 import unittest
+import hashlib
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
@@ -31,7 +32,7 @@ class AccountSafetyTests(unittest.TestCase):
             db.add(User(id=1, username='alice', email='alice@example.com', password_hash=self.password_hash, is_admin=True))
             db.add(User(id=2, username='bob', email='bob@example.com', password_hash=self.password_hash))
             db.flush()
-            db.add(ApiToken(user_id=2, name='script', token='api-test-token'))
+            db.add(ApiToken(user_id=2, name='script', token=hashlib.sha256(b'api-test-token').hexdigest()))
             db.commit()
         app = FastAPI()
         for router in (auth.router, users.router, admin.router, backup.router, notifications.router):
