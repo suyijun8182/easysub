@@ -1,6 +1,6 @@
 <template>
   <div class="android-preview">
-    <header class="mobile-masthead"><router-link to="/dashboard" class="mobile-brand"><span aria-hidden="true" v-html="icon('easysub-mark')"></span>EasySub</router-link><details class="mobile-build"><summary :aria-label="t('sync.nativeApp')">ALPHA</summary><p>{{ t(preview.isAndroid ? 'sync.nativeHint' : preview.isLocal ? 'sync.appHint' : 'mobile.previewHint') }}</p></details><router-link :to="preview.isLocal ? '/settings/sync' : '/settings'" class="mobile-account" :aria-label="t('sync.title')"><span aria-hidden="true" v-html="icon('settings')"></span></router-link></header>
+    <header class="mobile-masthead"><router-link to="/dashboard" class="mobile-brand"><span aria-hidden="true" v-html="icon('easysub-mark')"></span>EasySub</router-link><details class="mobile-build"><summary :aria-label="t('sync.nativeApp')">ALPHA</summary><p>{{ t(preview.isAndroid ? 'sync.nativeHint' : preview.isLocal ? 'sync.appHint' : 'mobile.previewHint') }}</p></details><router-link to="/settings/sync" class="mobile-account" :aria-label="connectionLabel"><span aria-hidden="true" v-html="icon('category-cloud')"></span><i class="app-sync-dot" :class="connectionStatus" aria-hidden="true"></i></router-link></header>
     <main ref="main" tabindex="-1" class="app-content"><section v-if="missingRates.length && ['/dashboard','/reports'].includes(route.path)" class="card" role="status"><h2>{{ t('mobile.unknownRate') }}</h2><p>{{ t('mobile.missingRate', { currencies: missingRates.join('、') }) }}</p><router-link to="/settings/currencies" class="btn">{{ t('mobile.manualRate') }}</router-link><router-link to="/subscriptions" class="btn ghost">{{ t('mobile.manage') }}</router-link></section><router-view v-else v-slot="{ Component, route: current }"><component :is="Component" :key="current.fullPath" /></router-view></main>
     <nav ref="bottomNav" class="app-bottom" :aria-label="t('sync.nav')"><router-link v-for="item in tabs" :key="item.path" :to="item.path" custom v-slot="{ href, navigate }"><a :href="href" :class="{ 'router-link-active': selectedTab === item.path }" :aria-current="selectedTab === item.path ? (route.path === item.path ? 'page' : 'location') : undefined" @click="navigateTab($event, item.path, navigate)"><span aria-hidden="true" v-html="icon(item.icon)"></span><span>{{ t(item.label) }}</span></a></router-link></nav>
   </div>
@@ -11,7 +11,11 @@ import { useI18n } from 'vue-i18n'
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { activeTab } from './ui-behavior.js'
+import { syncStatus } from './sync-status.js'
 const preview = inject('preview'), revision = inject('previewRevision'), route = useRoute()
+const localSync = inject('localSync')
+const connectionStatus = computed(() => { revision.value; return syncStatus(localSync?.status) })
+const connectionLabel = computed(() => `${t('sync.title')}: ${t('mobile.syncStatus_' + connectionStatus.value)}`)
 const main = ref(null)
 const selectedTab = computed(() => activeTab(route.path))
 const router = useRouter()

@@ -17,7 +17,7 @@ export async function createLocal(store, storage, changed, transportFactory = cr
     doc = { local, sync: emptySync(), mappings: {}, link: null, tokens: {}, iconCache: {} }
   }
   store.loadState(doc.local)
-  let queue = Promise.resolve(), closing = false, syncQueued = null, activeTransport = null
+  let queue = Promise.resolve(), closing = false, syncQueued = null, activeTransport = null, syncing = false
   const serial = fn => { const result = queue.then(fn); queue = result.catch(() => {}); return result }
   const save = async () => { doc.local = clone(store.state); await storage.save(doc); changed() }
   const key = (kind, id) => `${kind}:${id}`
@@ -114,6 +114,7 @@ export async function createLocal(store, storage, changed, transportFactory = cr
     const previous = clone(doc)
     const transport = transportFactory(doc.link.server, doc.tokens)
     activeTransport = transport
+    syncing = true; changed()
     try {
       // Upload local bitmaps before persisting an immutable wire batch.
       for (const op of Object.values(doc.sync.pending)) if (!op.deleted && /^(data:image\/|\/preview-icons\/)/.test(op.data.icon || '') && !doc.sync.inflight?.some(i => i.id === op.id)) {
@@ -139,10 +140,10 @@ export async function createLocal(store, storage, changed, transportFactory = cr
       if ([401, 403].includes(error.status) || ['RESET_REQUIRED', 'SYNC_PROTOCOL_UNAVAILABLE'].includes(error.code)) doc.sync.enabled = false
       try { project(); await save() } catch { doc = previous; store.loadState(doc.local); changed(); throw error }
       throw error
-    } finally { activeTransport = null }
+    } finally { activeTransport = null; syncing = false; changed() }
   }
   const local = {
-    get status() { return { ...doc.sync, link: doc.link, error: doc.error, exchange_base: doc.exchangeBase || 'CNY' } },
+    get status() { return { ...doc.sync, syncing, link: doc.link, error: doc.error, exchange_base: doc.exchangeBase || 'CNY' } },
     request: (...args) => { activeTransport?.abort?.(); return serial(async () => {
       const previous = clone(doc), oldState = clone(store.state), before = collect()
       try { const result = await store.request(...args); rememberSettings(oldState); if (doc.link) changes(before); await save(); return result }

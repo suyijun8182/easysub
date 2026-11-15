@@ -12,3 +12,9 @@ test('Android renewal entry is conditional and announces the pending count', asy
   values.renewalCount = 3; values.androidPreview = null
   assert.ok(!(await render()).includes('href'))
 })
+
+test('top account entry announces sync status and opens account and sync',async()=>{
+ const html=await renderClass('./PreviewApp.vue','mobile-account',{connectionLabel:'Account and sync: Local only',connectionStatus:'local',icon:()=>''})
+ assert.match(html,/href="\/settings\/sync"/)
+ assert.match(html,/aria-label="Account and sync: Local only"/)
+})
