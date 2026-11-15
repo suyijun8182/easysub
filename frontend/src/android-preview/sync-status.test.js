@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { syncStatus } from './sync-status.js'
+import { syncStatus, showRawSyncError } from './sync-status.js'
 import { createPreviewStore } from './store.js'
 import { createLocal } from '../sync/local.js'
 import { emptySync } from '../sync/engine.js'
@@ -28,4 +28,9 @@ test('real sync exposes its running state and clears it after failure',async()=>
   await assert.rejects(running,/offline/)
   assert.equal(local.status.syncing,false)
   assert.equal(syncStatus(local.status),'failed')
+})
+test('browser network failures are never shown as raw English text',()=>{
+  for (const message of ['Failed to fetch','Load failed','NetworkError when attempting to fetch resource.','net::ERR_NAME_NOT_RESOLVED']) assert.equal(showRawSyncError(message,'zh'),false,message)
+  assert.equal(showRawSyncError('令牌已失效，请重新登录','zh'),true)
+  assert.equal(showRawSyncError('令牌已失效，请重新登录','en'),false)
 })
