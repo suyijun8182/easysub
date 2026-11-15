@@ -33,6 +33,7 @@ class UserOut(BaseModel):
     email: str
     is_admin: bool
     is_active: bool
+    insecure_default_password: bool
     locale: str
     theme: str
     base_currency: str

@@ -61,7 +61,9 @@ function normalize(s, today) {
   return out
 }
 
-export function createPreviewStore(today = isoToday()) {
+export function createPreviewStore(fixedDay = null) {
+  const currentDay = () => fixedDay ?? isoToday()
+  const today = currentDay()
   let next = 1000
   let state = {
     user: { id: 1, username: '本地用户', email: '', is_admin: false, locale: 'zh', theme: 'light', base_currency: 'CNY', monthly_budget: 600, category_order: [], notify_settings: { quiet_start: '22:00', quiet_end: '08:00', digest_enabled: false, digest_weekday: 0 }, totp_enabled: false },
@@ -94,6 +96,7 @@ export function createPreviewStore(today = isoToday()) {
   }
   const backup = () => copy({ app: 'EasySub', export_version: 2, exported_at: new Date().toISOString(), user: { ...state.user, notify_config: state.config }, ...Object.fromEntries(['subscriptions', 'categories', 'payment_methods', 'currencies', 'bundles', 'rates', 'rates_updated_at', 'logs', 'notifications'].map(k => [k, state[k]])) })
   function restore(data, replace = false) {
+    const today = currentDay()
     if (!data || !Array.isArray(data.subscriptions)) throw new Error('备份缺少 subscriptions，整站文件请先选择用户')
     const candidate = copy(state)
     if (replace) { candidate.subscriptions = []; candidate.notifications = [] }
@@ -109,7 +112,9 @@ export function createPreviewStore(today = isoToday()) {
         maps[key].set(entity.id, target.id)
       }
     }
-    for (const c of data.currencies || []) if (!candidate.currencies.some(e => e.code === c.code)) candidate.currencies.push(copy(c))
+    for (const c of data.currencies || []) if (!candidate.currencies.some(e => e.code === c.code)) {
+      candidate.currencies.push({ ...copy(c), is_custom: c.is_custom ?? !seed.CURRENCIES.some(([code]) => code === c.code) })
+    }
     let skipped = 0
     const subscriptionIds = new Map()
     for (const source of data.subscriptions) {
@@ -135,6 +140,7 @@ export function createPreviewStore(today = isoToday()) {
     return { ok: true, imported: data.subscriptions.length - skipped, skipped }
   }
   async function request(method, path, body = {}, params = {}) {
+    const today = currentDay()
     method = method.toLowerCase(); path = path.split('?')[0]
     if (path === '/api/auth/me') return copy(state.user)
     if (path === '/api/me' && method === 'patch') { Object.assign(state.user, body); log('preferences.update', '更新偏好'); return copy(state.user) }
@@ -180,7 +186,6 @@ export function createPreviewStore(today = isoToday()) {
       }
       if (method === 'put') { Object.assign(s, normalize({ ...s, ...body, id: s.id }, today)); log('subscription.update', `编辑「${s.name}」`); return out(s) }
       if (method === 'delete') {
-        if (body.password !== 'preview') throw new Error('预览删除确认口令为 preview；正式 App 改用设备认证')
         state.subscriptions = state.subscriptions.filter(x => x.id !== id); state.notifications = state.notifications.filter(x => x.subscription_id !== id); log('subscription.delete', `删除「${s.name}」`); return { ok: true }
       }
       return out(s)
@@ -233,6 +238,7 @@ export function createPreviewStore(today = isoToday()) {
   log('preview.start', '打开完整功能预览；刷新重置，不连接正式 API')
   function loadState(value) {
     state = copy(value)
+    for (const currency of state.currencies) currency.is_custom ??= !seed.CURRENCIES.some(([code]) => code === currency.code)
     next = Math.max(1000, ...['subscriptions', 'categories', 'payment_methods', 'bundles', 'logs', 'notifications'].flatMap(k => (state[k] || []).map(r => Number(r.id) + 1)))
   }
   return { get state() { return state }, request, backup, restore, loadState }
@@ -256,9 +262,9 @@ export async function encryptBackup(data, password) {
 }
 export async function decryptBackup(envelope, password) {
   if (!globalThis.crypto?.subtle) throw new Error('当前 HTTP 手机预览不支持解密，请在电脑 http://localhost:5174 使用备份功能。')
-  if (envelope.format !== 'encrypted-preview-v1') throw new Error('不支持的加密格式')
+  if (!['encrypted-preview-v1', 'encrypted-full-v1'].includes(envelope.format)) throw new Error('不支持的加密格式')
   try {
-    const bytes = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: from64(envelope.iv) }, await backupKey(password, from64(envelope.salt)), from64(envelope.ciphertext))
+    const bytes = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: from64(envelope.iv), ...(envelope.format === 'encrypted-full-v1' ? { additionalData: new TextEncoder().encode(envelope.format) } : {}) }, await backupKey(password, from64(envelope.salt)), from64(envelope.ciphertext))
     return JSON.parse(new TextDecoder().decode(bytes))
   } catch { throw new Error('密码错误或备份文件损坏，原数据未更改') }
 }

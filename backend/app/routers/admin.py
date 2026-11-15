@@ -95,6 +95,7 @@ def update_user(
             )
     if payload.password:
         user.password_hash = hash_password(payload.password)
+        user.auth_version += 1
     db.commit()
     db.refresh(user)
     return _to_out(db, user)

@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 from app import bootstrap, database, migrate
 from app.seed import seed_all
+from app.secrets_store import rotate_legacy_secrets_safely
 from app.services import scheduler
 
 router = APIRouter(prefix="/api/setup", tags=["setup"])
@@ -24,6 +25,7 @@ def _initialize(cfg: dict) -> None:
     db = database.SessionLocal()
     try:
         seed_all(db)
+        rotate_legacy_secrets_safely(db)
     finally:
         db.close()
     scheduler.start_scheduler()
@@ -43,6 +45,8 @@ def status():
 
 @router.post("/test")
 def test(cfg: DBConfig):
+    if database.is_configured():
+        raise HTTPException(400, "系统已完成数据库配置")
     ok, msg = bootstrap.test_connection(cfg.model_dump())
     if not ok:
         raise HTTPException(400, f"连接失败：{msg}")

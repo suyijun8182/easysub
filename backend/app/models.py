@@ -22,6 +22,11 @@ from app.database import Base
 class User(Base):
     __tablename__ = "users"
 
+    @property
+    def insecure_default_password(self) -> bool:
+        from app.security import insecure_default_password
+        return insecure_default_password(self.password_hash)
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     username: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
@@ -34,6 +39,15 @@ class User(Base):
     is_approved: Mapped[bool] = mapped_column(Boolean, default=True)
     email_code: Mapped[str | None] = mapped_column(String(16), nullable=True)
     email_code_expires: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    auth_version: Mapped[int] = mapped_column(Integer, default=0)
+    totp_pending_secret: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    reset_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    reset_code_expires: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    reset_code_sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    reset_code_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    email_code_sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    email_code_attempts: Mapped[int] = mapped_column(Integer, default=0)
 
     # 偏好
     locale: Mapped[str] = mapped_column(String(8), default="zh")        # zh | en | ru

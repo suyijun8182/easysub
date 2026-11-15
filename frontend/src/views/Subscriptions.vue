@@ -1,5 +1,5 @@
 <template>
-  <div class="subs">
+  <div class="subs" :class="{ 'app-compact-subs': androidPreview }">
     <header class="page-head">
       <div>
         <h1>{{ t('nav.subscriptions') }}</h1>
@@ -9,20 +9,22 @@
           <span v-if="!lateN && !soonN && subs.length" class="lede-ok">{{ t('dashboard.summaryClear') }}</span>
         </p>
       </div>
-      <button class="btn" @click="openNew"><span class="i" v-html="icon('plus')"></span>{{ t('sub.add') }}</button>
+      <button v-if="!androidPreview" class="btn" @click="openNew"><span class="i" v-html="icon('plus')"></span>{{ t('sub.add') }}</button>
     </header>
 
+    <button v-if="androidPreview" class="app-add-fab btn" :aria-label="t('sub.add')" @click="openNew"><span aria-hidden="true" v-html="icon('plus')"></span></button>
     <div class="toolbar">
       <div class="seg">
         <button :class="{ on: filter === '' }" :aria-pressed="filter === ''" @click="setFilter('')">{{ t('sub.filterAll') }}</button>
         <button :class="{ on: filter === 'recurring' }" :aria-pressed="filter === 'recurring'" @click="setFilter('recurring')">{{ t('sub.filterRecurring') }}</button>
         <button :class="{ on: filter === 'one_time' }" :aria-pressed="filter === 'one_time'" @click="setFilter('one_time')">{{ t('sub.filterOneTime') }}</button>
       </div>
+      <button v-if="androidPreview" class="btn ghost app-tools-toggle" :aria-label="t('nav.more')" :aria-expanded="toolsOpen" @click="toolsOpen = !toolsOpen"><span class="i" aria-hidden="true" v-html="icon('more')"></span></button>
       <label class="search">
         <span class="i" v-html="icon('search')"></span>
         <input v-model="search" type="search" :placeholder="t('sub.searchPh')" :aria-label="t('sub.searchPh')" />
       </label>
-      <div class="tb-right">
+      <div v-show="!androidPreview || toolsOpen" class="tb-right">
         <button class="btn ghost sm" :class="{ on: manage === 'sort' }" :aria-pressed="manage === 'sort'"
                 :disabled="!subs.length" @click="setManage('sort')">
           <span class="i" v-html="icon('grip')"></span>{{ t('sub.sortMode') }}</button>
@@ -45,6 +47,8 @@
       <button class="btn" style="margin-top:12px" @click="openNew"><span class="i" v-html="icon('plus')"></span>{{ t('sub.add') }}</button>
     </div>
 
+    <MobileSubscriptionList v-if="androidPreview && !manage" :subscriptions="compactSubs" @renew="askRenew" @edit="openEdit" />
+    <template v-if="!androidPreview || manage">
     <!-- 按分类分组 -->
     <section v-for="(g, gi) in grouped" :key="g.key" class="cat-group"
          :class="{ 'drop-cat': dragOverCat === g.key }"
@@ -135,6 +139,7 @@
         </article>
       </div>
     </section>
+    </template>
 
     <!-- 多选模式：批量操作条 -->
     <div v-if="manage === 'select'" class="bulk-bar" role="toolbar" :aria-label="t('sub.selectMode')">
@@ -186,15 +191,16 @@
     <!-- 删除确认（需验证密码；单个 / 批量） -->
     <BaseModal v-if="delTarget || delBulk" style="width:420px" @close="closeDelete" v-slot="{ titleId }">
         <h3 :id="titleId">{{ t('sub.deleteTitle') }}</h3>
-        <p id="del-tip" style="font-size:14px;line-height:1.6">{{ androidPreview ? t('sync.deleteConfirmation', { count: delBulk ? selected.size : 1 }) : delBulk
+        <p id="del-tip" style="font-size:14px;line-height:1.6">{{ androidPreview ? t('mobile.deleteHint') : delBulk
           ? t('sub.bulkDeleteTip', { n: selected.size })
           : t('sub.deletePwdTip', { name: delTarget.name }) }}</p>
-        <input v-model="delPwd" :type="androidPreview ? 'text' : 'password'" :autocomplete="androidPreview ? 'off' : 'current-password'" :aria-label="t(androidPreview ? 'sync.confirmationText' : 'sub.pwdPh')"
+        <ul v-if="androidPreview" class="app-delete-identities"><li v-for="s in deleteRows" :key="s.id"><strong>{{ s.name }}</strong><span>{{ s.remark || s.plan }}</span><span>{{ Number(s.amount).toFixed(2) }} {{ s.currency }}</span></li></ul>
+        <input v-else v-model="delPwd" :type="androidPreview ? 'text' : 'password'" :autocomplete="androidPreview ? 'off' : 'current-password'" :aria-label="t(androidPreview ? 'sync.confirmationText' : 'sub.pwdPh')"
                aria-describedby="del-tip" :placeholder="androidPreview ? 'preview' : t('sub.pwdPh')" @keyup.enter="confirmDelete" />
         <p v-if="delErr" class="err" role="alert">{{ delErr }}</p>
         <div class="row" style="justify-content:flex-end;margin-top:16px">
           <button class="btn ghost" @click="closeDelete">{{ t('sub.cancel') }}</button>
-          <button class="btn danger" :disabled="deleting || !delPwd" @click="confirmDelete">{{ t('sub.delete') }}</button>
+          <button class="btn danger" :disabled="deleting || (!androidPreview && !delPwd)" @click="confirmDelete">{{ t('sub.delete') }}</button>
         </div>
     </BaseModal>
 
@@ -269,7 +275,7 @@
             <div style="flex:1">
               <label for="sf-currency">{{ t('sub.currency') }}</label>
               <select id="sf-currency" v-model="form.currency">
-                <option v-for="c in currencies" :key="c.code" :value="c.code">{{ c.code }} {{ c.symbol }}</option>
+                <option v-for="c in currencies" :key="c.code" :value="c.code">{{ androidPreview ? currencyName(c, locale) : c.code + ' ' + c.symbol }}</option>
               </select>
             </div>
           </div>
@@ -353,7 +359,7 @@
               <label for="sf-pay">{{ t('sub.payment') }}</label>
               <select id="sf-pay" v-model="form.payment_method_id">
                 <option :value="null">—</option>
-                <option v-for="p in methods" :key="p.id" :value="p.id">{{ p.icon }} {{ p.name }}</option>
+                <option v-for="p in methods" :key="p.id" :value="p.id">{{ p.icon }} {{ androidPreview ? paymentName(p, locale) : p.name }}</option>
               </select>
             </div>
           </div>
@@ -442,9 +448,11 @@ import { icon } from '../icons'
 import { categoryIconName } from '../android-preview/bitmap-renderer.js'
 import { daysLeft, isImg, lifeBar, statusOf } from '../lifeline'
 import SubIcon from '../components/SubIcon.vue'
+import MobileSubscriptionList from '../android-preview/MobileSubscriptionList.vue'
+import { paymentName, currencyName } from '../android-preview/display-names.js'
 import BaseModal from '../components/BaseModal.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const auth = useAuth()
 const subs = ref([])
 const currencies = ref([])
@@ -455,6 +463,7 @@ const iconLib = ref([])
 const filter = ref('')
 const showForm = ref(false)
 const androidPreview = inject('preview', null)
+const previewRevision = inject('previewRevision', null)
 const route = useRoute()
 let initialForm = ''
 function confirmFormExit() {
@@ -483,6 +492,7 @@ const renewMode = ref('today')
 const renewing = ref(false)
 
 const delTarget = ref(null)
+const deleteRows = computed(() => delBulk.value ? subs.value.filter(s=>selected.has(s.id)) : delTarget.value ? [delTarget.value] : [])
 const delBulk = ref(false)
 const delPwd = ref('')
 const delErr = ref('')
@@ -490,6 +500,8 @@ const deleting = ref(false)
 
 // 管理模式：'' 常规 | 'sort' 按钮排序（键盘 / 触屏可用） | 'select' 多选批量操作
 const manage = ref('')
+const toolsOpen = ref(false)
+const compactSubs = computed(() => grouped.value.flatMap(group => group.items))
 const selected = reactive(new Set())
 const bulkBusy = ref(false)
 
@@ -503,7 +515,7 @@ function toast(msg, type = 'ok') {
 
 function payName(s) {
   const p = methods.value.find((x) => x.id === s.payment_method_id)
-  return p ? `${p.icon || ''} ${p.name}`.trim() : ''
+  return p ? `${p.icon || ''} ${androidPreview ? paymentName(p,locale.value) : p.name}`.trim() : ''
 }
 function cycleText(s) {
   const n = s.cycle_count > 1 ? s.cycle_count + ' ' : ''
@@ -610,8 +622,10 @@ function rebuild() {
 
 const search = ref('')
 const grouped = computed(() => {
+  if (previewRevision) previewRevision.value
+  const hidden = androidPreview?.deletions.hiddenIds
   const q = search.value.trim().toLowerCase()
-  const match = (s) => !q || [s.name, s.plan, s.remark, s.url].some((v) => (v || '').toLowerCase().includes(q))
+  const match = (s) => !hidden?.has(s.id) && (!q || [s.name, s.plan, s.remark, s.url].some((v) => (v || '').toLowerCase().includes(q)))
   return catOrder.value
     .filter((k) => orderMap[k] && orderMap[k].length)
     .map((k) => {
@@ -910,6 +924,12 @@ async function confirmRenew() {
 function askDelete(s) { delTarget.value = s; delBulk.value = false; delPwd.value = ''; delErr.value = '' }
 function closeDelete() { delTarget.value = null; delBulk.value = false }
 async function confirmDelete() {
+  if (androidPreview) {
+    if (deleting.value || !deleteRows.value.length) return
+    androidPreview.deletions.stage(deleteRows.value)
+    for (const s of deleteRows.value) selected.delete(s.id)
+    closeDelete();return
+  }
   if (delBulk.value) return confirmBulkDelete()
   if (!delTarget.value || deleting.value || !delPwd.value) return
   deleting.value = true
@@ -1013,9 +1033,10 @@ onMounted(async () => {
   iconLib.value = lib.data
   await load()
   if (androidPreview) {
-    const target = subs.value.find(s => s.id === Number(route.query.edit || route.query.renew))
+    const target = subs.value.find(s => s.id === Number(route.query.edit || route.query.renew || route.query.delete))
     if (target && route.query.edit) openEdit(target)
     else if (target && route.query.renew) askRenew(target)
+    else if (target && route.query.delete) askDelete(target)
   }
 })
 </script>

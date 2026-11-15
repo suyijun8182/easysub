@@ -9,13 +9,14 @@
           <span v-if="!lateList.length && !soonCount" class="sum ok">{{ t('dashboard.summaryClear') }}</span>
         </p>
       </div>
-      <router-link to="/subscriptions" class="btn"><span v-html="icon('plus')"></span>{{ t('sub.add') }}</router-link>
+      <router-link v-if="!androidPreview" to="/subscriptions" class="btn"><span v-html="icon('plus')"></span>{{ t('sub.add') }}</router-link>
     </header>
 
     <div v-if="loading" class="card skeleton" aria-busy="true"></div>
     <template v-else>
       <!-- 签名区：未来 30 天续费时间轴 -->
-      <section class="card horizon" :aria-label="t('dashboard.nextDays', { n: horizon })">
+      <MobileTimeline v-if="androidPreview" :subscriptions="allSubs" />
+      <section v-else class="card horizon" :aria-label="t('dashboard.nextDays', { n: horizon })">
         <div class="hz-head">
           <h3>{{ t('dashboard.nextDays', { n: horizon }) }}</h3>
           <router-link to="/calendar" class="more">{{ t('nav.calendar') }}<span v-html="icon('chevron')"></span></router-link>
@@ -50,6 +51,8 @@
         </div>
       </section>
 
+      <router-link v-if="androidPreview && renewalCount" class="mobile-renew-entry" to="/renewals"><span class="renew-entry-icon" aria-hidden="true" v-html="icon('renew')"></span><span>{{ t('mobile.renewals', { n: renewalCount }) }}</span><span aria-hidden="true" v-html="icon('chevron')"></span></router-link>
+
       <!-- 支出概况：一条横向读数，而非四张同质卡片 -->
       <section class="card figures">
         <div class="fig">
@@ -71,7 +74,7 @@
         <div v-if="data.monthly_budget" class="budget">
           <div class="bd-h">
             <span class="fig-l">{{ t('dashboard.budgetOf') }}</span>
-            <span class="num" :class="{ over: overBudget }">{{ money(data.month_spend) }} / {{ money(data.monthly_budget) }}</span>
+            <span class="num" :class="{ over: overBudget }"><template v-if="androidPreview"><span class="app-nowrap">{{ money(data.month_spend) }}</span> / <span class="app-nowrap">{{ money(data.monthly_budget) }}</span></template><template v-else>{{ money(data.month_spend) }} / {{ money(data.monthly_budget) }}</template></span>
           </div>
           <div class="life" :class="overBudget ? 'late' : budgetPct >= 85 ? 'soon' : 'ok'">
             <i :style="{ transform: `scaleX(${budgetPct / 100})` }"></i>
@@ -174,12 +177,16 @@ import api from '../api'
 import { useAuth } from '../stores/auth'
 import { icon } from '../icons'
 import { categoryIconName } from '../android-preview/bitmap-renderer.js'
+import { upcomingRenewals } from '../android-preview/renewal-desk.js'
+import MobileTimeline from '../android-preview/MobileTimeline.vue'
 import { daysLeft, lifeBar, statusOf } from '../lifeline'
 import SubIcon from '../components/SubIcon.vue'
 
 const { t } = useI18n()
 const auth = useAuth()
 const androidPreview = inject('preview', null)
+const previewRevision = inject('previewRevision', null)
+const renewalCount = computed(() => { if (previewRevision) previewRevision.value; return androidPreview ? upcomingRenewals(androidPreview.state.subscriptions, 30).length : 0 })
 const loading = ref(true)
 const data = ref({ upcoming: [], recent: [] })
 const breakdown = ref([])

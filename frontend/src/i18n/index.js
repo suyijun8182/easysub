@@ -80,6 +80,8 @@ const zh = {
     pendingTab: '待审核 ({n})', allTab: '全部用户', noPending: '没有待审核的用户'
   },
   auth: {
+    resendSent: '若账号尚未验证，验证码将发送到邮箱，请查收（重发间隔 60 秒）。',
+    resendCode: '重新发送验证码（60 秒后可重发）',
     login: '登录', register: '注册', username: '用户名', email: '邮箱', password: '密码',
     loginBtn: '登录', registerBtn: '注册', noAccount: '没有账户？去注册', hasAccount: '已有账户？去登录',
     loginFail: '用户名或密码错误', welcome: '欢迎回来',
@@ -157,6 +159,7 @@ const zh = {
     exportOk: '备份已下载', importOk: '已成功导入 {n} 个订阅', importFail: '导入失败：文件格式不正确', notJson: '导入失败：这不是有效的 JSON 备份文件', httpFail: '导入失败：服务器返回 {s} {m}', netFail: '导入失败：无法连接服务器，请检查网络或反向代理'
   },
   backupAll: {
+    passwordLabel: '整站备份密码', passwordHint: '至少 12 位。导出和恢复使用同一密码，请另行妥善保存。', passwordRequired: '自动备份已暂停：请由管理员配置 BACKUP_PASSWORD（至少 12 位）。',
     title: '整站备份与恢复（管理员）',
     tip: '导出全部成员的账户与数据为一个 JSON 文件；重新部署后导入即可整站恢复所有用户的订阅、分类等。',
     export: '导出整站备份', import: '导入整站恢复', replace: '每个用户导入前清空其现有订阅',
@@ -179,7 +182,7 @@ const zh = {
     digest: '每周汇总推送', over: '已超预算', budgetLeft: '预算剩余'
   },
   wk: { mon: '周一', tue: '周二', wed: '周三', thu: '周四', fri: '周五', sat: '周六', sun: '周日' },
-  sec: { revoke: '吊销',
+  sec: { defaultPasswordWarning: '你的账号仍在使用默认密码，请立即点击此处修改密码。', revoke: '吊销',
     title: '安全', twofa: '两步验证 (2FA)', on: '已开启', off: '未开启', enable: '开启', disable: '关闭',
     confirmEnable: '确认开启', scanTip: '用 Google Authenticator / 1Password 等扫码，或手动输入密钥：',
     enabledOk: '两步验证已开启', disabledOk: '两步验证已关闭', enterPwd: '请输入登录密码以关闭两步验证',
@@ -273,6 +276,8 @@ const en = {
     pendingTab: 'Pending ({n})', allTab: 'All users', noPending: 'No users awaiting approval'
   },
   auth: {
+    resendSent: 'If the account is unverified, a code will be emailed. Please wait 60 seconds before resending.',
+    resendCode: 'Resend code (60-second cooldown)',
     login: 'Login', register: 'Register', username: 'Username', email: 'Email', password: 'Password',
     loginBtn: 'Sign in', registerBtn: 'Sign up', noAccount: 'No account? Register', hasAccount: 'Have an account? Login',
     loginFail: 'Wrong username or password', welcome: 'Welcome back',
@@ -350,6 +355,7 @@ const en = {
     exportOk: 'Backup downloaded', importOk: 'Imported {n} subscriptions', importFail: 'Import failed: invalid file', notJson: 'Import failed: not a valid JSON backup', httpFail: 'Import failed: server returned {s} {m}', netFail: 'Import failed: cannot reach the server; check the network or reverse proxy'
   },
   backupAll: {
+    passwordLabel: 'Full backup password', passwordHint: 'At least 12 characters. Keep this password separately; it is required to restore the backup.', passwordRequired: 'Automatic backups are paused. Set BACKUP_PASSWORD to at least 12 characters.',
     title: 'Full Site Backup & Restore (Admin)',
     tip: 'Export every member\'s account and data as one JSON file. After a redeploy, import it to restore all users\' subscriptions, categories and more.',
     export: 'Export full backup', import: 'Import full backup', replace: 'Clear each user\'s subscriptions first',
@@ -372,7 +378,7 @@ const en = {
     digest: 'Weekly digest', over: 'Over budget', budgetLeft: 'Budget left'
   },
   wk: { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat', sun: 'Sun' },
-  sec: { revoke: 'Revoke',
+  sec: { defaultPasswordWarning: 'Your account still uses the default password. Click here to change it now.', revoke: 'Revoke',
     title: 'Security', twofa: 'Two-factor (2FA)', on: 'enabled', off: 'off', enable: 'Enable', disable: 'Disable',
     confirmEnable: 'Confirm', scanTip: 'Scan with Google Authenticator / 1Password, or enter the key manually:',
     enabledOk: '2FA enabled', disabledOk: '2FA disabled', enterPwd: 'Enter your password to disable 2FA',
@@ -466,6 +472,8 @@ const ru = {
     pendingTab: 'Ожидают ({n})', allTab: 'Все', noPending: 'Нет ожидающих одобрения'
   },
   auth: {
+    resendSent: 'Если учётная запись не подтверждена, код придёт по почте. Повторная отправка доступна через 60 секунд.',
+    resendCode: 'Отправить код повторно (через 60 секунд)',
     login: 'Вход', register: 'Регистрация', username: 'Логин', email: 'Эл. почта', password: 'Пароль',
     loginBtn: 'Войти', registerBtn: 'Создать', noAccount: 'Нет аккаунта? Регистрация', hasAccount: 'Есть аккаунт? Войти',
     loginFail: 'Неверный логин или пароль', welcome: 'С возвращением',
@@ -543,6 +551,7 @@ const ru = {
     exportOk: 'Файл скачан', importOk: 'Импортировано подписок: {n}', importFail: 'Ошибка импорта: неверный файл', notJson: 'Ошибка импорта: это не JSON-резервная копия', httpFail: 'Ошибка импорта: сервер вернул {s} {m}', netFail: 'Ошибка импорта: сервер недоступен, проверьте сеть или прокси'
   },
   backupAll: {
+    passwordLabel: 'Пароль полной резервной копии', passwordHint: 'Не менее 12 символов. Храните пароль отдельно: он потребуется для восстановления.', passwordRequired: 'Автоматическое копирование приостановлено. Задайте BACKUP_PASSWORD длиной от 12 символов.',
     title: 'Полная резервная копия сайта (админ)',
     tip: 'Экспортируйте аккаунты и данные всех участников в один JSON-файл. После переустановки импортируйте его, чтобы восстановить подписки, категории и т.д. всех пользователей.',
     export: 'Экспорт полной копии', import: 'Импорт полной копии', replace: 'Сначала очистить подписки каждого пользователя',
@@ -565,7 +574,7 @@ const ru = {
     digest: 'Еженедельная сводка', over: 'Превышен бюджет', budgetLeft: 'Остаток бюджета'
   },
   wk: { mon: 'Пн', tue: 'Вт', wed: 'Ср', thu: 'Чт', fri: 'Пт', sat: 'Сб', sun: 'Вс' },
-  sec: { revoke: 'Отозвать',
+  sec: { defaultPasswordWarning: 'Ваш аккаунт использует пароль по умолчанию. Нажмите здесь, чтобы изменить его.', revoke: 'Отозвать',
     title: 'Безопасность', twofa: 'Двухфакторная (2FA)', on: 'вкл', off: 'выкл', enable: 'Включить', disable: 'Выключить',
     confirmEnable: 'Подтвердить', scanTip: 'Отсканируйте в Google Authenticator / 1Password или введите ключ вручную:',
     enabledOk: '2FA включена', disabledOk: '2FA выключена', enterPwd: 'Введите пароль, чтобы выключить 2FA',

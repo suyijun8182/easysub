@@ -10,6 +10,8 @@ import os
 from datetime import datetime
 
 from app import database
+from app.config import settings
+from app.backup_crypto import encrypt_backup
 from app.routers.backup import build_full_backup
 
 BACKUP_DIR = os.path.join("data", "backups")
@@ -27,6 +29,8 @@ def _prune() -> None:
 
 def run_auto_backup() -> dict:
     """执行一次整站自动备份，返回 {ok, file, users} 或 {skipped}。"""
+    if len(settings.backup_password) < 12:
+        return {"skipped": "请配置至少 12 位的 BACKUP_PASSWORD，自动备份不会降级为明文"}
     if database.SessionLocal is None:
         return {"skipped": "数据库未配置"}
     os.makedirs(BACKUP_DIR, exist_ok=True)
@@ -38,8 +42,19 @@ def run_auto_backup() -> dict:
     # 文件名带日期（同日覆盖，避免一天多份）
     stamp = datetime.utcnow().strftime("%Y%m%d")
     path = os.path.join(BACKUP_DIR, f"easysub-{stamp}.json")
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(payload, f, ensure_ascii=False, indent=2)
+    from tempfile import NamedTemporaryFile
+    encrypted = encrypt_backup(payload, settings.backup_password)
+    temporary = None
+    try:
+        with NamedTemporaryFile(mode="w", encoding="utf-8", dir=BACKUP_DIR, delete=False) as f:
+            temporary = f.name
+            json.dump(encrypted, f, ensure_ascii=False)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temporary, path)
+    finally:
+        if temporary and os.path.exists(temporary):
+            os.remove(temporary)
     _prune()
     return {"ok": True, "file": os.path.basename(path), "users": len(payload["users"])}
 

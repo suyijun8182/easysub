@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app import bootstrap, database
 from app.routers import (
@@ -106,12 +107,24 @@ def health():
 
 
 # 静态资源（上传的图标）
+class IconStaticFiles(StaticFiles):
+    async def get_response(self, path, scope):
+        try:
+            response = await super().get_response(path, scope)
+        except StarletteHTTPException as exc:
+            response = JSONResponse({"detail": exc.detail}, status_code=exc.status_code, headers=exc.headers)
+        response.headers["Content-Security-Policy"] = "default-src 'none'; style-src 'unsafe-inline'; sandbox"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
+
+
 os.makedirs(os.path.join("data", "icons"), exist_ok=True)
-app.mount("/static/icons", StaticFiles(directory=os.path.join("data", "icons")), name="icons")
+app.mount("/static/icons", IconStaticFiles(directory=os.path.join("data", "icons")), name="icons")
 
 # 前端构建产物（若存在则托管，实现单服务部署 + SPA history 路由兜底）
 _frontend_dist = os.path.join("frontend_dist")
 if os.path.isdir(_frontend_dist):
+    dist_root = os.path.realpath(_frontend_dist)
     _assets = os.path.join(_frontend_dist, "assets")
     if os.path.isdir(_assets):
         app.mount("/assets", StaticFiles(directory=_assets), name="assets")
@@ -120,7 +133,11 @@ if os.path.isdir(_frontend_dist):
     async def spa_fallback(full_path: str):
         if full_path.startswith("api/"):
             raise HTTPException(404, "API endpoint not found")
-        candidate = os.path.join(_frontend_dist, full_path)
-        if full_path and os.path.isfile(candidate):
+        candidate = os.path.realpath(os.path.join(dist_root, full_path))
+        try:
+            contained = os.path.commonpath([dist_root, candidate]) == dist_root
+        except ValueError:  # Windows paths on different drives have no common root.
+            contained = False
+        if contained and os.path.isfile(candidate):
             return FileResponse(candidate)
-        return FileResponse(os.path.join(_frontend_dist, "index.html"))
+        return FileResponse(os.path.join(dist_root, "index.html"))

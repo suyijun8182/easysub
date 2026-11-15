@@ -18,6 +18,12 @@ try {
     if ($LASTEXITCODE -gt 7) { throw 'Cannot stage Android sources.' }
     & robocopy.exe node_modules/@capacitor (Join-Path $stage 'node_modules/@capacitor') /E /XD build .gradle node_modules /NFL /NDL /NJH /NJS /NP
     if ($LASTEXITCODE -gt 7) { throw 'Cannot stage Android dependencies.' }
+    # cap sync resolves node_modules junctions to the source checkout. The staged
+    # build must reference its own copied dependencies, not that checkout path.
+    $stagedSettings = Join-Path $stage 'android/capacitor.settings.gradle'
+    $settingsText = Get-Content -LiteralPath $stagedSettings -Raw
+    $settingsText = $settingsText -replace "new File\('[^']*node_modules/", "new File('../node_modules/"
+    Set-Content -LiteralPath $stagedSettings -Value $settingsText -Encoding utf8
     Push-Location (Join-Path $stage 'android')
     try {
         & .\gradlew.bat assembleDebug testDebugUnitTest --console=plain

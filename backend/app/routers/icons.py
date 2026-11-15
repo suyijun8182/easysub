@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 
-from app import icon_library
+from app import icon_library, outbound
 from app.deps import get_current_user
 from app.models import User
 
@@ -46,13 +46,18 @@ def import_from_url(payload: IconUrlIn, user: User = Depends(get_current_user)):
     if not url.startswith(("http://", "https://")):
         raise HTTPException(400, "请输入 http(s) 图标地址")
     try:
-        resp = httpx.get(url, timeout=15, follow_redirects=True)
-        resp.raise_for_status()
+        content = bytearray()
+        with outbound.client(timeout=15, follow_redirects=True) as client:
+            with client.stream("GET", url) as response:
+                response.raise_for_status()
+                ctype = response.headers.get("content-type", "")
+                for chunk in response.iter_bytes():
+                    content.extend(chunk)
+                    if len(content) > MAX_BYTES:
+                        raise ValueError("图标过大（上限 2MB）")
     except Exception as e:  # noqa: BLE001
-        raise HTTPException(502, f"下载失败：{e}")
-    if len(resp.content) > MAX_BYTES:
-        raise HTTPException(400, "图标过大（上限 2MB）")
-    ctype = resp.headers.get("content-type", "")
+        raise HTTPException(502, outbound.error_summary(e))
+
     ext = {
         "image/png": ".png",
         "image/jpeg": ".jpg",
@@ -67,7 +72,7 @@ def import_from_url(payload: IconUrlIn, user: User = Depends(get_current_user)):
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     name = f"{user.id}_{uuid.uuid4().hex}{ext}"
     with open(os.path.join(UPLOAD_DIR, name), "wb") as f:
-        f.write(resp.content)
+        f.write(bytes(content))
     return {"url": f"/static/icons/{name}"}
 
 

@@ -42,6 +42,29 @@ test('real local entry starts empty, merges full local entities, survives reload
   assert.equal(Object.values(f.records).find(r => r.kind === 'subscriptions').data.name, 'Offline edited')
   assert.equal(Object.keys(reloaded.status.pending).length, 0)
 })
+test('website backup custom currency and manual rate survive first sync and restart', async () => {
+  const f = fixture(), store = createPreviewStore(), local = await createLocal(store, f.storage, () => {}, f.transport)
+  await local.restore({ subscriptions: [{ name: 'Custom currency sub', amount: 10, currency: 'ABC' }], currencies: [{ code: 'ABC', name: 'Custom', symbol: 'A' }], rates: { CNY: 1, ABC: 3 }, rate_base: 'CNY' })
+  await local.connect(f.candidate)
+  assert.equal(store.state.currencies.find(c => c.code === 'ABC')?.name, 'Custom')
+  assert.equal(store.state.rates.ABC, 3)
+  assert.ok(Object.values(f.records).some(r => r.kind === 'currencies' && r.data.code === 'ABC' && r.data.rate_to_base === 3))
+  const reloaded = createPreviewStore()
+  await createLocal(reloaded, f.storage, () => {}, f.transport)
+  assert.equal(reloaded.state.currencies.find(c => c.code === 'ABC')?.symbol, 'A')
+  assert.equal(reloaded.state.rates.ABC, 3)
+})
+
+test('upgrading an unsynced legacy local database repairs missing custom-currency flags', async () => {
+  const f = fixture(), original = createPreviewStore(), local = await createLocal(original, f.storage, () => {}, f.transport)
+  await local.restore({ subscriptions: [], currencies: [{ code: 'ABC', name: 'Legacy', symbol: 'A' }], rates: { CNY: 1, ABC: 3 } })
+  delete f.saved.local.currencies.find(c => c.code === 'ABC').is_custom
+  const store = createPreviewStore(), upgraded = await createLocal(store, f.storage, () => {}, f.transport)
+  await upgraded.connect(f.candidate)
+  assert.equal(store.state.currencies.find(c => c.code === 'ABC')?.name, 'Legacy')
+  assert.equal(store.state.rates.ABC, 3)
+})
+
 test('first connection copies reactive credentials into serializable local state', async () => {
   const f = fixture(), store = createPreviewStore(), local = await createLocal(store, f.storage, () => {}, f.transport)
   const tokens = new Proxy({ access_token: 'access', refresh_token: 'refresh' }, {})

@@ -1,5 +1,7 @@
 """定时任务：每日扫描即将到期的订阅并通过 Telegram 提醒。"""
-from datetime import date, datetime
+from datetime import date, datetime, timezone
+from threading import RLock
+from functools import wraps
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -22,18 +24,52 @@ def _parse_days(raw: str) -> list[int]:
     return out
 
 
-def _already_sent(db, sub_id: int, days_before: int, on_day: date) -> bool:
-    rows = db.scalars(
-        select(NotificationLog).where(
-            NotificationLog.subscription_id == sub_id,
-            NotificationLog.days_before == days_before,
-            NotificationLog.status == "sent",
-        )
-    ).all()
-    return any(r.sent_at and r.sent_at.date() == on_day for r in rows)
+_scan_lock = RLock()
 
 
-def run_reminder_scan() -> dict:
+def _serialized(fn):
+    @wraps(fn)
+    def wrapped(*args, **kwargs):
+        with _scan_lock:
+            return fn(*args, **kwargs)
+    return wrapped
+
+
+def _send_event(db, sub, user, code, subject, body, text_md=None, retry_only=False):
+    now = datetime.now(timezone.utc)
+    rows = [row for row in db.scalars(select(NotificationLog).where(
+        NotificationLog.subscription_id == sub.id, NotificationLog.days_before == code
+    )).all() if row.sent_at and row.sent_at.replace(tzinfo=timezone.utc).astimezone().date() == date.today()]
+    if retry_only and not rows:
+        return 0, 0
+    enabled = {ch for ch, conf in notify.load_config(user).items() if conf.get("enabled")}
+    pending = set()
+    for channel in enabled:
+        history = [r for r in rows if r.channel == channel or r.channel.startswith("multi:")]
+        if any(r.status == "sent" for r in history):
+            continue
+        failures = [r for r in history if r.status == "failed"]
+        if failures:
+            last = max(r.sent_at for r in failures).replace(tzinfo=timezone.utc)
+            if len(failures) >= 5 or (now - last).total_seconds() < min(3600, 60 * 2**(len(failures) - 1)):
+                continue
+        pending.add(channel)
+    if not pending:
+        return 0, 0
+    results = notify.dispatch(user, subject, body, text_md=text_md, only_channels=pending)
+    for result in results:
+        db.add(NotificationLog(subscription_id=sub.id, user_id=user.id, days_before=code,
+            channel=result["channel"], status="sent" if result.get("ok") else "failed",
+            message=text_md or body if result.get("ok") else "通知发送失败，将按渠道重试",
+            sent_at=now.replace(tzinfo=None)))
+    # Persist every event before moving to the next subscription.
+    db.commit()
+    return int(any(r.get("ok") for r in results)), int(any(not r.get("ok") for r in results))
+
+
+@_serialized
+
+def run_reminder_scan(retry_only=False) -> dict:
     """核心扫描逻辑（可被定时器或手动触发调用）。"""
     today = date.today()
     sent, failed = 0, 0
@@ -62,53 +98,20 @@ def run_reminder_scan() -> dict:
             if days_left >= 2 and notify.in_quiet_hours(user):
                 continue
             for n in _parse_days(sub.remind_days_before):
-                if days_left == n and not _already_sent(db, sub.id, n, today):
+                if days_left == n:
                     text_md = _build_text(db, sub, user, days_left)
-                    subject = f"续费提醒：{sub.name}"
-                    results = notify.dispatch(
-                        user, subject, notify._strip_md(text_md), text_md=text_md
-                    )
-                    ok_ch = [r["channel"] for r in results if r.get("ok")]
-                    err = [f"{r['channel']}: {r['error']}" for r in results if not r.get("ok")]
-                    # channel 列仅 16 字符：单渠道存名字，多渠道存紧凑摘要
-                    if len(ok_ch) == 1:
-                        ch_label = ok_ch[0]
-                    elif ok_ch:
-                        ch_label = f"multi:{len(ok_ch)}"
-                    else:
-                        ch_label = "none"
-                    log = NotificationLog(
-                        subscription_id=sub.id,
-                        user_id=user.id,
-                        days_before=n,
-                        channel=ch_label,
-                        status="sent" if ok_ch else "failed",
-                        message=text_md if ok_ch else "; ".join(err) or "无可用渠道",
-                        sent_at=datetime.utcnow(),
-                    )
-                    db.add(log)
-                    if ok_ch:
-                        sent += 1
-                        activity.log(
-                            "notify.reminder",
-                            f"已提醒「{sub.name}」（提前 {n} 天，渠道：{', '.join(ok_ch)}）",
-                            user=user,
-                        )
-                    if err:
-                        failed += 1
-                        activity.log(
-                            "notify.reminder",
-                            f"提醒「{sub.name}」部分渠道失败：{'; '.join(err)}",
-                            user=user,
-                            level="error" if not ok_ch else "warn",
-                        )
+                    ok, err = _send_event(db, sub, user, n, f"续费提醒：{sub.name}",
+                        notify._strip_md(text_md), text_md=text_md, retry_only=retry_only)
+                    sent += ok
+                    failed += err
         db.commit()
     finally:
         db.close()
     return {"sent": sent, "failed": failed}
 
 
-def run_date_reminders() -> dict:
+@_serialized
+def run_date_reminders(retry_only=False) -> dict:
     """试用期结束 / 取消截止 / 付款卡到期 提醒（每日检查）。
 
     用 NotificationLog.days_before 的哨兵值区分类型并去重：-1 试用、-2 取消、-3 卡到期。
@@ -150,18 +153,8 @@ def run_date_reminders() -> dict:
                                    f"「{sub.name}」绑定的付款卡{tail}将于 {sub.card_expiry} 到期，"
                                    f"请及时更换，避免自动续费失败。"))
             for code, subject, body in events:
-                if _already_sent(db, sub.id, code, today):
-                    continue
-                results = notify.dispatch(user, subject, body)
-                ok_ch = [r["channel"] for r in results if r.get("ok")]
-                db.add(NotificationLog(
-                    subscription_id=sub.id, user_id=user.id, days_before=code,
-                    channel=(ok_ch[0] if len(ok_ch) == 1 else f"multi:{len(ok_ch)}") if ok_ch else "none",
-                    status="sent" if ok_ch else "failed", message=body,
-                    sent_at=datetime.utcnow(),
-                ))
-                if ok_ch:
-                    sent += 1
+                ok, _ = _send_event(db, sub, user, code, subject, body, retry_only=retry_only)
+                sent += ok
         db.commit()
     finally:
         db.close()
@@ -298,6 +291,11 @@ def _build_text(db, sub: Subscription, user: User, days_left: int) -> str:
     return "\n".join(lines)
 
 
+def retry_failed_notifications():
+    run_reminder_scan(retry_only=True)
+    run_date_reminders(retry_only=True)
+
+
 def start_scheduler() -> None:
     global _scheduler
     if _scheduler is not None:
@@ -343,6 +341,7 @@ def start_scheduler() -> None:
         id="weekly_digest",
         replace_existing=True,
     )
+    _scheduler.add_job(retry_failed_notifications, "interval", minutes=5, id="retry_failed", replace_existing=True, max_instances=1)
     _scheduler.start()
 
 

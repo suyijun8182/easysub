@@ -1,10 +1,18 @@
 from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import PrivateAttr
+
+from app.secrets_store import INSECURE_SECRETS, resolve_jwt_secret
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    _legacy_jwt_secret: str | None = PrivateAttr(default=None)
+
+    @property
+    def legacy_jwt_secret(self) -> str | None:
+        return self._legacy_jwt_secret
 
     # 基础（数据库连接已改为运行时由网页安装向导配置，不再用环境变量）
     jwt_secret: str = "change-me"
@@ -33,15 +41,24 @@ class Settings(BaseSettings):
     smtp_from: str = ""
     smtp_tls: bool = True
 
+    # Automatic full backups require a separate portable encryption password.
+    backup_password: str = ""
+    outbound_private_allowlist: str = ""
+
     # 首个管理员
     admin_username: str = "admin"
-    admin_password: str = "admin123"
+    admin_password: str = ""
     admin_email: str = "admin@example.com"
 
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    resolved = Settings()
+    configured = resolved.jwt_secret
+    resolved.jwt_secret = resolve_jwt_secret(configured)
+    if configured in INSECURE_SECRETS:
+        resolved._legacy_jwt_secret = configured
+    return resolved
 
 
 settings = get_settings()

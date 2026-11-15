@@ -4,7 +4,7 @@
   <div class="inertia-wheel" role="spinbutton" tabindex="0" :aria-label="label" :aria-valuemin="options[0]" :aria-valuemax="options.at(-1)" :aria-valuenow="modelValue" :aria-valuetext="`${modelValue} ${unit}`"
     @pointerdown="start" @pointermove="move" @pointerup="release" @pointercancel="cancel" @lostpointercapture="cancel" @keydown="key" @wheel.prevent="wheel">
     <div class="wheel-band" aria-hidden="true"></div>
-    <div class="wheel-track" :style="{ transform: `translateY(${66 - position * 44}px)` }" aria-hidden="true">
+    <div class="wheel-track" :style="{ transform: `translateY(${WHEEL_PHYSICS.bandTop - position * WHEEL_PHYSICS.row}px)` }" aria-hidden="true">
       <div v-for="(value,i) in options" :key="value" :class="{ chosen: Math.round(position) === i }">{{ value }} <small>{{ unit }}</small></div>
     </div>
   </div>
@@ -13,6 +13,8 @@
 </template>
 <script setup>
 import { onBeforeUnmount, ref, watch } from 'vue'
+import { WHEEL_PHYSICS, wheelStep } from './wheel-physics.js'
+import { haptics } from './haptics.js'
 const props = defineProps({ modelValue: Number, options: Array, label: String, unit: String, decreaseLabel: String, increaseLabel: String })
 const emit = defineEmits(['update:modelValue'])
 const position = ref(Math.max(0, props.options.indexOf(props.modelValue)))
@@ -22,13 +24,13 @@ const clamp = n => Math.max(0, Math.min(props.options.length - 1, n))
 function stop() { cancelAnimationFrame(frame); frame = 0 }
 function settle(next, immediate = false) {
   stop(); target = clamp(Math.round(next))
+  if (props.options[target] !== props.modelValue) haptics.tick()
   if (immediate || reduced()) { position.value = target; emit('update:modelValue', props.options[target]); return }
   let velocity = 0, last = performance.now()
   const tick = now => {
-    const dt = Math.min((now - last) / 1000, .032); last = now
-    velocity += ((target - position.value) * 210 - velocity * 25) * dt
-    position.value += velocity * dt
-    if (Math.abs(target - position.value) < .003 && Math.abs(velocity) < .02) {
+    const next = wheelStep({ position: position.value, velocity }, target, (now - last) / 1000); last = now
+    velocity = next.velocity; position.value = next.position
+    if (Math.abs(target - position.value) < WHEEL_PHYSICS.positionEpsilon && Math.abs(velocity) < WHEEL_PHYSICS.velocityEpsilon) {
       position.value = target; frame = 0; emit('update:modelValue', props.options[target])
     } else frame = requestAnimationFrame(tick)
   }
@@ -37,15 +39,15 @@ function settle(next, immediate = false) {
 function start(e) { if (e.button !== 0) return; stop(); e.currentTarget.setPointerCapture(e.pointerId); drag = { y: e.clientY, start: e.clientY, p: position.value, time: e.timeStamp, velocity: 0 } }
 function move(e) {
   if (!drag) return
-  const raw = drag.p + (drag.start - e.clientY) / 44, edge = clamp(raw)
-  position.value = edge + (raw - edge) * .22
-  drag.velocity = (drag.y - e.clientY) / Math.max(8, e.timeStamp - drag.time) / 44
+  const raw = drag.p + (drag.start - e.clientY) / WHEEL_PHYSICS.row, edge = clamp(raw)
+  position.value = edge + (raw - edge) * WHEEL_PHYSICS.edgeResistance
+  drag.velocity = (drag.y - e.clientY) / Math.max(WHEEL_PHYSICS.minSampleMs, e.timeStamp - drag.time) / WHEEL_PHYSICS.row
   drag.y = e.clientY; drag.time = e.timeStamp
 }
 function release(e) {
   if (!drag) return
-  const velocity = e.timeStamp - drag.time > 90 ? 0 : drag.velocity
-  const next = Math.abs(e.clientY - drag.start) < 5 ? position.value + (e.clientY - e.currentTarget.getBoundingClientRect().top - 88) / 44 : position.value + velocity * 160
+  const velocity = e.timeStamp - drag.time > WHEEL_PHYSICS.staleVelocityMs ? 0 : drag.velocity
+  const next = Math.abs(e.clientY - drag.start) < WHEEL_PHYSICS.tapSlop ? position.value + (e.clientY - e.currentTarget.getBoundingClientRect().top - WHEEL_PHYSICS.center) / WHEEL_PHYSICS.row : position.value + velocity * WHEEL_PHYSICS.projectionMs
   drag = null; settle(next)
 }
 function cancel() { if (!drag) return; drag = null; settle(position.value) }
@@ -59,13 +61,15 @@ watch(() => props.modelValue, value => { if (!drag) { stop(); target = Math.max(
 onBeforeUnmount(stop)
 </script>
 <style scoped>
-.wheel-control { display:grid; grid-template-columns:48px minmax(0,1fr) 48px; gap:12px; min-width:0; align-items:center; }
-.wheel-step { width:48px; min-height:48px; font-size:20px; border-radius:50%; }
+/* Remaining px are the calibrated wheel row/band/viewport geometry; keep them
+   aligned with WHEEL_PHYSICS, independently of the user's font scale. */
+.wheel-control { display:grid; grid-template-columns:var(--es-control-min) minmax(0,1fr) var(--es-control-min); gap:var(--es-space-3); min-width:0; align-items:center; }
+.wheel-step { width:var(--es-control-min); min-height:var(--es-control-min); font-size:var(--es-text-brand); border-radius:50%; }
 .inertia-wheel { position: relative; height: 176px; overflow: hidden; touch-action: none; cursor: ns-resize; user-select: none; border-radius: var(--radius-sm); background: var(--surface); }
-.inertia-wheel:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.wheel-band { position: absolute; inset: 66px 12px; height: 44px; border-block: 1px solid var(--border-strong); background: var(--primary-soft); }
+.inertia-wheel:focus-visible { outline: var(--es-focus-width) solid var(--primary); outline-offset: var(--es-focus-offset); }
+.wheel-band { position: absolute; inset: 66px 12px; height: 44px; border-block: var(--es-border-width) solid var(--border-strong); background: var(--primary-soft); }
 .wheel-track { position: relative; pointer-events: none; }
-.wheel-track > div { height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--text-soft); font-size: 20px; font-variant-numeric: tabular-nums; }
+.wheel-track > div { height: 44px; display: flex; align-items: center; justify-content: center; gap: var(--es-space-2); color: var(--text-soft); font-size: var(--es-text-brand); font-variant-numeric: tabular-nums; }
 .wheel-track > .chosen { color: var(--text); font-weight: 650; }
-small { font-size: 14px; font-weight: 400; }
+small { font-size: var(--es-text-label); font-weight: 400; }
 </style>

@@ -30,6 +30,9 @@
     </aside>
 
     <main class="content">
+      <router-link v-if="auth.user?.insecure_default_password" to="/settings#account" class="password-warning" role="alert">
+        {{ t('sec.defaultPasswordWarning') }}
+      </router-link>
       <router-link v-if="updateInfo && updateInfo.update_available && !bannerDismissed" to="/settings" class="upd-banner" @click="dismissBanner">
         <span class="upd-ico" v-html="icon('sparkle')"></span>
         <span class="upd-text">{{ t('upd.banner', { v: updateInfo.latest }) }}</span>
@@ -134,6 +137,9 @@ function logout() {
 </script>
 
 <style scoped>
+.password-warning { display: block; margin-bottom: 16px; padding: 12px 16px;
+  border: 1px solid var(--danger); border-radius: var(--radius-sm); color: var(--danger);
+  background: var(--surface); font-weight: 600; text-decoration: underline; }
 .shell { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: 100vh;
   /* 侧栏底色随页面高度铺满 */
   background: linear-gradient(90deg, color-mix(in srgb, var(--surface) 55%, var(--bg)) 0 235px, var(--border) 235px 236px, transparent 236px); }

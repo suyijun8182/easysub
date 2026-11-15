@@ -6,6 +6,10 @@ export const useAuth = defineStore('auth', {
   state: () => ({ user: null }),
   getters: { isLoggedIn: () => !!localStorage.getItem('access_token') },
   actions: {
+    acceptSession(data) {
+      localStorage.setItem('access_token', data.access_token)
+      localStorage.setItem('refresh_token', data.refresh_token)
+    },
     async login(username, password, otp) {
       const form = new URLSearchParams()
       form.append('username', username)
@@ -20,6 +24,9 @@ export const useAuth = defineStore('auth', {
       // 返回 { status: 'ok' | 'verify' | 'pending', message }，由页面决定后续流程
       const { data } = await api.post('/api/auth/register', { username, email, password })
       return data || { status: 'ok' }
+    },
+    async resendVerification(email) {
+      return api.post('/api/auth/resend-verification', { email, code: '' })
     },
     async verifyEmail(email, code) {
       const { data } = await api.post('/api/auth/verify-email', { email, code })

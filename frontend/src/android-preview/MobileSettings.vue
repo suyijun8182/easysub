@@ -1,6 +1,7 @@
 <template>
   <div class="mobile-settings" :aria-busy="busy">
-    <div class="page-head"><h1>{{ titles[section] || t('mobile.settings') }}</h1><router-link v-if="section" to="/settings" class="btn ghost">{{ t('mobile.back') }}</router-link></div>
+    <SettingsTopBar v-if="section" :title="titles[section] || t('mobile.settings')" />
+    <div v-else class="page-head"><h1>{{ t('mobile.settings') }}</h1></div>
     <p v-if="dirty" class="unsaved-note" role="status">{{ t('mobile.unsavedBadge') }}</p>
     <p v-if="busy" class="settings-busy" role="status">{{ t('sync.busy') }}</p>
     <fieldset :disabled="busy" class="settings-fields">
@@ -11,8 +12,9 @@
     <form v-else-if="section === 'preferences'" class="card" @submit.prevent="savePrefs">
       <label>{{ t('mobile.language') }}<select v-model="prefs.locale"><option value="zh">中文</option><option value="en">English</option><option value="ru">Русский</option></select></label>
       <label>{{ t('mobile.theme') }}<select v-model="prefs.theme"><option v-for="th in ['light','dark','ocean','forest','purple','auto']" :key="th" :value="th">{{ t('mobile.' + th) }}</option></select></label>
-      <label>{{ t('mobile.baseCurrency') }}<select v-model="prefs.base_currency"><option v-for="c in data.currencies" :key="c.code" :value="c.code">{{ c.code }} {{ c.name }}</option></select></label>
-      <label>{{ t('mobile.budget') }}<input v-model.number="prefs.monthly_budget" type="number" min="0"></label>
+      <label class="check-label"><input v-model="hapticsOn" type="checkbox" aria-describedby="haptics-hint" @change="setHapticsEnabled(hapticsOn)">{{ t('mobile.haptics') }}</label><p id="haptics-hint" class="muted">{{ t('mobile.hapticsHint') }}</p>
+      <label>{{ t('mobile.baseCurrency') }}<select v-model="prefs.base_currency"><option v-for="c in data.currencies" :key="c.code" :value="c.code">{{ currencyName(c, locale) }}</option></select></label>
+      <label>{{ t('mobile.budget') }}<span class="app-budget-field"><input v-model.number="prefs.monthly_budget" type="number" min="0" step="any" inputmode="decimal" :placeholder="t('mobile.budgetUnset')" aria-describedby="budget-currency"><span id="budget-currency">{{ prefs.base_currency }}</span></span></label>
       <button class="btn" type="submit">{{ t('common.save') }}</button>
     </form>
     <form v-else-if="section === 'reminders'" class="card" @submit.prevent="savePrefs">
@@ -37,7 +39,7 @@
         <label v-if="section === 'currencies'">{{ t('sync.rate', { base: preview.isLocal ? localSync.status.exchange_base : 'CNY' }) }}<input v-model.number="entity.rate_to_base" required type="number" min="0.000001" step="any"></label>
         <div class="actions"><button class="btn">{{ entity.id ? text("保存修改") : text("添加") }}</button><button v-if="entity.id" type="button" class="btn ghost" @click="resetEntity">{{ text("取消编辑") }}</button></div>
       </form>
-      <section class="card"><div v-for="item in entities" :key="item.id || item.code" class="entity-row"><span class="entity-name">{{ item.icon }} {{ item.code }} {{ item.name }}<small v-if="item.note">{{ item.note }}</small></span><button v-if="section === 'categories'" class="btn ghost" @click="editEntity(item)">{{ text("编辑") }}</button><button class="btn ghost danger" @click="removeEntity(item)">{{ text("删除") }}</button></div></section>
+      <section class="card"><div v-for="item in entities" :key="item.id || item.code" class="entity-row"><span class="entity-name">{{ item.icon }} {{ item.code }} {{ section === 'payment-methods' ? paymentName(item, locale) : item.name }}<small v-if="item.note">{{ item.note }}</small></span><button v-if="section === 'categories'" class="btn ghost" @click="editEntity(item)">{{ text("编辑") }}</button><button class="btn ghost danger" @click="removeEntity(item)">{{ text("删除") }}</button></div></section>
     </template>
     <template v-else-if="section === 'rates'">
       <p class="muted">{{ text("以下为演示缓存汇率，不代表实时市场数据。缺少缓存的币种显示“未缓存”。") }}</p>
@@ -74,6 +76,9 @@ import { settingsCopy } from './settings-copy.js'
 import { icon } from '../icons.js'
 import { aboutBackgroundStyle } from './bitmap-assets.js'
 import { useUnsavedChanges } from './useUnsavedChanges.js'
+import { hapticsEnabled, setHapticsEnabled } from './haptics.js'
+import { paymentName, currencyName } from './display-names.js'
+import SettingsTopBar from './SettingsTopBar.vue'
 const clone = value => JSON.parse(JSON.stringify(value))
 const settingIcons = { preferences:'theme-light', categories:'category-other', 'payment-methods':'card', bundles:'package', currencies:'wallet', rates:'trending', reminders:'notifications', channels:'send', '/notifications':'inbox', '/logs':'logs', backup:'backup', calendar:'calendar', privacy:'lock', about:'help' }
 const localSync = inject('localSync')
@@ -82,6 +87,7 @@ const text = value => settingsCopy[value]?.[locale.value] || value
 const section = computed(() => route.params.section || '')
 const titles = computed(() => Object.fromEntries(Object.entries({ preferences: 'preferences', reminders: 'reminders', channels: 'channels', categories: 'categories', 'payment-methods': 'payments', bundles: 'bundles', currencies: 'currencies', rates: 'rates', backup: 'backup', calendar: 'calendar', privacy: 'privacy', about: 'about', '/notifications': 'noticeLog', '/logs': 'activityLog' }).map(([path,key]) => [path,t('mobile.'+key)])))
 const groups = [ { title: 'groupPrefs', items: ['preferences'] }, { title: 'groupRecords', items: ['categories','payment-methods','bundles','currencies','rates'] }, { title: 'groupNotify', items: ['reminders','channels','/notifications','/logs'] }, { title: 'groupData', items: ['backup','calendar','privacy'] }, { title: 'groupAbout', items: ['about'] } ]
+const hapticsOn = ref(hapticsEnabled())
 const data = ref(preview.state), prefs = ref(clone(preview.state.user)), entity = ref({}), entities = ref([]), rates = ref({ items: [] }), message = ref('')
 const password = ref(''), passwordAgain = ref(''), importPassword = ref(''), envelope = ref(null), incoming = ref(null), fullUsers = ref([]), selectedUser = ref(0), replace = ref(false)
 // Snapshots contain secrets and live only in this design preview's memory.
@@ -103,7 +109,7 @@ async function act(fn) {
   catch (e) { messageKind.value = 'error'; message.value = e.message; await nextTick(); result.value?.focus() }
   finally { busy.value = false }
 }
-async function savePrefs() { await act(async () => { await auth.updateMe(clone(prefs.value)); locale.value = prefs.value.locale; applyTheme(prefs.value.theme); savedPrefs.value = JSON.stringify(prefs.value); message.value = t(preview.isLocal ? 'sync.localSaved' : 'mobile.saved'); await load() }) }
+async function savePrefs() { await act(async () => { await auth.updateMe({ ...clone(prefs.value), monthly_budget: prefs.value.monthly_budget === '' ? null : prefs.value.monthly_budget }); locale.value = prefs.value.locale; applyTheme(prefs.value.theme); savedPrefs.value = JSON.stringify(prefs.value); message.value = t(preview.isLocal ? 'sync.localSaved' : 'mobile.saved'); await load() }) }
 function editEntity(item) { entity.value = clone(item); savedEntity.value = JSON.stringify(entity.value); window.scrollTo({ top: 0, behavior: 'instant' }) }
 async function saveEntity() { await act(async () => { await preview.request(entity.value.id ? 'put' : 'post', '/api/' + section.value + (entity.value.id ? '/' + entity.value.id : ''), clone(entity.value)); resetEntity(); await load(); message.value = text("已保存") }) }
 async function removeEntity(item) { if (!confirm(locale.value === 'en' ? `Delete ${item.name}? Subscriptions will be kept.` : locale.value === 'ru' ? `Удалить ${item.name}? Подписки сохранятся.` : `确认删除「${item.name}」？相关订阅会保留。`)) return; await act(async () => { await preview.request('delete', '/api/' + section.value + '/' + (item.id || item.code)); await load(); message.value = locale.value === 'en' ? 'Deleted; subscriptions kept.' : locale.value === 'ru' ? 'Удалено; подписки сохранены.' : '已删除，关联已安全处理' }) }

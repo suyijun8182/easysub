@@ -25,7 +25,7 @@ from email.message import EmailMessage
 
 import httpx
 
-from app import crypto
+from app import crypto, outbound
 from app.services import telegram
 
 # 各渠道需加密存储的敏感字段
@@ -146,7 +146,7 @@ def _send_feishu(conf: dict, subject: str, text: str) -> None:
     chat_ids = _split(conf.get("chat_ids", ""))
     if not app_id or not secret or not chat_ids:
         raise RuntimeError("飞书未配置 App ID / Secret / Chat IDs")
-    with httpx.Client(timeout=15) as c:
+    with outbound.client(timeout=15) as c:
         r = c.post(
             "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal",
             json={"app_id": app_id, "app_secret": secret},
@@ -178,7 +178,7 @@ def _send_qq(conf: dict, subject: str, text: str) -> None:
     if not groups and not users:
         raise RuntimeError("QQ 未填写任何群聊或私聊 OpenID")
     body_text = f"{subject}\n\n{text}" if subject else text
-    with httpx.Client(timeout=15) as c:
+    with outbound.client(timeout=15) as c:
         r = c.post("https://bots.qq.com/app/getAppAccessToken",
                    json={"appId": app_id, "clientSecret": secret})
         r.raise_for_status()
@@ -209,7 +209,7 @@ def _send_bark(conf: dict, subject: str, text: str) -> None:
         payload["level"] = conf["level"]
     if conf.get("icon"):
         payload["icon"] = conf["icon"]
-    with httpx.Client(timeout=15) as c:
+    with outbound.client(timeout=15) as c:
         for url in urls:
             resp = c.post(url.rstrip("/"), json=payload)
             resp.raise_for_status()
@@ -232,16 +232,13 @@ def _send_email(conf: dict, subject: str, text: str) -> None:
     user, pwd = conf.get("username"), conf.get("password")
     if conf.get("ssl"):
         ctx = ssl.create_default_context()
-        with smtplib.SMTP_SSL(host, port, timeout=20, context=ctx) as s:
+        with outbound.CheckedSMTPSSL(host, port, timeout=20, context=ctx) as s:
             if user:
                 s.login(user, pwd)
             s.send_message(msg)
     else:
-        with smtplib.SMTP(host, port, timeout=20) as s:
-            try:
-                s.starttls(context=ssl.create_default_context())
-            except smtplib.SMTPException:
-                pass
+        with outbound.CheckedSMTP(host, port, timeout=20) as s:
+            s.starttls(context=ssl.create_default_context())
             if user:
                 s.login(user, pwd)
             s.send_message(msg)
@@ -257,7 +254,7 @@ def _send_pushplus(conf: dict, subject: str, text: str) -> None:
         body["topic"] = conf["topic"]
     if conf.get("channel"):
         body["channel"] = conf["channel"]
-    with httpx.Client(timeout=15) as c:
+    with outbound.client(timeout=15) as c:
         resp = c.post("https://www.pushplus.plus/send", json=body)
         resp.raise_for_status()
         data = resp.json()
@@ -296,7 +293,7 @@ def _send_webhook(conf: dict, subject: str, text: str, event: str = "reminder") 
     for url in urls:
         for attempt in range(retries + 1):
             try:
-                with httpx.Client(timeout=timeout) as c:
+                with outbound.client(timeout=timeout) as c:
                     resp = c.post(url, content=raw, headers=headers)
                     resp.raise_for_status()
                 last_err = None
@@ -311,7 +308,7 @@ def _send_serverchan(conf: dict, subject: str, text: str) -> None:
     key = conf.get("sendkey")
     if not key:
         raise RuntimeError("Server酱未配置 SendKey")
-    with httpx.Client(timeout=15) as c:
+    with outbound.client(timeout=15) as c:
         r = c.post(f"https://sctapi.ftqq.com/{key}.send",
                    data={"title": subject or "省心订阅 EasySub", "desp": text})
         r.raise_for_status()
@@ -359,7 +356,7 @@ def wecom_token(conf: dict, force: bool = False) -> str:
     hit = _WECOM_TOKENS.get(key)
     if hit and not force and hit[1] > time.time():
         return hit[0]
-    with httpx.Client(timeout=15) as c:
+    with outbound.client(timeout=15) as c:
         r = c.get(f"{base}/cgi-bin/gettoken",
                   params={"corpid": corp_id, "corpsecret": secret})
         r.raise_for_status()
@@ -383,7 +380,7 @@ def wecom_agent_info(conf: dict) -> dict:
     base = wecom_api_base(conf)
     for attempt in (0, 1):
         token = wecom_token(conf, force=bool(attempt))
-        with httpx.Client(timeout=15) as c:
+        with outbound.client(timeout=15) as c:
             r = c.get(f"{base}/cgi-bin/agent/get",
                       params={"access_token": token, "agentid": agent_id})
             r.raise_for_status()
@@ -431,7 +428,7 @@ def _send_wecom_robot(conf: dict, subject: str, text: str) -> None:
     if payload["msgtype"] == "textcard":  # 群机器人不支持 textcard，降级为 text
         payload = {"msgtype": "text",
                    "text": {"content": _trunc_bytes(f"{subject}\n\n{text}" if subject else text, 2048)}}
-    with httpx.Client(timeout=15) as c:
+    with outbound.client(timeout=15) as c:
         r = c.post(url, json=payload)
         r.raise_for_status()
         data = r.json()
@@ -456,7 +453,7 @@ def _send_wecom_app(conf: dict, subject: str, text: str) -> None:
     base = wecom_api_base(conf)
     for attempt in (0, 1):  # token 失效时强制刷新重试一次
         token = wecom_token(conf, force=bool(attempt))
-        with httpx.Client(timeout=15) as c:
+        with outbound.client(timeout=15) as c:
             r = c.post(f"{base}/cgi-bin/message/send",
                        params={"access_token": token}, json=payload)
             r.raise_for_status()
@@ -504,7 +501,7 @@ def _send_dingtalk(conf: dict, subject: str, text: str) -> None:
         ))
         url = f"{url}&timestamp={ts}&sign={sign}"
     body_text = f"{subject}\n\n{text}" if subject else text
-    with httpx.Client(timeout=15) as c:
+    with outbound.client(timeout=15) as c:
         r = c.post(url, json={"msgtype": "text", "text": {"content": body_text}})
         r.raise_for_status()
         if r.json().get("errcode", 0) != 0:
@@ -516,7 +513,7 @@ def _send_discord(conf: dict, subject: str, text: str) -> None:
     if not url:
         raise RuntimeError("Discord 未配置 Webhook URL")
     content = f"**{subject}**\n{text}" if subject else text
-    with httpx.Client(timeout=15) as c:
+    with outbound.client(timeout=15) as c:
         c.post(url, json={"content": content[:1900]}).raise_for_status()
 
 
@@ -525,7 +522,7 @@ def _send_slack(conf: dict, subject: str, text: str) -> None:
     if not url:
         raise RuntimeError("Slack 未配置 Webhook URL")
     body_text = f"*{subject}*\n{text}" if subject else text
-    with httpx.Client(timeout=15) as c:
+    with outbound.client(timeout=15) as c:
         c.post(url, json={"text": body_text}).raise_for_status()
 
 
@@ -538,7 +535,7 @@ def _send_ntfy(conf: dict, subject: str, text: str) -> None:
     headers = {}
     if conf.get("token"):
         headers["Authorization"] = f"Bearer {conf['token']}"
-    with httpx.Client(timeout=15) as c:
+    with outbound.client(timeout=15) as c:
         c.post(f"{server}/{topic}", content=body.encode("utf-8"), headers=headers).raise_for_status()
 
 
@@ -547,7 +544,7 @@ def _send_gotify(conf: dict, subject: str, text: str) -> None:
     token = conf.get("token")
     if not server or not token:
         raise RuntimeError("Gotify 未配置 Server / Token")
-    with httpx.Client(timeout=15) as c:
+    with outbound.client(timeout=15) as c:
         c.post(f"{server}/message", params={"token": token},
                json={"title": subject or "省心订阅 EasySub", "message": text,
                      "priority": int(conf.get("priority") or 5)}).raise_for_status()
@@ -573,6 +570,7 @@ _SENDERS = {
 
 def send_one(channel: str, conf: dict, subject: str, text: str) -> None:
     """按单个渠道配置发送（供测试按钮使用）。失败抛异常。"""
+    outbound.validate_config(channel, conf)
     fn = _SENDERS.get(channel)
     if not fn:
         raise RuntimeError(f"未知渠道：{channel}")
@@ -594,15 +592,18 @@ def in_quiet_hours(user) -> bool:
 
 
 def dispatch(user, subject: str, text_plain: str, text_md: str | None = None,
-             event: str = "reminder") -> list[dict]:
+             event: str = "reminder", only_channels: set[str] | None = None) -> list[dict]:
     """向该用户所有已启用渠道推送。返回每个渠道的结果列表。"""
     cfg = load_config(user)
     results: list[dict] = []
     for channel in CHANNELS:
+        if only_channels is not None and channel not in only_channels:
+            continue
         conf = cfg.get(channel, {})
         if not conf.get("enabled"):
             continue
         try:
+            outbound.validate_config(channel, conf)
             if channel == "telegram":
                 _send_telegram(conf, subject, text_md or text_plain)
             elif channel == "webhook":
@@ -611,5 +612,5 @@ def dispatch(user, subject: str, text_plain: str, text_md: str | None = None,
                 _SENDERS[channel](conf, subject, text_plain)
             results.append({"channel": channel, "ok": True})
         except Exception as e:  # noqa: BLE001
-            results.append({"channel": channel, "ok": False, "error": f"{type(e).__name__}: {e}"})
+            results.append({"channel": channel, "ok": False, "error": f"{type(e).__name__}: 通知发送失败，请检查地址、白名单或渠道配置"})
     return results

@@ -1,6 +1,6 @@
 <template>
   <div class="sync-settings" :aria-busy="busy">
-    <header class="page-head"><h1>{{ t('sync.title') }}</h1><router-link class="btn ghost" to="/settings">{{ t('mobile.back') }}</router-link></header>
+    <SettingsTopBar :title="t('sync.title')" />
     <p v-if="!local" class="card">{{ t('sync.previewHint') }} <a href="/android-app.html#/settings/sync">{{ t('sync.openLocal') }}</a></p>
     <template v-else>
       <section class="card">
@@ -8,7 +8,7 @@
         <p>{{ t(status.enabled ? 'sync.enabled' : 'sync.paused') }}</p>
         <p role="status" aria-atomic="true">{{ t('sync.counts', { pending: Object.keys(status.pending).length, conflicts: Object.keys(status.conflicts).length }) }}</p>
         <p>{{ t('sync.last', { time: status.last_success ? new Date(status.last_success).toLocaleString(locale) : t('sync.never') }) }}</p>
-        <p v-if="status.error" role="alert">{{ locale === 'zh' ? status.error : t('sync.requestFailed') }}</p>
+        <p v-if="status.error" role="alert">{{ showRawSyncError(status.error, locale) ? status.error : t('sync.requestFailed') }}</p>
         <div class="sync-actions">
           <button v-if="status.link" class="btn" :disabled="busy" @click="action(() => local.enable(!status.enabled))">{{ t(status.enabled ? 'sync.pause' : 'sync.enable') }}</button>
           <button v-if="status.enabled" class="btn ghost" :disabled="busy" @click="action(() => local.sync())">{{ t('sync.now') }}</button>
@@ -56,6 +56,8 @@ import { computed, inject, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { createTransport, serverUrl } from './transport.js'
 import { validateConnection } from './validation.js'
+import SettingsTopBar from '../android-preview/SettingsTopBar.vue'
+import { showRawSyncError } from '../android-preview/sync-status.js'
 const { t, locale } = useI18n()
 const local = inject('localSync'), revision = inject('previewRevision')
 const status = computed(() => { revision.value; return local?.status })

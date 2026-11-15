@@ -1,6 +1,24 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { createPreviewStore, addCycle, encryptBackup, decryptBackup } from './store.js'
+import fullBackupFixture from '../../../backend/tests/fixtures/full-backup-v1.json' with { type: 'json' }
+
+test('Android decrypts the server full-backup format with authenticated metadata', async () => {
+  assert.deepEqual(await decryptBackup(fullBackupFixture, 'fixture-password-123'), { users: [{ user: { username: 'fixture' }, subscriptions: [] }] })
+  await assert.rejects(decryptBackup(fullBackupFixture, 'wrong-password'))
+})
+
+test('renewal reads the current day after midnight without recreating the store', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2026-11-08T12:00:00').getTime() })
+  const store = createPreviewStore()
+  const sub = await store.request('post', '/api/subscriptions', { name: 'SIM', amount: 10 })
+  t.mock.timers.tick(24 * 60 * 60 * 1000)
+  const day = '2026-11-09'
+  const renewed = await store.request('post', `/api/subscriptions/${sub.id}/renew`, { mode: 'today' })
+  assert.equal(renewed.start_date, day)
+  assert.equal(renewed.last_renewed_at, day)
+  assert.equal(renewed.next_renewal_date, '2026-12-09')
+})
 
 test('month-end and leap-year renewal preserve the two starting modes', async () => {
   assert.equal(addCycle('2024-01-31', 'month', 1), '2024-02-29')
