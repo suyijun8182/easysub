@@ -74,7 +74,7 @@
         <div v-if="data.monthly_budget" class="budget">
           <div class="bd-h">
             <span class="fig-l">{{ t('dashboard.budgetOf') }}</span>
-            <span class="num" :class="{ over: overBudget }">{{ money(data.month_spend) }} / {{ money(data.monthly_budget) }}</span>
+            <span class="num" :class="{ over: overBudget }"><template v-if="androidPreview"><span class="app-nowrap">{{ money(data.month_spend) }}</span> / <span class="app-nowrap">{{ money(data.monthly_budget) }}</span></template><template v-else>{{ money(data.month_spend) }} / {{ money(data.monthly_budget) }}</template></span>
           </div>
           <div class="life" :class="overBudget ? 'late' : budgetPct >= 85 ? 'soon' : 'ok'">
             <i :style="{ transform: `scaleX(${budgetPct / 100})` }"></i>
