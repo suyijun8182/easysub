@@ -1,6 +1,7 @@
 <template>
   <div class="mobile-settings" :aria-busy="busy">
-    <div class="page-head"><h1>{{ titles[section] || t('mobile.settings') }}</h1><router-link v-if="section" to="/settings" class="btn ghost">{{ t('mobile.back') }}</router-link></div>
+    <SettingsTopBar v-if="section" :title="titles[section] || t('mobile.settings')" />
+    <div v-else class="page-head"><h1>{{ t('mobile.settings') }}</h1></div>
     <p v-if="dirty" class="unsaved-note" role="status">{{ t('mobile.unsavedBadge') }}</p>
     <p v-if="busy" class="settings-busy" role="status">{{ t('sync.busy') }}</p>
     <fieldset :disabled="busy" class="settings-fields">
@@ -75,6 +76,7 @@ import { icon } from '../icons.js'
 import { aboutBackgroundStyle } from './bitmap-assets.js'
 import { useUnsavedChanges } from './useUnsavedChanges.js'
 import { paymentName } from './display-names.js'
+import SettingsTopBar from './SettingsTopBar.vue'
 const clone = value => JSON.parse(JSON.stringify(value))
 const settingIcons = { preferences:'theme-light', categories:'category-other', 'payment-methods':'card', bundles:'package', currencies:'wallet', rates:'trending', reminders:'notifications', channels:'send', '/notifications':'inbox', '/logs':'logs', backup:'backup', calendar:'calendar', privacy:'lock', about:'help' }
 const localSync = inject('localSync')

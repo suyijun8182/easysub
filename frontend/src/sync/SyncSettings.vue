@@ -1,6 +1,6 @@
 <template>
   <div class="sync-settings" :aria-busy="busy">
-    <header class="page-head"><h1>{{ t('sync.title') }}</h1><router-link class="btn ghost" to="/settings">{{ t('mobile.back') }}</router-link></header>
+    <SettingsTopBar :title="t('sync.title')" />
     <p v-if="!local" class="card">{{ t('sync.previewHint') }} <a href="/android-app.html#/settings/sync">{{ t('sync.openLocal') }}</a></p>
     <template v-else>
       <section class="card">
@@ -56,6 +56,7 @@ import { computed, inject, nextTick, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { createTransport, serverUrl } from './transport.js'
 import { validateConnection } from './validation.js'
+import SettingsTopBar from '../android-preview/SettingsTopBar.vue'
 const { t, locale } = useI18n()
 const local = inject('localSync'), revision = inject('previewRevision')
 const status = computed(() => { revision.value; return local?.status })

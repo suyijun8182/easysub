@@ -51,6 +51,8 @@ html[data-desk-navigation] .app-page-enter-active, html[data-desk-navigation] .a
 :root body .android-preview .app-subscription small { font-size:var(--es-text-caption); line-height:var(--es-leading-title); }
 .android-preview .app-compact-subs .page-head .lede { line-height:var(--es-leading-title); }
 .android-preview .app-danger-zone { margin-top:var(--es-space-6); border-color:var(--late); }
+.android-preview .app-content:has(.app-subpage-bar) { padding-top:0; }
+:root body .android-preview .app-subpage-bar h1 { font-size:var(--es-text-section); }
 :root body .android-preview .app-content :is(.app-nowrap,.figures .fig-v,.stats .stat-v,.sc-count-t,.due-when,.due-amt,.cc-d,.lr-amt,.ag-amt,.bar-val,.category-value,.agenda-bottom strong,.desk-amount,.detail-amount) { white-space:nowrap; overflow-wrap:normal; }
 :root body .android-preview :is(.figures,.stats) { display:flex; flex-wrap:wrap; }
 :root body .android-preview .app-content :is(.figures .fig,.stats .stat) { flex:1 1 max-content; min-width:max-content; }

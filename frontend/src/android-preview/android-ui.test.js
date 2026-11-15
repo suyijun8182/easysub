@@ -26,3 +26,7 @@ test('compact Android cards link to details and expose renewal and edit without 
  assert.match(html,/sub.renew/);assert.match(html,/sub.edit/)
  assert.ok(!html.includes('192.0.2.1')&&!html.includes('sub.delete')&&!html.includes('life'))
 })
+test('settings subpage top bar has a named back arrow and the page title',async()=>{
+ const html=await renderClass('./SettingsTopBar.vue','app-subpage-bar',{title:'Appearance',t,icon:()=>''})
+ assert.match(html,/aria-label="mobile.back"/);assert.match(html,/href="\/settings"/);assert.match(html,/<h1>Appearance<\/h1>/)
+})
