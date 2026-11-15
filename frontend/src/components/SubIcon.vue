@@ -1,6 +1,6 @@
 <template>
   <span class="sub-icon" :style="{ '--sz': size + 'px' }" aria-hidden="true">
-    <img v-if="isImg(icon)" :src="icon" alt="" loading="lazy" @error="broken = true" v-show="!broken" />
+    <img v-if="isImg(icon)" :src="icon" alt="" loading="lazy" decoding="async" @error="broken = true" v-show="!broken" />
     <span v-if="bitmapSymbol" class="glyph native-glyph" v-html="renderIcon(bitmapSymbol)"></span>
     <span v-else-if="!isImg(icon) && icon" class="glyph">{{ icon }}</span>
     <span v-else-if="!isImg(icon) || broken" class="initial">{{ initial }}</span>

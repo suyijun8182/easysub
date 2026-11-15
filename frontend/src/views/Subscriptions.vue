@@ -219,7 +219,7 @@
               <input id="sf-name" v-model="form.name" @input="onNameInput" @keydown.esc="closeSuggest" autocomplete="off" />
               <div v-if="suggestions.length" class="suggest">
                 <button v-for="s in suggestions" :key="s.slug" type="button" class="suggest-i" @click="pickService(s)">
-                  <img :src="s.icon" alt="" class="ico" /> {{ s.name }}
+                  <img :src="s.icon" alt="" class="ico" loading="lazy" decoding="async" /> {{ s.name }}
                 </button>
               </div>
             </div>
@@ -259,7 +259,7 @@
             <div class="lib-grid">
               <button v-for="it in iconLib" :key="it.slug" type="button" class="lib-ico" :title="it.name"
                       :aria-label="it.name" :aria-pressed="form.icon === it.icon" @click="form.icon = it.icon">
-                <img :src="it.icon" alt="" loading="lazy" />
+                <img :src="it.icon" alt="" loading="lazy" decoding="async" />
               </button>
             </div>
           </details>
@@ -424,7 +424,7 @@
           <div class="lib-group-t">{{ g.label }}</div>
           <div class="svc-grid">
             <button v-for="s in g.items" :key="s.slug" class="svc" @click="pickFromBrowser(s)">
-              <img :src="s.icon" alt="" class="svc-ico" /> <span>{{ s.name }}</span>
+              <img :src="s.icon" alt="" class="svc-ico" loading="lazy" decoding="async" /> <span>{{ s.name }}</span>
             </button>
           </div>
         </div>
