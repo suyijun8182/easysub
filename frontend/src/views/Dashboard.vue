@@ -15,7 +15,8 @@
     <div v-if="loading" class="card skeleton" aria-busy="true"></div>
     <template v-else>
       <!-- 签名区：未来 30 天续费时间轴 -->
-      <section class="card horizon" :aria-label="t('dashboard.nextDays', { n: horizon })">
+      <MobileTimeline v-if="androidPreview" :subscriptions="allSubs" />
+      <section v-else class="card horizon" :aria-label="t('dashboard.nextDays', { n: horizon })">
         <div class="hz-head">
           <h3>{{ t('dashboard.nextDays', { n: horizon }) }}</h3>
           <router-link to="/calendar" class="more">{{ t('nav.calendar') }}<span v-html="icon('chevron')"></span></router-link>
@@ -177,6 +178,7 @@ import { useAuth } from '../stores/auth'
 import { icon } from '../icons'
 import { categoryIconName } from '../android-preview/bitmap-renderer.js'
 import { upcomingRenewals } from '../android-preview/renewal-desk.js'
+import MobileTimeline from '../android-preview/MobileTimeline.vue'
 import { daysLeft, lifeBar, statusOf } from '../lifeline'
 import SubIcon from '../components/SubIcon.vue'
 

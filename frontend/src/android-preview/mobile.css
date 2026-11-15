@@ -28,10 +28,10 @@ html[data-desk-navigation] .app-page-enter-active, html[data-desk-navigation] .a
 .android-preview .dash { display:flex; flex-direction:column; }
 .android-preview .dash > .page-head { order:0; }
 .android-preview .dash > .figures { order:1; }
-.android-preview .dash > .horizon { order:2; }
+.android-preview .dash > .horizon,.android-preview .dash > .app-timeline { order:2; }
 .android-preview .dash > .mobile-renew-entry { order:3; margin:0 0 var(--es-space-6); }
 .android-preview .dash > .split { order:4; }
-.android-preview .dash > .card:not(.figures):not(.horizon) { order:5; }
+.android-preview .dash > .card:not(.figures):not(.horizon):not(.app-timeline) { order:5; }
 .android-preview .dash .page-head > div { display:flex; align-items:baseline; flex-wrap:wrap; gap:var(--es-space-2); }
 .android-preview .dash .page-head h1 { font-size:var(--es-text-section); margin:0; }
 .android-preview .dash .page-head .lede { margin:0; }
