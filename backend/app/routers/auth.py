@@ -38,17 +38,17 @@ def _gen_code() -> str:
     return f"{secrets.randbelow(1000000):06d}"
 
 
-# 登录失败限流（内存版）：同一用户名在锁定窗口内失败过多则暂时拒绝
+# 登录失败限流（内存版）：按来源 IP 和 IP+用户名分别限制失败次数
 _FAILS: dict[str, list[float]] = {}
 _MAX_FAILS = 8
 _LOCK_SECONDS = 900
 
 
-def _check_lock(username: str) -> None:
+def _check_lock(username: str, max_fails: int = _MAX_FAILS) -> None:
     now = time.time()
     fails = [t for t in _FAILS.get(username, []) if now - t < _LOCK_SECONDS]
     _FAILS[username] = fails
-    if len(fails) >= _MAX_FAILS:
+    if len(fails) >= max_fails:
         raise HTTPException(429, "登录尝试过多，请约 15 分钟后再试")
 
 
@@ -152,15 +152,21 @@ def verify_email(payload: VerifyEmailIn, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=TokenOut)
 def login(
+    request: Request,
     form: OAuth2PasswordRequestForm = Depends(),
     otp: str | None = Form(default=None),
     sync_client: bool = Form(default=False),
     db: Session = Depends(get_db),
 ):
-    _check_lock(form.username)
+    client_ip = request.client.host if request.client else "unknown"
+    login_key = f"login:{client_ip}:{form.username.lower()}"
+    ip_key = f"login-ip:{client_ip}"
+    _check_lock(login_key)
+    _check_lock(ip_key, max_fails=30)
     user = db.scalar(select(User).where(User.username == form.username))
     if not user or not verify_password(form.password, user.password_hash):
-        _record_fail(form.username)
+        _record_fail(login_key)
+        _record_fail(ip_key)
         if sync_client and not user:
             raise HTTPException(401, {"code": "ACCOUNT_NOT_REGISTERED", "message": "该账号尚未在此服务器注册", "registration": True})
         raise HTTPException(401, "用户名或密码错误")
@@ -178,9 +184,10 @@ def login(
                 raise HTTPException(401, {"code": "OTP_REQUIRED", "message": "请输入网页账号的两步验证码"})
             raise HTTPException(401, "需要两步验证码", headers={"X-2FA-Required": "1"})
         if not pyotp.TOTP(user.totp_secret).verify(otp.strip(), valid_window=1):
-            _record_fail(form.username)
+            _record_fail(login_key)
+            _record_fail(ip_key)
             raise HTTPException(401, "两步验证码不正确")
-    _clear_fail(form.username)
+    _clear_fail(login_key)
     activity.log("auth.login", f"用户 {user.username} 登录", user=user)
     return TokenOut(
         access_token=create_access_token(user.id, user.auth_version),
