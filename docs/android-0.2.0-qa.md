@@ -52,3 +52,8 @@
 - 演示数据中选择 SIM 和 Netflix，注入 Netflix 单项失败：SIM 保存，Netflix 保持选中，未出现完成动效；恢复演示适配器后重试仅提交剩余项，全部成功后出现对勾和结果文字。
 - `1.7-partial-light-zh.png`、`1.7-success-light-zh.png`、`1.7-results.json`；浏览器控制台无错误。没有访问真实 API，没有写入真机。
 - 增加保存完成前不报告成功、全部失败保留去重后的完整重试集合的单元测试；既有行为正确，无需修改生产逻辑。
+
+## 2.10 设置行垂直居中
+
+- 现有 `.mobile-settings .setting-link` 已为 `align-items:center`，图标和箭头都使用固定尺寸块。本项没有重复添加样式。
+- 360px、近似 1.35 字号下，三种语言的全部设置行实测图标/文字/箭头中心差均为 0px；截图 `2.10-settings-light-{zh,en,ru}.png`，记录 `2.10-alignment.json`，浏览器控制台无错误。
