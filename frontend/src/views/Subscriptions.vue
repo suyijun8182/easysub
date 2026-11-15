@@ -358,7 +358,7 @@
               <label for="sf-pay">{{ t('sub.payment') }}</label>
               <select id="sf-pay" v-model="form.payment_method_id">
                 <option :value="null">—</option>
-                <option v-for="p in methods" :key="p.id" :value="p.id">{{ p.icon }} {{ p.name }}</option>
+                <option v-for="p in methods" :key="p.id" :value="p.id">{{ p.icon }} {{ androidPreview ? paymentName(p, locale) : p.name }}</option>
               </select>
             </div>
           </div>
@@ -448,9 +448,10 @@ import { categoryIconName } from '../android-preview/bitmap-renderer.js'
 import { daysLeft, isImg, lifeBar, statusOf } from '../lifeline'
 import SubIcon from '../components/SubIcon.vue'
 import MobileSubscriptionList from '../android-preview/MobileSubscriptionList.vue'
+import { paymentName } from '../android-preview/display-names.js'
 import BaseModal from '../components/BaseModal.vue'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const auth = useAuth()
 const subs = ref([])
 const currencies = ref([])
@@ -511,7 +512,7 @@ function toast(msg, type = 'ok') {
 
 function payName(s) {
   const p = methods.value.find((x) => x.id === s.payment_method_id)
-  return p ? `${p.icon || ''} ${p.name}`.trim() : ''
+  return p ? `${p.icon || ''} ${androidPreview ? paymentName(p,locale.value) : p.name}`.trim() : ''
 }
 function cycleText(s) {
   const n = s.cycle_count > 1 ? s.cycle_count + ' ' : ''

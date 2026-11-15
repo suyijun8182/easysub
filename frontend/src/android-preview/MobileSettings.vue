@@ -37,7 +37,7 @@
         <label v-if="section === 'currencies'">{{ t('sync.rate', { base: preview.isLocal ? localSync.status.exchange_base : 'CNY' }) }}<input v-model.number="entity.rate_to_base" required type="number" min="0.000001" step="any"></label>
         <div class="actions"><button class="btn">{{ entity.id ? text("保存修改") : text("添加") }}</button><button v-if="entity.id" type="button" class="btn ghost" @click="resetEntity">{{ text("取消编辑") }}</button></div>
       </form>
-      <section class="card"><div v-for="item in entities" :key="item.id || item.code" class="entity-row"><span class="entity-name">{{ item.icon }} {{ item.code }} {{ item.name }}<small v-if="item.note">{{ item.note }}</small></span><button v-if="section === 'categories'" class="btn ghost" @click="editEntity(item)">{{ text("编辑") }}</button><button class="btn ghost danger" @click="removeEntity(item)">{{ text("删除") }}</button></div></section>
+      <section class="card"><div v-for="item in entities" :key="item.id || item.code" class="entity-row"><span class="entity-name">{{ item.icon }} {{ item.code }} {{ section === 'payment-methods' ? paymentName(item, locale) : item.name }}<small v-if="item.note">{{ item.note }}</small></span><button v-if="section === 'categories'" class="btn ghost" @click="editEntity(item)">{{ text("编辑") }}</button><button class="btn ghost danger" @click="removeEntity(item)">{{ text("删除") }}</button></div></section>
     </template>
     <template v-else-if="section === 'rates'">
       <p class="muted">{{ text("以下为演示缓存汇率，不代表实时市场数据。缺少缓存的币种显示“未缓存”。") }}</p>
@@ -74,6 +74,7 @@ import { settingsCopy } from './settings-copy.js'
 import { icon } from '../icons.js'
 import { aboutBackgroundStyle } from './bitmap-assets.js'
 import { useUnsavedChanges } from './useUnsavedChanges.js'
+import { paymentName } from './display-names.js'
 const clone = value => JSON.parse(JSON.stringify(value))
 const settingIcons = { preferences:'theme-light', categories:'category-other', 'payment-methods':'card', bundles:'package', currencies:'wallet', rates:'trending', reminders:'notifications', channels:'send', '/notifications':'inbox', '/logs':'logs', backup:'backup', calendar:'calendar', privacy:'lock', about:'help' }
 const localSync = inject('localSync')

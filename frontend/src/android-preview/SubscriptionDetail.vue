@@ -18,7 +18,8 @@ import { useI18n } from 'vue-i18n'
 import SubIcon from '../components/SubIcon.vue'
 import { detailBackTarget } from './ui-behavior.js'
 import { billingProgress } from './billing-progress.js'
-const route = useRoute(), router = useRouter(), preview = inject('preview'), { t } = useI18n()
+import { paymentName } from './display-names.js'
+const route = useRoute(), router = useRouter(), preview = inject('preview'), { t, locale } = useI18n()
 const revision = inject('previewRevision')
 function goBack() {
   const state = router.options.history.state
@@ -32,7 +33,7 @@ const fields = computed(() => {
   const s = subscription.value
   if (!s) return []
   const category = preview.state.categories.find(c=>c.id===s.category_id)?.name
-  const payment = preview.state.payment_methods.find(c=>c.id===s.payment_method_id)?.name
+  const payment = paymentName(preview.state.payment_methods.find(c=>c.id===s.payment_method_id),locale.value)
   const bundle = preview.state.bundles.find(c=>c.id===s.bundle_id)?.name
   const entries = [
     ['category',t('sub.category'),category],['payment',t('sub.payment'),payment],['bundle',t('mobile.bundles'),bundle],
