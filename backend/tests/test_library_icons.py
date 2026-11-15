@@ -37,7 +37,7 @@ class LibraryIconTests(unittest.TestCase):
     def test_image_bundled_in_docker_dist_is_served_without_network(self):
         target = Path('frontend_dist/preview-icons'); target.mkdir(parents=True)
         (target / f'{self.slug}.png').write_bytes(PNG)
-        with mock.patch.object(self.icons.httpx, 'get') as fetch:
+        with mock.patch.object(self.icons, '_fetch_favicon') as fetch:
             response = self.get()
         fetch.assert_not_called()
         self.assertEqual(response.status_code, 200)
@@ -46,7 +46,7 @@ class LibraryIconTests(unittest.TestCase):
     def test_image_bundled_in_source_checkout_is_served_without_network(self):
         target = Path('../frontend/public/preview-icons'); target.mkdir(parents=True)
         (target / f'{self.slug}.png').write_bytes(PNG)
-        with mock.patch.object(self.icons.httpx, 'get') as fetch:
+        with mock.patch.object(self.icons, '_fetch_favicon') as fetch:
             response = self.get()
         fetch.assert_not_called()
         self.assertEqual(response.content, PNG)
@@ -56,16 +56,15 @@ class LibraryIconTests(unittest.TestCase):
         Path(f'data/icons/library/{self.slug}.png').write_bytes(b'cached')
         Path('frontend_dist/preview-icons').mkdir(parents=True)
         Path(f'frontend_dist/preview-icons/{self.slug}.png').write_bytes(PNG)
-        with mock.patch.object(self.icons.httpx, 'get') as fetch:
+        with mock.patch.object(self.icons, '_fetch_favicon') as fetch:
             self.assertEqual(self.get().content, b'cached')
         fetch.assert_not_called()
 
     def test_failed_download_returns_cached_placeholder_and_is_not_retried_for_six_hours(self):
-        with mock.patch.object(self.icons.httpx, 'get', side_effect=OSError('blocked')) as fetch:
+        with mock.patch.object(self.icons, '_fetch_favicon', side_effect=OSError('blocked')) as fetch:
             first = self.get()
             second = self.get()
             self.assertEqual(fetch.call_count, 1)
-            self.assertEqual(fetch.call_args.kwargs['timeout'], 4)
             with mock.patch.object(self.icons.time, 'monotonic', return_value=time.monotonic() + 6 * 3600 + 1):
                 self.get()
             self.assertEqual(fetch.call_count, 2)
@@ -80,8 +79,15 @@ class LibraryIconTests(unittest.TestCase):
         svg = self.icons.placeholder_svg('<script>')
         self.assertNotIn('<script', svg)
 
+    def test_favicon_client_is_shared_and_times_out_after_four_seconds(self):
+        client = self.icons._favicon_client()
+        self.addCleanup(client.close)
+        self.assertIs(client, self.icons._favicon_client())
+        self.assertEqual(client.timeout.connect, 4)
+        self.assertEqual(client.timeout.read, 4)
+
     def test_unknown_slug_is_still_404(self):
-        with mock.patch.object(self.icons.httpx, 'get') as fetch:
+        with mock.patch.object(self.icons, '_fetch_favicon') as fetch:
             self.assertEqual(self.get('not_a_known_service').status_code, 404)
         fetch.assert_not_called()
 

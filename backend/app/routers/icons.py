@@ -1,6 +1,7 @@
 import html
 import os
 import re
+import threading
 import time
 import uuid
 
@@ -29,6 +30,24 @@ FAILURE_TTL = 6 * 3600
 PLACEHOLDER_HEADERS = {"Cache-Control": "public, max-age=86400"}
 # 进程内记录下载失败的图标，避免访问不到外网时每次打开页面都等待超时
 _failed: dict[str, float] = {}
+_client: httpx.Client | None = None
+_client_lock = threading.Lock()
+
+
+def _favicon_client() -> httpx.Client:
+    # 复用一个客户端：每次新建都要重新加载证书，在 Windows 上要 1～2 秒，会让 4 秒超时变成 6 秒。
+    # 首次使用时才创建，仍会读取环境变量里的 HTTPS_PROXY。
+    global _client
+    with _client_lock:
+        if _client is None:
+            _client = httpx.Client(timeout=FETCH_TIMEOUT, follow_redirects=True)
+        return _client
+
+
+def _fetch_favicon(domain: str) -> bytes:
+    resp = _favicon_client().get(f"https://www.google.com/s2/favicons?domain={domain}&sz=64")
+    resp.raise_for_status()
+    return resp.content
 
 
 class IconUrlIn(BaseModel):
@@ -138,15 +157,13 @@ def library_icon(slug: str):
     if failed_at is not None and time.monotonic() - failed_at < FAILURE_TTL:
         return placeholder
     # 用 Google favicon 服务抓取该商家图标（覆盖面广；大陆网络通常访问不到，所以超时要短）
-    fav = f"https://www.google.com/s2/favicons?domain={domain}&sz=64"
     try:
-        resp = httpx.get(fav, timeout=FETCH_TIMEOUT, follow_redirects=True)
-        resp.raise_for_status()
+        content = _fetch_favicon(domain)
     except Exception:  # noqa: BLE001
         _failed[safe] = time.monotonic()
         return placeholder
     _failed.pop(safe, None)
     os.makedirs(LIBRARY_DIR, exist_ok=True)
     with open(os.path.join(LIBRARY_DIR, safe), "wb") as f:
-        f.write(resp.content)
-    return Response(content=resp.content, media_type="image/png")
+        f.write(content)
+    return Response(content=content, media_type="image/png")
