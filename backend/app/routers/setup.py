@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 from app import bootstrap, database, migrate
 from app.seed import seed_all
-from app.secrets_store import reencrypt_legacy_secrets
+from app.secrets_store import rotate_legacy_secrets_safely
 from app.services import scheduler
 
 router = APIRouter(prefix="/api/setup", tags=["setup"])
@@ -25,7 +25,7 @@ def _initialize(cfg: dict) -> None:
     db = database.SessionLocal()
     try:
         seed_all(db)
-        reencrypt_legacy_secrets(db)
+        rotate_legacy_secrets_safely(db)
     finally:
         db.close()
     scheduler.start_scheduler()

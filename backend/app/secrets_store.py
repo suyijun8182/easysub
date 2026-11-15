@@ -64,3 +64,13 @@ def reencrypt_legacy_secrets(db) -> None:
                 condition = [column == row[column.name] for column in table.primary_key]
                 db.execute(update(table).where(*condition).values(payload=rotated))
     db.commit()
+
+
+def rotate_legacy_secrets_safely(db) -> None:
+    """Startup wrapper: a bad row must never make the database look unavailable."""
+    try:
+        reencrypt_legacy_secrets(db)
+    except Exception as exc:  # noqa: BLE001
+        # Legacy ciphertext stays readable through crypto's fallback keys; retry next start.
+        db.rollback()
+        print(f"[security] 旧密文重新加密失败，已跳过：{type(exc).__name__}")
