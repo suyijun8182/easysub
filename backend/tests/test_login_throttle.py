@@ -49,11 +49,11 @@ class LoginThrottleTests(unittest.TestCase):
         self.assertEqual(self.login(self.client_a, 'correct-password').status_code, 429)
         self.assertEqual(self.login(self.client_a, 'wrong', 'ALICE').status_code, 429)
 
-    def test_ip_limit_prevents_username_spraying(self):
+    def test_shared_proxy_ip_cannot_lock_out_other_users(self):
+        # Behind a reverse proxy (Lucky, Caddy, nginx) every request shares one client IP.
         for i in range(30):
             self.assertEqual(self.login(self.client_a, 'wrong', f'unknown-{i}').status_code, 401)
-        self.assertEqual(self.login(self.client_a, 'correct-password').status_code, 429)
-        self.assertEqual(self.login(self.client_b, 'correct-password').status_code, 200)
+        self.assertEqual(self.login(self.client_a, 'correct-password').status_code, 200)
 
     def test_success_clears_only_ip_username_failures(self):
         for _ in range(7):
@@ -62,6 +62,3 @@ class LoginThrottleTests(unittest.TestCase):
         for _ in range(7):
             self.assertEqual(self.login(self.client_a, 'wrong').status_code, 401)
         self.assertEqual(self.login(self.client_a, 'correct-password').status_code, 200)
-        for i in range(16):
-            self.assertEqual(self.login(self.client_a, 'wrong', f'unknown-{i}').status_code, 401)
-        self.assertEqual(self.login(self.client_a, 'correct-password').status_code, 429)
