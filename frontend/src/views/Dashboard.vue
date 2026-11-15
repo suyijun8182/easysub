@@ -137,7 +137,7 @@
         <div class="cat-cols">
           <div v-for="g in catGroups" :key="g.key" class="cat-col">
             <div class="cc-head">
-              <span class="cc-name"><span class="cc-ico" v-if="g.icon">{{ g.icon }}</span>{{ g.name }}</span>
+              <span class="cc-name"><span class="cc-ico" v-if="g.icon"><span v-if="androidPreview && categoryIconName(g.icon)" class="category-bitmap" v-html="icon(categoryIconName(g.icon))"></span><template v-else>{{ g.icon }}</template></span>{{ g.name }}</span>
               <span class="tag num">{{ g.items.length }}</span>
             </div>
             <router-link v-for="s in g.items" :key="s.id" to="/subscriptions" class="cc-item">
@@ -173,6 +173,7 @@ import { useI18n } from 'vue-i18n'
 import api from '../api'
 import { useAuth } from '../stores/auth'
 import { icon } from '../icons'
+import { categoryIconName } from '../android-preview/bitmap-renderer.js'
 import { daysLeft, lifeBar, statusOf } from '../lifeline'
 import SubIcon from '../components/SubIcon.vue'
 

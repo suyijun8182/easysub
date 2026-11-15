@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { appearance, detailBackTarget } from './ui-behavior.js'
+import { appearance, detailBackTarget, activeTab } from './ui-behavior.js'
 import { createPreviewStore } from './store.js'
 import { createLocal } from '../sync/local.js'
 import { validateConnection } from '../sync/validation.js'
@@ -20,6 +20,14 @@ test('persisted local preferences survive restarting the app', async () => {
 test('details opened without app history return to subscriptions, never an external page', () => {
   for (const state of [null, {}, { back: 'https://example.com' }, { back: '//example.com' }, { back: '/subscriptions/1' }]) assert.equal(detailBackTarget(state), '/subscriptions')
   assert.equal(detailBackTarget({ back: '/calendar?month=2026-11' }), '/calendar?month=2026-11')
+})
+test('bottom navigation keeps the owning section selected on detail and settings pages', () => {
+  for (const path of ['/settings', '/settings/preferences', '/settings/sync', '/settings/about', '/logs', '/notifications']) assert.equal(activeTab(path), '/settings')
+  assert.equal(activeTab('/subscriptions/42'), '/subscriptions')
+  assert.equal(activeTab('/renewals'), '/dashboard')
+  assert.equal(activeTab('/calendar'), '/calendar')
+  assert.equal(activeTab('/settings-other'), null)
+  assert.equal(activeTab('/unknown'), null)
 })
 test('connection validation identifies each invalid field without transmitting credentials', () => {
   const t = key => key

@@ -1,0 +1,90 @@
+/* debug23 handoff tokens. Existing theme remains the color source of truth. */
+.android-preview {
+  --es-color-bg: var(--bg, #f6f7f5);
+  --es-color-surface: var(--surface, #ffffff);
+  --es-color-surface-muted: var(--surface-2, #eef0ee);
+  --es-color-text: var(--text, #16191d);
+  --es-color-text-secondary: var(--text-soft, #59606a);
+  --es-color-border: var(--border, #e1e4e3);
+  --es-color-border-strong: var(--border-strong, #cfd3d2);
+  --es-color-action: var(--primary, #1b1f24);
+  --es-color-on-action: var(--on-primary, #ffffff);
+  --es-color-selected: var(--ok, #0f7352);
+  --es-color-selected-surface: var(--ok-soft, #e3f3ec);
+  --es-color-warning: var(--soon, #9e5b00);
+  --es-color-warning-surface: var(--soon-soft, #fdf1dc);
+  --es-color-error: var(--late, #c3352c);
+  --es-color-error-surface: var(--late-soft, #fbe6e3);
+  --es-font-sans: var(--font, "Onest Variable", "PingFang SC", "HarmonyOS Sans SC", system-ui, sans-serif);
+  --es-font-mono: var(--mono, "Cascadia Mono", Consolas, monospace);
+  --es-text-brand: 20px;
+  --es-text-page: 24px;
+  --es-text-section: 16px;
+  --es-text-card: 16px;
+  --es-text-amount: 24px;
+  --es-text-body: 16px;
+  --es-text-label: 14px;
+  --es-text-caption: 12px;
+  --es-weight-regular: 400;
+  --es-weight-label: 550;
+  --es-weight-strong: 650;
+  --es-weight-brand: 700;
+  --es-leading-title: 1.3;
+  --es-leading-label: 1.4;
+  --es-leading-body: 1.55;
+  --es-space-1: 4px;
+  --es-space-2: 8px;
+  --es-space-3: 12px;
+  --es-space-4: 16px;
+  --es-space-5: 20px;
+  --es-space-6: 24px;
+  --es-space-8: 32px;
+  --es-space-10: 40px;
+  --es-radius-control: 12px;
+  --es-radius-card: 16px;
+  --es-radius-featured: 20px;
+  --es-radius-sheet: 24px;
+  --es-radius-round: 999px;
+  --es-border-width: 1px;
+  --es-control-min: 48px;
+  --es-content-max: 520px;
+  --es-icon-small: 16px;
+  --es-icon-control: 20px;
+  --es-icon-nav: 24px;
+  --es-icon-brand: 32px;
+  --es-icon-brand-featured: 40px;
+  --es-icon-stroke: 1.7;
+  --es-shadow-card: none;
+  --es-shadow-float: 0 12px 32px rgb(22 25 29 / .14);
+  --es-focus-width: 2px;
+  --es-focus-offset: 3px;
+  --es-motion-press: 100ms;
+  --es-motion-count: 180ms;
+  --es-motion-selection: 220ms;
+  --es-motion-stack: 240ms;
+  --es-motion-stack-stagger: 28ms;
+  --es-motion-timeline: 280ms;
+  --es-motion-navigation: 320ms;
+  --es-motion-complete: 200ms;
+  --es-motion-check: 260ms;
+  --es-motion-particles: 450ms;
+  --es-ease-out: cubic-bezier(.2, 0, 0, 1);
+  --es-ease-spring: cubic-bezier(.2, .8, .2, 1);
+}
+[data-theme="dark"] .android-preview {
+  --es-shadow-float: 0 12px 32px rgb(0 0 0 / .4);
+}
+@media (prefers-reduced-motion: reduce) {
+  .android-preview {
+    --es-motion-press: 0ms;
+    --es-motion-count: 0ms;
+    --es-motion-selection: 0ms;
+    --es-motion-stack: 0ms;
+    --es-motion-stack-stagger: 0ms;
+    --es-motion-timeline: 0ms;
+    --es-motion-navigation: 0ms;
+    --es-motion-complete: 0ms;
+    --es-motion-check: 0ms;
+    --es-motion-particles: 0ms;
+  }
+}

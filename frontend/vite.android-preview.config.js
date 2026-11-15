@@ -23,6 +23,6 @@ self.addEventListener('fetch', e => {
 });` })
     }
   }],
-  build: { target: 'esnext', outDir: 'dist-android-preview', rollupOptions: { input: ['android-features.html', 'android-app.html'] } },
+  build: { target: 'esnext', assetsInlineLimit: 0, outDir: 'dist-android-preview', rollupOptions: { input: ['android-features.html', 'android-app.html'] } },
   server: { host: '0.0.0.0', port: 5174, strictPort: true }
 })

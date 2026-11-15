@@ -5,7 +5,7 @@
     <p v-if="busy" class="settings-busy" role="status">{{ t('sync.busy') }}</p>
     <fieldset :disabled="busy" class="settings-fields">
     <template v-if="!section">
-      <section v-for="group in groups" :key="group.title" class="setting-group"><h2>{{ t('mobile.' + group.title) }}</h2><div class="card"><router-link v-for="key in group.items" :key="key" :to="key.startsWith('/') ? key : '/settings/' + key" class="setting-link"><span>{{ titles[key] }}</span><span aria-hidden="true">›</span></router-link></div></section>
+      <section v-for="group in groups" :key="group.title" class="setting-group"><h2>{{ t('mobile.' + group.title) }}</h2><div class="card"><router-link v-for="key in group.items" :key="key" :to="key.startsWith('/') ? key : '/settings/' + key" class="setting-link"><span class="setting-art" aria-hidden="true" v-html="icon(settingIcons[key] || 'settings')"></span><span class="setting-title">{{ titles[key] }}</span><span class="setting-arrow" aria-hidden="true" v-html="icon('chevron')"></span></router-link></div></section>
       <p class="muted">{{ t('mobile.pendingNative') }}</p>
     </template>
     <form v-else-if="section === 'preferences'" class="card" @submit.prevent="savePrefs">
@@ -56,7 +56,7 @@
     </template>
     <template v-else-if="section === 'calendar'"><section class="card"><h2>{{ text("导出系统日历文件") }}</h2><p>{{ text("导出有效且允许日历显示的订阅，包含名称、金额、备注与提前一天的提醒。") }}</p><button class="btn" @click="exportIcs">{{ text("导出 ICS") }}</button><p class="muted">{{ text("这是文件快照，后续订阅变更需要重新导出；手机不提供服务器订阅地址。") }}</p></section></template>
     <template v-else-if="section === 'privacy'"><section class="card"><h2>{{ text("设备认证与隐私") }}</h2><p>{{ text("正式 App 使用手机设备认证保护访问，并控制多任务预览中的敏感内容。") }}</p><p class="muted">{{ text("浏览器预览无法验证 Android 设备锁、后台安全存储和系统认证。本页不提供无效的“开启成功”开关。") }}</p><p>{{ text("删除预览数据的确认口令为") }}<b>preview</b>{{ text("。正式 App 将使用删除确认和设备认证，不沿用网站账号密码。") }}</p></section></template>
-    <template v-else-if="section === 'about'"><section class="card"><h2>{{ text("EasySub · Android 设计预览") }}</h2><p>{{ text("真实业务页面与演示数据层已接通，未生成正式 APK。") }}</p><a class="btn ghost" href="https://github.com/suyijun8182/easysub/releases" target="_blank" rel="noopener">{{ text("查看 GitHub Releases") }}</a><p class="muted">{{ text("版本检查、签名 APK 升级保留数据、后台任务与外部渠道发送仍需 Android 工程验证。") }}</p></section></template>
+    <template v-else-if="section === 'about'"><section class="card app-art-surface" :style="aboutBackgroundStyle"><span class="about-app-mark" aria-hidden="true" v-html="icon('easysub-mark')"></span><h2>EasySub</h2><p>{{ t(preview.isAndroid ? 'sync.nativeHint' : 'mobile.previewHint') }}</p><a class="btn ghost" href="https://github.com/suyijun8182/easysub/releases" target="_blank" rel="noopener">{{ text("查看 GitHub Releases") }}</a><p class="muted">{{ text("版本检查、签名 APK 升级保留数据、后台任务与外部渠道发送仍需 Android 工程验证。") }}</p></section></template>
     </fieldset>
     <p v-if="message" ref="result" tabindex="-1" class="preview-result" :class="messageKind" :role="messageKind === 'error' ? 'alert' : 'status'">{{ message }}</p>
   </div>
@@ -71,8 +71,11 @@ import { applyTheme } from '../theme.js'
 import { downloadFile } from '../native/device.js'
 import { encryptBackup, decryptBackup } from './store.js'
 import { settingsCopy } from './settings-copy.js'
+import { icon } from '../icons.js'
+import { aboutBackgroundStyle } from './bitmap-assets.js'
 import { useUnsavedChanges } from './useUnsavedChanges.js'
 const clone = value => JSON.parse(JSON.stringify(value))
+const settingIcons = { preferences:'theme-light', categories:'category-other', 'payment-methods':'card', bundles:'package', currencies:'wallet', rates:'trending', reminders:'notifications', channels:'send', '/notifications':'inbox', '/logs':'logs', backup:'backup', calendar:'calendar', privacy:'lock', about:'help' }
 const localSync = inject('localSync')
 const preview = inject('preview'), route = useRoute(), auth = useAuth(), { t, locale } = useI18n()
 const text = value => settingsCopy[value]?.[locale.value] || value

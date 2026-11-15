@@ -1,18 +1,40 @@
 <template>
   <div class="android-preview">
-    <details class="preview-info"><summary>{{ t(preview.isAndroid ? 'sync.nativeApp' : preview.isLocal ? 'sync.app' : 'mobile.previewInfo') }} <span>EasySub</span></summary><p>{{ t(preview.isAndroid ? 'sync.nativeHint' : preview.isLocal ? 'sync.appHint' : 'mobile.previewHint') }}</p></details>
-    <router-link v-if="preview.isLocal" class="btn ghost sync-shortcut" to="/settings/sync">{{ t('sync.title') }}</router-link>
-    <main ref="main" tabindex="-1" class="app-content"><section v-if="missingRates.length && ['/dashboard','/reports'].includes(route.path)" class="card" role="status"><h2>{{ t('mobile.unknownRate') }}</h2><p>{{ t('mobile.missingRate', { currencies: missingRates.join('、') }) }}</p><router-link to="/settings/currencies" class="btn">{{ t('mobile.manualRate') }}</router-link><router-link to="/subscriptions" class="btn ghost">{{ t('mobile.manage') }}</router-link></section><router-view v-else v-slot="{ Component, route: current }"><Transition name="app-page" mode="out-in" @after-enter="focusPage"><component :is="Component" :key="current.fullPath" /></Transition></router-view></main>
-    <nav ref="bottomNav" class="app-bottom" :aria-label="t('sync.nav')"><router-link v-for="item in tabs" :key="item.path" :to="item.path"><span aria-hidden="true" v-html="icon(item.icon)"></span><span>{{ t(item.label) }}</span></router-link></nav>
+    <header class="mobile-masthead"><router-link to="/dashboard" class="mobile-brand"><span aria-hidden="true" v-html="icon('easysub-mark')"></span>EasySub</router-link><details class="mobile-build"><summary :aria-label="t('sync.nativeApp')">ALPHA</summary><p>{{ t(preview.isAndroid ? 'sync.nativeHint' : preview.isLocal ? 'sync.appHint' : 'mobile.previewHint') }}</p></details><router-link :to="preview.isLocal ? '/settings/sync' : '/settings'" class="mobile-account" :aria-label="t('sync.title')"><span aria-hidden="true" v-html="icon('settings')"></span></router-link></header>
+    <router-link v-if="route.path === '/dashboard'" class="mobile-renew-entry" to="/renewals"><span class="renew-entry-icon" aria-hidden="true" v-html="icon('renew')"></span><span>{{ deskLabel }}</span><span aria-hidden="true" v-html="icon('chevron')"></span></router-link>
+    <main ref="main" tabindex="-1" class="app-content"><section v-if="missingRates.length && ['/dashboard','/reports'].includes(route.path)" class="card" role="status"><h2>{{ t('mobile.unknownRate') }}</h2><p>{{ t('mobile.missingRate', { currencies: missingRates.join('、') }) }}</p><router-link to="/settings/currencies" class="btn">{{ t('mobile.manualRate') }}</router-link><router-link to="/subscriptions" class="btn ghost">{{ t('mobile.manage') }}</router-link></section><router-view v-else v-slot="{ Component, route: current }"><component :is="Component" :key="current.fullPath" /></router-view></main>
+    <nav ref="bottomNav" class="app-bottom" :aria-label="t('sync.nav')"><router-link v-for="item in tabs" :key="item.path" :to="item.path" custom v-slot="{ href, navigate }"><a :href="href" :class="{ 'router-link-active': selectedTab === item.path }" :aria-current="selectedTab === item.path ? (route.path === item.path ? 'page' : 'location') : undefined" @click="navigateTab($event, item.path, navigate)"><span aria-hidden="true" v-html="icon(item.icon)"></span><span>{{ t(item.label) }}</span></a></router-link></nav>
   </div>
 </template>
 <script setup>
 import { icon } from '../icons.js'
 import { useI18n } from 'vue-i18n'
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { activeTab } from './ui-behavior.js'
 const preview = inject('preview'), revision = inject('previewRevision'), route = useRoute()
 const main = ref(null)
+const selectedTab = computed(() => activeTab(route.path))
+const router = useRouter()
+let navigationTransition
+watch(() => route.fullPath, focusPage, { flush: 'post' })
+async function navigateTab(event, path, navigate) {
+  if (!document.startViewTransition || event.detail === 0 || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || matchMedia('(prefers-reduced-motion: reduce)').matches || route.path === path) return navigate(event)
+  event.preventDefault()
+  navigationTransition?.skipTransition()
+  const x = event.clientX, y = event.clientY
+  const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))
+  document.documentElement.dataset.deskNavigation = 'true'
+
+  const transition = document.startViewTransition(async () => { await router.push(path); await nextTick() })
+  navigationTransition = transition
+  try {
+    await transition.ready
+    document.documentElement.animate({ clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] }, { duration: 320, easing: 'cubic-bezier(.2,0,0,1)', pseudoElement: '::view-transition-new(root)' })
+    await transition.finished
+  } catch { /* Navigation remains usable if the platform skips its snapshot. */ }
+  finally { if (navigationTransition === transition) { delete document.documentElement.dataset.deskNavigation; navigationTransition = null } }
+}
 const bottomNav = ref(null)
 let navObserver
 function measureViewport() { document.documentElement.style.setProperty('--preview-viewport-height', `${window.visualViewport?.height || window.innerHeight}px`) }
@@ -31,7 +53,8 @@ const missingRates = computed(() => {
   revision.value
   return [...new Set([preview.state.user.base_currency, ...preview.state.subscriptions.filter(s => s.is_active).map(s => s.currency)])].filter(c => !(preview.state.rates[c] > 0))
 })
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const deskLabel = computed(() => ({ zh: '续费计划', en: 'Renewal plan', ru: 'План продлений' }[locale.value] || 'Renewal plan'))
 const tabs = [
   { path: '/dashboard', icon: 'dashboard', label: 'sync.navHome' },
   { path: '/subscriptions', icon: 'subscriptions', label: 'sync.navSubscriptions' },
