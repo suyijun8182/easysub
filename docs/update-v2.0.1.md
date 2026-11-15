@@ -62,4 +62,4 @@ Android 保持 0.1.3 Alpha，本次不发布新的 APK，不修改 `frontend/and
 
 回滚恢复快照会丢弃快照之后的数据库变更，应事先保留当前副本。旧版仍包含本次修复的安全问题，回滚仅用于隔离环境中的故障恢复。
 
-依赖选型依据：[FastAPI 0.133.0 PyPI 元数据](https://pypi.org/pypi/fastapi/0.133.0/json) 允许 `starlette>=0.40.0`，而 [0.132.1](https://pypi.org/pypi/fastapi/0.132.1/json) 仍限制 `<1.0.0`；本版选择可覆盖审计最高修复版本 1.3.1 的最小 FastAPI 版本，不单独钉 Starlette。
+依赖选型依据：[FastAPI 0.133.0 PyPI 元数据](https://pypi.org/pypi/fastapi/0.133.0/json) 允许 `starlette>=0.40.0`，而 [0.132.1](https://pypi.org/pypi/fastapi/0.132.1/json) 仍限制 `<1.0.0`；本版选择可覆盖审计最高修复版本 1.3.1 的最小 FastAPI 版本，并单独锁定 `starlette==1.10.0`：FastAPI 的下限允许旧版，不锁定时原地 `pip install -r` 会保留有漏洞的 Starlette。

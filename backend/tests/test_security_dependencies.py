@@ -14,6 +14,14 @@ class SecurityDependencyTests(unittest.TestCase):
             with self.subTest(package=package):
                 self.assertGreaterEqual(tuple(map(int, version(package).split('.'))), tuple(map(int, minimum.split('.'))))
 
+    def test_requirements_pin_patched_starlette(self):
+        # fastapi only requires starlette>=0.40, so in-place upgrades keep a vulnerable starlette unless pinned.
+        from pathlib import Path
+        lines = (Path(__file__).resolve().parents[1] / 'requirements.txt').read_text(encoding='utf-8').splitlines()
+        pins = [line.split('==', 1)[1].strip() for line in lines if line.strip().lower().startswith('starlette==')]
+        self.assertEqual(len(pins), 1, 'requirements.txt must pin starlette')
+        self.assertGreaterEqual(tuple(map(int, pins[0].split('.'))), (1, 3, 1))
+
     def test_jwt_uses_pyjwt(self):
         self.assertEqual(security.jwt.__name__, 'jwt')
 
