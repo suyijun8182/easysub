@@ -47,7 +47,7 @@ class Settings(BaseSettings):
 
     # 首个管理员
     admin_username: str = "admin"
-    admin_password: str = "admin123"
+    admin_password: str = ""
     admin_email: str = "admin@example.com"
 
 

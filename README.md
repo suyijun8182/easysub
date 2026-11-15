@@ -16,6 +16,8 @@
 docker run -d -p 8842:8000 -v easysub_data:/app/data suyijun8182/easysub:latest
 ```
 
+不再预置 `admin/admin123`。不设置 `ADMIN_PASSWORD` 时，第一个注册的账号就是管理员。如需预置账号，可取消注释示例 `# ADMIN_PASSWORD=your-strong-password` 并填写自己的强密码。
+
 </div>
 
 **v2.0.0：账号安全与加密灾备。** 升级前请阅读 [升级与回滚步骤](docs/update-v2.0.0.md)，配置自动备份密码及需要放行的内网通知目标。Android 0.1.3 仍为 Alpha。
@@ -61,7 +63,6 @@ docker run -d -p 8842:8000 -v easysub_data:/app/data suyijun8182/easysub:latest
 docker run -d --name easysub \
   -p 8842:8000 \
   -e JWT_SECRET="$(openssl rand -hex 32)" \
-  -e ADMIN_USERNAME=admin -e ADMIN_PASSWORD=admin123 \
   -e ADMIN_EMAIL=admin@example.com -e TZ=Asia/Shanghai \
   -v easysub_data:/app/data \
   --restart unless-stopped \
@@ -122,7 +123,7 @@ NAS 图形界面：在镜像里重新拉取 `latest`，再重建容器（保持 
 | 变量 | 必填 | 说明 |
 |------|:---:|------|
 | `JWT_SECRET` | ✅ | 登录令牌密钥，请用 `openssl rand -hex 32` 生成随机串 |
-| `ADMIN_USERNAME` / `ADMIN_PASSWORD` / `ADMIN_EMAIL` | ✅ | 首次初始化创建的管理员账号 |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD` / `ADMIN_EMAIL` | | 可选初始管理员；不设置密码时，第一个注册的账号就是管理员 |
 | `TZ` | | 时区，如 `Asia/Shanghai` |
 | `REMINDER_SCAN_TIME` | | 每天扫描到期订阅、发送提醒的时间，如 `09:00` |
 | `REQUIRE_ADMIN_APPROVAL` | | 新用户注册后是否需管理员审核，默认 `false`（注册即用） |
@@ -222,7 +223,6 @@ Telegram [@Aiden_SU](https://t.me/Aiden_SU) · 📧 aidensu8182@gmail.com
 ```bash
 docker run -d --name easysub -p 8842:8000 \
   -e JWT_SECRET="$(openssl rand -hex 32)" \
-  -e ADMIN_USERNAME=admin -e ADMIN_PASSWORD=admin123 \
   -v easysub_data:/app/data --restart unless-stopped \
   suyijun8182/easysub:latest
 ```
@@ -243,7 +243,6 @@ NAS guides: [各厂家NAS安装教程.md](./各厂家NAS安装教程.md) · Dock
 ```bash
 docker run -d --name easysub -p 8842:8000 \
   -e JWT_SECRET="$(openssl rand -hex 32)" \
-  -e ADMIN_USERNAME=admin -e ADMIN_PASSWORD=admin123 \
   -v easysub_data:/app/data --restart unless-stopped \
   suyijun8182/easysub:latest
 ```

@@ -6,7 +6,7 @@
 
     <div class="set-grid">
       <!-- 账号与密码 -->
-      <section class="card sect">
+      <section id="account" class="card sect">
         <h3 class="sh"><span class="hi" v-html="icon('users')"></span>{{ t('account.title') }}</h3>
         <div class="pair">
           <div>

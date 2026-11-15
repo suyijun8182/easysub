@@ -77,7 +77,7 @@ def seed_all(db: Session) -> None:
             db.add(PaymentMethod(name=name, icon=icon, is_system=True))
 
     # 首个管理员
-    if settings.admin_username and settings.admin_password:
+    if settings.admin_username and settings.admin_password and settings.admin_password != "admin123":
         exists = db.scalar(select(User).where(User.username == settings.admin_username))
         if not exists:
             db.add(

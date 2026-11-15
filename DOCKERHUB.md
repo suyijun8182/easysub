@@ -21,14 +21,15 @@ docker run -d --name easysub \
   -p 8842:8000 \
   -e JWT_SECRET="$(openssl rand -hex 32)" \
   -e ADMIN_USERNAME=admin \
-  -e ADMIN_PASSWORD=admin123 \
   -e TZ=Asia/Shanghai \
   -v easysub_data:/app/data \
   --restart unless-stopped \
   suyijun8182/easysub:latest
 ```
 
-Then open `http://<host>:8842`, finish the DB wizard, and log in.
+Then open `http://<host>:8842`, finish the DB wizard, register the first administrator account, and log in.
+
+不再预置 `admin/admin123`。不设置 `ADMIN_PASSWORD` 时，第一个注册的账号就是管理员。如需预置账号，可取消注释示例 `# ADMIN_PASSWORD=your-strong-password` 并填写自己的强密码。
 
 ## docker-compose
 
@@ -42,7 +43,7 @@ services:
       JWT_SECRET: change-me-to-a-random-secret
       TZ: Asia/Shanghai
       ADMIN_USERNAME: admin
-      ADMIN_PASSWORD: admin123
+      # ADMIN_PASSWORD: your-strong-password
       ADMIN_EMAIL: admin@example.com
     volumes:
       - easysub_data:/app/data
@@ -57,7 +58,7 @@ volumes:
 | Var | Description |
 |-----|-------------|
 | `JWT_SECRET` | **Required.** Random secret for auth tokens. |
-| `ADMIN_USERNAME` / `ADMIN_PASSWORD` / `ADMIN_EMAIL` | Initial admin account created on first init. |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD` / `ADMIN_EMAIL` | Optional initial admin. Without ADMIN_PASSWORD, the first registered account becomes admin. |
 | `TZ` | Timezone, e.g. `Asia/Shanghai`. |
 | `REMINDER_SCAN_TIME` | Daily scan time for reminders, e.g. `09:00`. |
 | `REQUIRE_ADMIN_APPROVAL` | Require admin approval for new sign-ups. Default `false` (sign up and log in right away). |

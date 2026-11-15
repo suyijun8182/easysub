@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from functools import lru_cache
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -14,6 +15,11 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
+
+
+@lru_cache(maxsize=1024)
+def insecure_default_password(password_hash: str) -> bool:
+    return verify_password("admin123", password_hash)
 
 
 def _create_token(sub: str, expires: timedelta, token_type: str, auth_version: int = 0) -> str:

@@ -182,7 +182,7 @@ const zh = {
     digest: '每周汇总推送', over: '已超预算', budgetLeft: '预算剩余'
   },
   wk: { mon: '周一', tue: '周二', wed: '周三', thu: '周四', fri: '周五', sat: '周六', sun: '周日' },
-  sec: { revoke: '吊销',
+  sec: { defaultPasswordWarning: '你的账号仍在使用默认密码，请立即点击此处修改密码。', revoke: '吊销',
     title: '安全', twofa: '两步验证 (2FA)', on: '已开启', off: '未开启', enable: '开启', disable: '关闭',
     confirmEnable: '确认开启', scanTip: '用 Google Authenticator / 1Password 等扫码，或手动输入密钥：',
     enabledOk: '两步验证已开启', disabledOk: '两步验证已关闭', enterPwd: '请输入登录密码以关闭两步验证',
@@ -378,7 +378,7 @@ const en = {
     digest: 'Weekly digest', over: 'Over budget', budgetLeft: 'Budget left'
   },
   wk: { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat', sun: 'Sun' },
-  sec: { revoke: 'Revoke',
+  sec: { defaultPasswordWarning: 'Your account still uses the default password. Click here to change it now.', revoke: 'Revoke',
     title: 'Security', twofa: 'Two-factor (2FA)', on: 'enabled', off: 'off', enable: 'Enable', disable: 'Disable',
     confirmEnable: 'Confirm', scanTip: 'Scan with Google Authenticator / 1Password, or enter the key manually:',
     enabledOk: '2FA enabled', disabledOk: '2FA disabled', enterPwd: 'Enter your password to disable 2FA',
@@ -574,7 +574,7 @@ const ru = {
     digest: 'Еженедельная сводка', over: 'Превышен бюджет', budgetLeft: 'Остаток бюджета'
   },
   wk: { mon: 'Пн', tue: 'Вт', wed: 'Ср', thu: 'Чт', fri: 'Пт', sat: 'Сб', sun: 'Вс' },
-  sec: { revoke: 'Отозвать',
+  sec: { defaultPasswordWarning: 'Ваш аккаунт использует пароль по умолчанию. Нажмите здесь, чтобы изменить его.', revoke: 'Отозвать',
     title: 'Безопасность', twofa: 'Двухфакторная (2FA)', on: 'вкл', off: 'выкл', enable: 'Включить', disable: 'Выключить',
     confirmEnable: 'Подтвердить', scanTip: 'Отсканируйте в Google Authenticator / 1Password или введите ключ вручную:',
     enabledOk: '2FA включена', disabledOk: '2FA выключена', enterPwd: 'Введите пароль, чтобы выключить 2FA',

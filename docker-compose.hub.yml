@@ -16,7 +16,7 @@ services:
       BACKUP_PASSWORD: ""                # 12+ characters; empty pauses automatic full backups
       TZ: Asia/Shanghai
       ADMIN_USERNAME: admin
-      ADMIN_PASSWORD: admin123          # 首次初始化后请在网页里改密码
+      # ADMIN_PASSWORD: your-strong-password  # 不设置时，第一个注册的账号就是管理员
       ADMIN_EMAIL: admin@example.com
       REMINDER_SCAN_TIME: "09:00"       # 每天扫描到期订阅、发送提醒的时间
       EXCHANGE_API_BASE: USD
