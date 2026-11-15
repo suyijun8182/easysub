@@ -10,3 +10,10 @@ export function detailBackTarget(historyState) {
   return typeof path === 'string' && path.startsWith('/') && !path.startsWith('//')
     && !/^\/subscriptions\/[^/?#]+/.test(path) ? path : '/subscriptions'
 }
+
+export function activeTab(path) {
+  if (path === '/renewals') return '/dashboard'
+  if (path === '/logs' || path === '/notifications') return '/settings'
+  return ['/dashboard', '/subscriptions', '/calendar', '/reports', '/settings']
+    .find(tab => path === tab || path.startsWith(tab + '/')) || null
+}

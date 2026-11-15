@@ -55,7 +55,7 @@
          @drop="onCatDrop(g.key)">
       <div class="cat-head">
         <span class="grip" v-html="icon('grip')"></span>
-        <span class="cat-ico" v-if="g.icon">{{ g.icon }}</span>
+        <span class="cat-ico" v-if="g.icon"><span v-if="androidPreview && categoryIconName(g.icon)" class="category-bitmap" v-html="icon(categoryIconName(g.icon))"></span><template v-else>{{ g.icon }}</template></span>
         <h2 class="cat-name">{{ g.name }}</h2>
         <span class="tag num">{{ g.items.length }}</span>
         <span class="cat-line"></span>
@@ -439,6 +439,7 @@ import { useI18n } from 'vue-i18n'
 import api from '../api'
 import { useAuth } from '../stores/auth'
 import { icon } from '../icons'
+import { categoryIconName } from '../android-preview/bitmap-renderer.js'
 import { daysLeft, isImg, lifeBar, statusOf } from '../lifeline'
 import SubIcon from '../components/SubIcon.vue'
 import BaseModal from '../components/BaseModal.vue'

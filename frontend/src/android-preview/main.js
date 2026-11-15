@@ -8,6 +8,7 @@ import { applyTheme } from '../theme.js'
 import '@fontsource-variable/onest'
 import '../styles/theme.css'
 import './mobile.css'
+import './design-tokens.css'
 import { createPreviewStore } from './store.js'
 import PreviewApp from './PreviewApp.vue'
 import { uiCopy } from './ui-copy.js'
@@ -16,6 +17,9 @@ import { createLocal } from '../sync/local.js'
 import { syncCopy } from '../sync/copy.js'
 import { appearance } from './ui-behavior.js'
 import { isAndroid } from '../native/device.js'
+import { setIconRenderer } from '../icons.js'
+import { bitmapIcon } from './bitmap-assets.js'
+setIconRenderer(bitmapIcon)
 for (const [language, messages] of Object.entries(uiCopy)) i18n.global.mergeLocaleMessage(language, { mobile: messages })
 for (const [language, messages] of Object.entries(syncCopy)) i18n.global.mergeLocaleMessage(language, { sync: messages })
 
@@ -61,6 +65,7 @@ api.defaults.adapter = async config => {
   }
 }
 const routes = [
+  { path: '/renewals', component: () => import('./RenewalDesk.vue') },
   { path: '/settings/sync', component: () => import('../sync/SyncSettings.vue') },
   { path: '/', redirect: '/dashboard' },
   { path: '/dashboard', component: () => import('../views/Dashboard.vue') }, { path: '/subscriptions', component: () => import('../views/Subscriptions.vue') },
