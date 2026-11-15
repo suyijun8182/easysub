@@ -6,6 +6,7 @@
       <section class="card"><dl class="detail-fields"><div v-for="field in fields" :key="field.key"><dt>{{ field.label }}</dt><dd>{{ field.value }}</dd></div></dl></section>
       <section v-if="subscription.remark || subscription.notes" class="card"><h2>{{ t('sub.notes') }}</h2><p class="detail-notes">{{ subscription.remark }}</p><p class="detail-notes">{{ subscription.notes }}</p></section>
       <div class="detail-actions"><router-link v-if="subscription.billing_type === 'recurring'" class="btn" :to="{path:'/subscriptions',query:{renew:subscription.id}}">{{ t('sub.renew') }}</router-link><router-link class="btn ghost" :to="{path:'/subscriptions',query:{edit:subscription.id}}">{{ t('sub.edit') }}</router-link></div>
+      <section class="card app-danger-zone"><h2>{{ t('sub.delete') }}</h2><router-link class="btn danger" :to="{path:'/subscriptions',query:{delete:subscription.id}}">{{ t('sub.delete') }}</router-link></section>
     </template><p v-else role="status">{{ t('reports.noData') }}</p>
   </div>
 </template>
@@ -35,6 +36,7 @@ const fields = computed(() => {
     ['remind',t('sub.remindDays'),s.remind_days_before],['trial',t('sub.trialEnd'),s.trial_end],['cancel',t('sub.cancelBy'),s.cancel_by],
     ['card',t('sub.cardLast4'),s.card_last4],['expiry',t('sub.cardExpiry'),s.card_expiry],
     ['ipv4','IPv4',s.ipv4],['ipv6','IPv6',s.ipv6],['family',t('sub.family'),(s.family_members||[]).join('、')],['url','URL',s.url]
+    ,['auto-renew',t('sub.autoRenew'),s.auto_renew ? '✓' : '—']
   ]
   return entries.filter(e=>e[2]).map(([key,label,value])=>({key,label,value}))
 })

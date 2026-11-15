@@ -1,5 +1,5 @@
 <template>
-  <div class="subs">
+  <div class="subs" :class="{ 'app-compact-subs': androidPreview }">
     <header class="page-head">
       <div>
         <h1>{{ t('nav.subscriptions') }}</h1>
@@ -19,11 +19,12 @@
         <button :class="{ on: filter === 'recurring' }" :aria-pressed="filter === 'recurring'" @click="setFilter('recurring')">{{ t('sub.filterRecurring') }}</button>
         <button :class="{ on: filter === 'one_time' }" :aria-pressed="filter === 'one_time'" @click="setFilter('one_time')">{{ t('sub.filterOneTime') }}</button>
       </div>
+      <button v-if="androidPreview" class="btn ghost app-tools-toggle" :aria-label="t('nav.more')" :aria-expanded="toolsOpen" @click="toolsOpen = !toolsOpen"><span class="i" aria-hidden="true" v-html="icon('more')"></span></button>
       <label class="search">
         <span class="i" v-html="icon('search')"></span>
         <input v-model="search" type="search" :placeholder="t('sub.searchPh')" :aria-label="t('sub.searchPh')" />
       </label>
-      <div class="tb-right">
+      <div v-show="!androidPreview || toolsOpen" class="tb-right">
         <button class="btn ghost sm" :class="{ on: manage === 'sort' }" :aria-pressed="manage === 'sort'"
                 :disabled="!subs.length" @click="setManage('sort')">
           <span class="i" v-html="icon('grip')"></span>{{ t('sub.sortMode') }}</button>
@@ -46,6 +47,8 @@
       <button class="btn" style="margin-top:12px" @click="openNew"><span class="i" v-html="icon('plus')"></span>{{ t('sub.add') }}</button>
     </div>
 
+    <MobileSubscriptionList v-if="androidPreview && !manage" :subscriptions="compactSubs" @renew="askRenew" @edit="openEdit" />
+    <template v-if="!androidPreview || manage">
     <!-- 按分类分组 -->
     <section v-for="(g, gi) in grouped" :key="g.key" class="cat-group"
          :class="{ 'drop-cat': dragOverCat === g.key }"
@@ -136,6 +139,7 @@
         </article>
       </div>
     </section>
+    </template>
 
     <!-- 多选模式：批量操作条 -->
     <div v-if="manage === 'select'" class="bulk-bar" role="toolbar" :aria-label="t('sub.selectMode')">
@@ -443,6 +447,7 @@ import { icon } from '../icons'
 import { categoryIconName } from '../android-preview/bitmap-renderer.js'
 import { daysLeft, isImg, lifeBar, statusOf } from '../lifeline'
 import SubIcon from '../components/SubIcon.vue'
+import MobileSubscriptionList from '../android-preview/MobileSubscriptionList.vue'
 import BaseModal from '../components/BaseModal.vue'
 
 const { t } = useI18n()
@@ -491,6 +496,8 @@ const deleting = ref(false)
 
 // 管理模式：'' 常规 | 'sort' 按钮排序（键盘 / 触屏可用） | 'select' 多选批量操作
 const manage = ref('')
+const toolsOpen = ref(false)
+const compactSubs = computed(() => grouped.value.flatMap(group => group.items))
 const selected = reactive(new Set())
 const bulkBusy = ref(false)
 
@@ -1014,9 +1021,10 @@ onMounted(async () => {
   iconLib.value = lib.data
   await load()
   if (androidPreview) {
-    const target = subs.value.find(s => s.id === Number(route.query.edit || route.query.renew))
+    const target = subs.value.find(s => s.id === Number(route.query.edit || route.query.renew || route.query.delete))
     if (target && route.query.edit) openEdit(target)
     else if (target && route.query.renew) askRenew(target)
+    else if (target && route.query.delete) askDelete(target)
   }
 })
 </script>

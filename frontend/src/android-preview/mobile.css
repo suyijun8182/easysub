@@ -40,6 +40,17 @@ html[data-desk-navigation] .app-page-enter-active, html[data-desk-navigation] .a
 .android-preview .mobile-account { position:relative; }
 .android-preview .app-sync-dot { position:absolute; right:var(--es-space-2); bottom:var(--es-space-2); width:var(--es-space-2); height:var(--es-space-2); border-radius:var(--es-radius-round); background:var(--text-soft); }
 .android-preview .app-sync-dot.synced { background:var(--ok); }.android-preview .app-sync-dot.syncing,.android-preview .app-sync-dot.pending { background:var(--soon); }.android-preview .app-sync-dot.failed { background:var(--late); }
+.android-preview .app-compact-subs > .page-head { margin-bottom:var(--es-space-1); }
+.android-preview .app-content:has(.app-compact-subs) { padding-top:var(--es-space-2); }
+.android-preview .app-compact-subs .page-head h1 { margin-bottom:var(--es-space-1); }
+.android-preview .app-compact-subs .page-head .lede { margin:var(--es-space-1) 0 0; font-size:var(--es-text-caption); }
+.android-preview .app-compact-subs > .toolbar { gap:var(--es-space-2); margin-bottom:var(--es-space-2); }
+.android-preview .app-compact-subs .toolbar .seg { flex:1; }
+.android-preview .app-compact-subs .app-tools-toggle { padding:var(--es-space-2); }
+.android-preview .app-compact-subs .search { margin:0; }
+:root body .android-preview .app-subscription small { font-size:var(--es-text-caption); line-height:var(--es-leading-title); }
+.android-preview .app-compact-subs .page-head .lede { line-height:var(--es-leading-title); }
+.android-preview .app-danger-zone { margin-top:var(--es-space-6); border-color:var(--late); }
 [data-theme="dark"] .android-preview { --danger-fill: #af352b; --ok: #3dd68c; }
 .preview-info { padding: 0 var(--es-space-4); border-bottom: var(--es-border-width) solid var(--border); color: var(--text-soft); font-size: var(--es-text-label); }
 .preview-info summary { display: flex; justify-content: space-between; align-items: center; min-height: var(--es-control-min); cursor: pointer; }
