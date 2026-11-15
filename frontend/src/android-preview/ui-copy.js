@@ -31,3 +31,9 @@ const hapticsCopy={
  ru:{haptics:'Тактильный отклик',hapticsHint:'Короткая вибрация при фиксации колеса, завершении продления и удалении. Не зависит от уменьшения движения; действует только на этом устройстве.'}
 }
 for(const language of Object.keys(hapticsCopy))Object.assign(uiCopy[language],hapticsCopy[language])
+const timelineCopy={
+ zh:{timelineToday:'今天',timelineEnd:'{n} 天后'},
+ en:{timelineToday:'Today',timelineEnd:'In {n} days'},
+ ru:{timelineToday:'Сегодня',timelineEnd:'Через {n} дн.'}
+}
+for(const language of Object.keys(timelineCopy))Object.assign(uiCopy[language],timelineCopy[language])

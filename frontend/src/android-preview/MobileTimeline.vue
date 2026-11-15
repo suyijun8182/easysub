@@ -17,7 +17,7 @@ function select(group){selected.value=group;sheet.value.showModal()}
   <section class="app-timeline card" :aria-label="t('dashboard.nextDays',{n:30})">
     <div class="app-timeline-heading"><h2>{{ t('dashboard.nextDays',{n:30}) }}</h2><router-link to="/calendar">{{ t('nav.calendar') }}</router-link></div>
     <div ref="track" class="app-timeline-track" :style="{'--lanes':lanes}">
-      <span class="app-today">{{ t('dashboard.today') }}</span>
+      <span class="app-today">{{ t('mobile.timelineToday') }}</span><span class="app-timeline-end" aria-hidden="true">{{ t('mobile.timelineEnd',{n:30}) }}</span>
       <button v-for="group in placed" :key="group.date" class="app-timeline-mark" :style="{left:group.x+'px','--lane':group.lane}" :aria-label="timelineLabel(group)" @click="select(group)"><SubIcon :icon="group.items[0].icon" :name="group.items[0].name" :size="32"/><span v-if="group.items.length>1" class="app-timeline-count">+{{ group.items.length-1 }}</span></button>
       <p v-if="!placed.length" class="muted">{{ t('dashboard.noneInDays',{n:30}) }}</p>
     </div>
@@ -31,6 +31,7 @@ function select(group){selected.value=group;sheet.value.showModal()}
 /* Positions are measured timeline geometry; 48 is the minimum touch/clearance grid. */
 .app-timeline-track { position:relative; min-height:calc(var(--lanes)*var(--es-control-min) + var(--es-space-8)); margin-top:var(--es-space-4); border-bottom:var(--es-border-width) solid var(--border-strong); }
 .app-today { position:absolute; left:0; top:0; height:100%; border-left:var(--es-focus-width) solid var(--text); padding-left:var(--es-space-1); font-size:var(--es-text-caption); }
+.app-timeline-end { position:absolute; right:0; top:0; font-size:var(--es-text-caption); color:var(--text-soft); }
 .app-timeline-mark { position:absolute; top:calc(var(--lane)*var(--es-control-min) + var(--es-space-6)); transform:translateX(-50%); display:grid; place-items:center; padding:0; min-width:var(--es-control-min); background:none; border:0; color:var(--text); }
 .app-timeline-count { position:absolute; top:0; right:0; padding:0 var(--es-space-1); background:var(--primary); color:var(--on-primary); border-radius:var(--es-radius-round); font-size:var(--es-text-caption); }
 .app-date-sheet { width:min(100%,var(--es-content-max)); max-height:80dvh; margin:auto auto 0; padding:var(--es-space-4); border:var(--es-border-width) solid var(--border); border-radius:var(--es-radius-sheet) var(--es-radius-sheet) 0 0; color:var(--text); background:var(--surface); }
