@@ -1,5 +1,7 @@
+import html
 import os
 import re
+import time
 import uuid
 
 import httpx
@@ -17,6 +19,16 @@ UPLOAD_DIR = os.path.join("data", "icons")
 LIBRARY_DIR = os.path.join("data", "icons", "library")
 ALLOWED = {".png", ".jpg", ".jpeg", ".svg", ".webp", ".gif", ".ico"}
 MAX_BYTES = 2 * 1024 * 1024  # 2MB
+# 镜像和源码里已经带着的图标（前端 public/preview-icons，构建时复制进 frontend_dist）
+BUNDLED_DIRS = (
+    os.path.join("frontend_dist", "preview-icons"),
+    os.path.join("..", "frontend", "public", "preview-icons"),
+)
+FETCH_TIMEOUT = 4
+FAILURE_TTL = 6 * 3600
+PLACEHOLDER_HEADERS = {"Cache-Control": "public, max-age=86400"}
+# 进程内记录下载失败的图标，避免访问不到外网时每次打开页面都等待超时
+_failed: dict[str, float] = {}
 
 
 class IconUrlIn(BaseModel):
@@ -82,28 +94,59 @@ def list_library(user: User = Depends(get_current_user)):
     return icon_library.manifest()
 
 
+def placeholder_svg(name: str) -> str:
+    letter = html.escape((name or "?").strip()[:1] or "?")
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+        '<rect width="64" height="64" rx="14" fill="#e3f3ec"/>'
+        f'<text x="32" y="43" text-anchor="middle" fill="#12805c" font-size="36" font-family="sans-serif">{letter}</text>'
+        "</svg>"
+    )
+
+
+def _contained(directory: str, name: str) -> str | None:
+    root = os.path.realpath(directory)
+    candidate = os.path.realpath(os.path.join(root, name))
+    try:
+        inside = os.path.commonpath([root, candidate]) == root
+    except ValueError:
+        return None
+    return candidate if inside and os.path.isfile(candidate) else None
+
+
 @router.get("/library/{slug}")
 def library_icon(slug: str):
-    """返回某个商家图标；本地无缓存时从公共 favicon 服务下载后缓存。"""
+    """返回商家图标：下载缓存 → 内置图标 → 网络下载；下载失败返回首字母占位图。"""
     safe = re.sub(r"[^A-Za-z0-9_.\-]", "", slug)
     if not safe.endswith(".png"):
         safe += ".png"
-    path = os.path.join(LIBRARY_DIR, safe)
-    if os.path.isfile(path):
-        return FileResponse(path)
+    for directory in (LIBRARY_DIR, *BUNDLED_DIRS):
+        found = _contained(directory, safe)
+        if found:
+            return FileResponse(found)
 
     domain = icon_library.domain_for_slug(safe)
     if not domain:
         raise HTTPException(404, "未知图标")
-    # 用 Google favicon 服务抓取该商家图标（覆盖面广、稳定）
+    entry = next((e for e in icon_library.manifest() if e["domain"] == domain), None)
+    placeholder = Response(
+        content=placeholder_svg(entry["name"] if entry else domain),
+        media_type="image/svg+xml",
+        headers=PLACEHOLDER_HEADERS,
+    )
+    failed_at = _failed.get(safe)
+    if failed_at is not None and time.monotonic() - failed_at < FAILURE_TTL:
+        return placeholder
+    # 用 Google favicon 服务抓取该商家图标（覆盖面广；大陆网络通常访问不到，所以超时要短）
     fav = f"https://www.google.com/s2/favicons?domain={domain}&sz=64"
     try:
-        resp = httpx.get(fav, timeout=12, follow_redirects=True)
+        resp = httpx.get(fav, timeout=FETCH_TIMEOUT, follow_redirects=True)
         resp.raise_for_status()
-        os.makedirs(LIBRARY_DIR, exist_ok=True)
-        with open(path, "wb") as f:
-            f.write(resp.content)
-        return Response(content=resp.content, media_type="image/png")
     except Exception:  # noqa: BLE001
-        # 下载失败返回 1x1 透明占位，避免前端报错
-        raise HTTPException(404, "图标暂不可用")
+        _failed[safe] = time.monotonic()
+        return placeholder
+    _failed.pop(safe, None)
+    os.makedirs(LIBRARY_DIR, exist_ok=True)
+    with open(os.path.join(LIBRARY_DIR, safe), "wb") as f:
+        f.write(resp.content)
+    return Response(content=resp.content, media_type="image/png")
