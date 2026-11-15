@@ -61,6 +61,7 @@ def connect_from_saved_config(force: bool = False) -> bool:
     # 延迟导入避免与这些模块产生循环依赖
     from app import bootstrap, migrate
     from app.seed import seed_all
+    from app.secrets_store import reencrypt_legacy_secrets
     from app.services import scheduler
 
     if not bootstrap.config_exists():
@@ -72,6 +73,7 @@ def connect_from_saved_config(force: bool = False) -> bool:
         db = SessionLocal()
         try:
             seed_all(db)
+            reencrypt_legacy_secrets(db)
         finally:
             db.close()
         scheduler.start_scheduler()  # 幂等，已启动则跳过
