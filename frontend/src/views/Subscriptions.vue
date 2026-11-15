@@ -191,15 +191,16 @@
     <!-- 删除确认（需验证密码；单个 / 批量） -->
     <BaseModal v-if="delTarget || delBulk" style="width:420px" @close="closeDelete" v-slot="{ titleId }">
         <h3 :id="titleId">{{ t('sub.deleteTitle') }}</h3>
-        <p id="del-tip" style="font-size:14px;line-height:1.6">{{ androidPreview ? t('sync.deleteConfirmation', { count: delBulk ? selected.size : 1 }) : delBulk
+        <p id="del-tip" style="font-size:14px;line-height:1.6">{{ androidPreview ? t('mobile.deleteHint') : delBulk
           ? t('sub.bulkDeleteTip', { n: selected.size })
           : t('sub.deletePwdTip', { name: delTarget.name }) }}</p>
-        <input v-model="delPwd" :type="androidPreview ? 'text' : 'password'" :autocomplete="androidPreview ? 'off' : 'current-password'" :aria-label="t(androidPreview ? 'sync.confirmationText' : 'sub.pwdPh')"
+        <ul v-if="androidPreview" class="app-delete-identities"><li v-for="s in deleteRows" :key="s.id"><strong>{{ s.name }}</strong><span>{{ s.remark || s.plan }}</span><span>{{ Number(s.amount).toFixed(2) }} {{ s.currency }}</span></li></ul>
+        <input v-else v-model="delPwd" :type="androidPreview ? 'text' : 'password'" :autocomplete="androidPreview ? 'off' : 'current-password'" :aria-label="t(androidPreview ? 'sync.confirmationText' : 'sub.pwdPh')"
                aria-describedby="del-tip" :placeholder="androidPreview ? 'preview' : t('sub.pwdPh')" @keyup.enter="confirmDelete" />
         <p v-if="delErr" class="err" role="alert">{{ delErr }}</p>
         <div class="row" style="justify-content:flex-end;margin-top:16px">
           <button class="btn ghost" @click="closeDelete">{{ t('sub.cancel') }}</button>
-          <button class="btn danger" :disabled="deleting || !delPwd" @click="confirmDelete">{{ t('sub.delete') }}</button>
+          <button class="btn danger" :disabled="deleting || (!androidPreview && !delPwd)" @click="confirmDelete">{{ t('sub.delete') }}</button>
         </div>
     </BaseModal>
 
@@ -462,6 +463,7 @@ const iconLib = ref([])
 const filter = ref('')
 const showForm = ref(false)
 const androidPreview = inject('preview', null)
+const previewRevision = inject('previewRevision', null)
 const route = useRoute()
 let initialForm = ''
 function confirmFormExit() {
@@ -490,6 +492,7 @@ const renewMode = ref('today')
 const renewing = ref(false)
 
 const delTarget = ref(null)
+const deleteRows = computed(() => delBulk.value ? subs.value.filter(s=>selected.has(s.id)) : delTarget.value ? [delTarget.value] : [])
 const delBulk = ref(false)
 const delPwd = ref('')
 const delErr = ref('')
@@ -619,8 +622,10 @@ function rebuild() {
 
 const search = ref('')
 const grouped = computed(() => {
+  if (previewRevision) previewRevision.value
+  const hidden = androidPreview?.deletions.hiddenIds
   const q = search.value.trim().toLowerCase()
-  const match = (s) => !q || [s.name, s.plan, s.remark, s.url].some((v) => (v || '').toLowerCase().includes(q))
+  const match = (s) => !hidden?.has(s.id) && (!q || [s.name, s.plan, s.remark, s.url].some((v) => (v || '').toLowerCase().includes(q)))
   return catOrder.value
     .filter((k) => orderMap[k] && orderMap[k].length)
     .map((k) => {
@@ -919,6 +924,12 @@ async function confirmRenew() {
 function askDelete(s) { delTarget.value = s; delBulk.value = false; delPwd.value = ''; delErr.value = '' }
 function closeDelete() { delTarget.value = null; delBulk.value = false }
 async function confirmDelete() {
+  if (androidPreview) {
+    if (deleting.value || !deleteRows.value.length) return
+    androidPreview.deletions.stage(deleteRows.value)
+    for (const s of deleteRows.value) selected.delete(s.id)
+    closeDelete();return
+  }
   if (delBulk.value) return confirmBulkDelete()
   if (!delTarget.value || deleting.value || !delPwd.value) return
   deleting.value = true

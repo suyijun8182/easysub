@@ -19,6 +19,7 @@ import { appearance } from './ui-behavior.js'
 import { isAndroid } from '../native/device.js'
 import { setIconRenderer } from '../icons.js'
 import { bitmapIcon } from './bitmap-assets.js'
+import { createDeferredDeletion } from './deferred-deletion.js'
 setIconRenderer(bitmapIcon)
 for (const [language, messages] of Object.entries(uiCopy)) i18n.global.mergeLocaleMessage(language, { mobile: messages })
 for (const [language, messages] of Object.entries(syncCopy)) i18n.global.mergeLocaleMessage(language, { sync: messages })
@@ -39,6 +40,7 @@ export const preview = {
   async request(...args) { try { return await (local ? local.request(...args) : store.request(...args)) } finally { revision.value++ } },
   restore(...args) { if (local) return local.restore(...args); const result = store.restore(...args); revision.value++; return result }
 }
+preview.deletions=createDeferredDeletion(id=>preview.request('delete',`/api/subscriptions/${id}`),()=>{revision.value++})
 function imageData(file) {
   return new Promise((resolve, reject) => {
     if (file.size > 2 * 1024 * 1024 || !/^image\//.test(file.type)) return reject(new Error('请选择不超过 2 MB 的图片'))

@@ -54,6 +54,11 @@ html[data-desk-navigation] .app-page-enter-active, html[data-desk-navigation] .a
 .android-preview .app-content:has(.app-subpage-bar) { padding-top:0; }
 .android-preview .app-budget-field { display:flex; align-items:center; gap:var(--es-space-2); }
 .android-preview .app-budget-field input { flex:1; min-width:0; }
+.android-preview .app-delete-notices { position:fixed; bottom:calc(var(--mobile-nav-height,84px) + var(--es-space-2)); left:50%; transform:translateX(-50%); width:min(calc(100% - var(--es-space-8)),var(--es-content-max)); max-height:40dvh; overflow:auto; z-index:70; }
+.android-preview .app-delete-notice { display:flex; align-items:center; gap:var(--es-space-2); padding:var(--es-space-2); margin-top:var(--es-space-2); background:var(--surface); border:var(--es-border-width) solid var(--border-strong); border-radius:var(--es-radius-control); box-shadow:var(--es-shadow-float); }
+.android-preview .app-delete-notice > span { flex:1; min-width:0; overflow-wrap:anywhere; }
+.android-preview .app-delete-identities { padding:0; list-style:none; }
+.android-preview .app-delete-identities li { display:grid; gap:var(--es-space-1); padding-block:var(--es-space-2); border-bottom:var(--es-border-width) solid var(--border); }
 :root body .android-preview .app-subpage-bar h1 { font-size:var(--es-text-section); }
 :root body .android-preview .app-content :is(.app-nowrap,.figures .fig-v,.stats .stat-v,.sc-count-t,.due-when,.due-amt,.cc-d,.lr-amt,.ag-amt,.bar-val,.category-value,.agenda-bottom strong,.desk-amount,.detail-amount) { white-space:nowrap; overflow-wrap:normal; }
 :root body .android-preview :is(.figures,.stats) { display:flex; flex-wrap:wrap; }

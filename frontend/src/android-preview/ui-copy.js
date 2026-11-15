@@ -13,4 +13,10 @@ const syncStates = {
 for (const language of Object.keys(syncStates)) for (const [state, label] of Object.entries(syncStates[language])) uiCopy[language]['syncStatus_' + state] = label
 for (const [language,label] of Object.entries({zh:'本周期已过 {n}%',en:'{n}% of this cycle elapsed',ru:'Прошло {n}% текущего периода'})) uiCopy[language].cycleElapsed=label
 for (const [language,label] of Object.entries({zh:'不设置',en:'Not set',ru:'Не задан'})) uiCopy[language].budgetUnset=label
+const deletionCopy={
+ zh:{deleteHint:'确认删除以下订阅。删除后 5 秒内可撤销；到时才保存删除并加入同步队列。',deleted:'已删除',deleting:'正在删除…',deleteFailed:'删除失败，订阅已保留',undo:'撤销',retry:'重试'},
+ en:{deleteHint:'Delete these subscriptions? Undo within 5 seconds. Deletion is saved and queued for sync after that.',deleted:'Deleted',deleting:'Deleting…',deleteFailed:'Deletion failed; subscription kept',undo:'Undo',retry:'Retry'},
+ ru:{deleteHint:'Удалить эти подписки? Отмена доступна 5 секунд. Затем удаление будет сохранено и добавлено в очередь синхронизации.',deleted:'Удалено',deleting:'Удаление…',deleteFailed:'Не удалось удалить; подписка сохранена',undo:'Отменить',retry:'Повторить'}
+}
+for(const language of Object.keys(deletionCopy))Object.assign(uiCopy[language],deletionCopy[language])
 

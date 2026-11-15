@@ -186,7 +186,6 @@ export function createPreviewStore(fixedDay = null) {
       }
       if (method === 'put') { Object.assign(s, normalize({ ...s, ...body, id: s.id }, today)); log('subscription.update', `编辑「${s.name}」`); return out(s) }
       if (method === 'delete') {
-        if (body.password !== 'preview') throw new Error('预览删除确认口令为 preview；正式 App 改用设备认证')
         state.subscriptions = state.subscriptions.filter(x => x.id !== id); state.notifications = state.notifications.filter(x => x.subscription_id !== id); log('subscription.delete', `删除「${s.name}」`); return { ok: true }
       }
       return out(s)
