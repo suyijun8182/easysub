@@ -28,3 +28,15 @@ test('desk renewal uses the existing local API and preserves the chosen due-date
   assert.deepEqual(result.failed, [])
   assert.equal(store.state.subscriptions.find(s => s.id === sub.id).next_renewal_date, '2027-01-15')
 })
+
+test('completion waits for persistence and total failure preserves every retry ID', async () => {
+  let save
+  const pending = recordRenewals([7], 'today', () => new Promise(resolve => { save = resolve }))
+  let completed = false
+  pending.then(() => { completed = true })
+  await Promise.resolve()
+  assert.equal(completed, false)
+  save()
+  assert.deepEqual(await pending, { applied: [7], failed: [] })
+  assert.deepEqual(await recordRenewals([7, 8, 7], 'today', async () => { throw new Error('save failed') }), { applied: [], failed: [7, 8] })
+})
