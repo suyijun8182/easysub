@@ -30,7 +30,8 @@ async function navigateTab(event, path, navigate) {
   navigationTransition = transition
   try {
     await transition.ready
-    document.documentElement.animate({ clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] }, { duration: 320, easing: 'cubic-bezier(.2,0,0,1)', pseudoElement: '::view-transition-new(root)' })
+    // px here are measured viewport coordinates, not design spacing.
+    document.documentElement.animate({ clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] }, { duration: parseFloat(getComputedStyle(main.value).getPropertyValue('--es-motion-navigation')), easing: getComputedStyle(main.value).getPropertyValue('--es-ease-out').trim(), pseudoElement: '::view-transition-new(root)' })
     await transition.finished
   } catch { /* Navigation remains usable if the platform skips its snapshot. */ }
   finally { if (navigationTransition === transition) { delete document.documentElement.dataset.deskNavigation; navigationTransition = null } }

@@ -59,6 +59,8 @@
   --es-focus-width: 2px;
   --es-focus-offset: 3px;
   --es-motion-press: 100ms;
+  --es-motion-exit: 120ms;
+  --es-motion-check-delay: 150ms;
   --es-motion-count: 180ms;
   --es-motion-selection: 220ms;
   --es-motion-stack: 240ms;
@@ -68,6 +70,7 @@
   --es-motion-complete: 200ms;
   --es-motion-check: 260ms;
   --es-motion-particles: 450ms;
+  --es-motion-scroll-settle: 110ms;
   --es-ease-out: cubic-bezier(.2, 0, 0, 1);
   --es-ease-spring: cubic-bezier(.2, .8, .2, 1);
 }
@@ -77,6 +80,8 @@
 @media (prefers-reduced-motion: reduce) {
   .android-preview {
     --es-motion-press: 0ms;
+    --es-motion-exit: 0ms;
+    --es-motion-check-delay: 0ms;
     --es-motion-count: 0ms;
     --es-motion-selection: 0ms;
     --es-motion-stack: 0ms;
