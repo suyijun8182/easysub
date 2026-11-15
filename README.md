@@ -18,6 +18,8 @@ docker run -d -p 8842:8000 -v easysub_data:/app/data suyijun8182/easysub:latest
 
 不再预置 `admin/admin123`。不设置 `ADMIN_PASSWORD` 时，第一个注册的账号就是管理员。如需预置账号，可取消注释示例 `# ADMIN_PASSWORD=your-strong-password` 并填写自己的强密码。
 
+首次启动后请尽快完成安装向导，不要把未完成安装的实例暴露到公网。
+
 </div>
 
 **v2.0.0：账号安全与加密灾备。** 升级前请阅读 [升级与回滚步骤](docs/update-v2.0.0.md)，配置自动备份密码及需要放行的内网通知目标。Android 0.1.3 仍为 Alpha。

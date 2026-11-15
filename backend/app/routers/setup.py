@@ -45,6 +45,8 @@ def status():
 
 @router.post("/test")
 def test(cfg: DBConfig):
+    if database.is_configured():
+        raise HTTPException(400, "系统已完成数据库配置")
     ok, msg = bootstrap.test_connection(cfg.model_dump())
     if not ok:
         raise HTTPException(400, f"连接失败：{msg}")
