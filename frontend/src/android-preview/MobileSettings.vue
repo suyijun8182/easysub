@@ -12,6 +12,7 @@
     <form v-else-if="section === 'preferences'" class="card" @submit.prevent="savePrefs">
       <label>{{ t('mobile.language') }}<select v-model="prefs.locale"><option value="zh">中文</option><option value="en">English</option><option value="ru">Русский</option></select></label>
       <label>{{ t('mobile.theme') }}<select v-model="prefs.theme"><option v-for="th in ['light','dark','ocean','forest','purple','auto']" :key="th" :value="th">{{ t('mobile.' + th) }}</option></select></label>
+      <label class="check-label"><input v-model="hapticsOn" type="checkbox" aria-describedby="haptics-hint" @change="setHapticsEnabled(hapticsOn)">{{ t('mobile.haptics') }}</label><p id="haptics-hint" class="muted">{{ t('mobile.hapticsHint') }}</p>
       <label>{{ t('mobile.baseCurrency') }}<select v-model="prefs.base_currency"><option v-for="c in data.currencies" :key="c.code" :value="c.code">{{ currencyName(c, locale) }}</option></select></label>
       <label>{{ t('mobile.budget') }}<span class="app-budget-field"><input v-model.number="prefs.monthly_budget" type="number" min="0" step="any" inputmode="decimal" :placeholder="t('mobile.budgetUnset')" aria-describedby="budget-currency"><span id="budget-currency">{{ prefs.base_currency }}</span></span></label>
       <button class="btn" type="submit">{{ t('common.save') }}</button>
@@ -75,6 +76,7 @@ import { settingsCopy } from './settings-copy.js'
 import { icon } from '../icons.js'
 import { aboutBackgroundStyle } from './bitmap-assets.js'
 import { useUnsavedChanges } from './useUnsavedChanges.js'
+import { hapticsEnabled, setHapticsEnabled } from './haptics.js'
 import { paymentName, currencyName } from './display-names.js'
 import SettingsTopBar from './SettingsTopBar.vue'
 const clone = value => JSON.parse(JSON.stringify(value))
@@ -85,6 +87,7 @@ const text = value => settingsCopy[value]?.[locale.value] || value
 const section = computed(() => route.params.section || '')
 const titles = computed(() => Object.fromEntries(Object.entries({ preferences: 'preferences', reminders: 'reminders', channels: 'channels', categories: 'categories', 'payment-methods': 'payments', bundles: 'bundles', currencies: 'currencies', rates: 'rates', backup: 'backup', calendar: 'calendar', privacy: 'privacy', about: 'about', '/notifications': 'noticeLog', '/logs': 'activityLog' }).map(([path,key]) => [path,t('mobile.'+key)])))
 const groups = [ { title: 'groupPrefs', items: ['preferences'] }, { title: 'groupRecords', items: ['categories','payment-methods','bundles','currencies','rates'] }, { title: 'groupNotify', items: ['reminders','channels','/notifications','/logs'] }, { title: 'groupData', items: ['backup','calendar','privacy'] }, { title: 'groupAbout', items: ['about'] } ]
+const hapticsOn = ref(hapticsEnabled())
 const data = ref(preview.state), prefs = ref(clone(preview.state.user)), entity = ref({}), entities = ref([]), rates = ref({ items: [] }), message = ref('')
 const password = ref(''), passwordAgain = ref(''), importPassword = ref(''), envelope = ref(null), incoming = ref(null), fullUsers = ref([]), selectedUser = ref(0), replace = ref(false)
 // Snapshots contain secrets and live only in this design preview's memory.

@@ -14,6 +14,7 @@
 <script setup>
 import { onBeforeUnmount, ref, watch } from 'vue'
 import { WHEEL_PHYSICS, wheelStep } from './wheel-physics.js'
+import { haptics } from './haptics.js'
 const props = defineProps({ modelValue: Number, options: Array, label: String, unit: String, decreaseLabel: String, increaseLabel: String })
 const emit = defineEmits(['update:modelValue'])
 const position = ref(Math.max(0, props.options.indexOf(props.modelValue)))
@@ -23,6 +24,7 @@ const clamp = n => Math.max(0, Math.min(props.options.length - 1, n))
 function stop() { cancelAnimationFrame(frame); frame = 0 }
 function settle(next, immediate = false) {
   stop(); target = clamp(Math.round(next))
+  if (props.options[target] !== props.modelValue) haptics.tick()
   if (immediate || reduced()) { position.value = target; emit('update:modelValue', props.options[target]); return }
   let velocity = 0, last = performance.now()
   const tick = now => {

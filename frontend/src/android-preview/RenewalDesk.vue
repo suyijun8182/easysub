@@ -51,6 +51,7 @@ import SubIcon from '../components/SubIcon.vue'
 import { icon } from '../icons.js'
 import { upcomingRenewals, recordRenewals } from './renewal-desk.js'
 import { onBeforeRouteLeave } from 'vue-router'
+import { haptics } from './haptics.js'
 const preview = inject('preview'), revision = inject('previewRevision'), { locale } = useI18n()
 const words = {
   zh: { title:'续费工作台', hint:'查看近期到期，核对后记录续费。', selected:'已选', horizon:'查看未来', wheelHint:'上下滑动滚轮，松手选择天数。包含已过期订阅。', days:'天', timeline:'到期时间线', subscriptions:'待续费订阅', expand:'展开卡片', collapse:'收起卡片', empty:'这个时间范围内没有待续费订阅。', review:'核对并完成', localHint:'仅记录已经完成的续费，并更新到期日。不会执行扣款。', mode:'新的周期从何时开始', today:'从今天重新计算', expiry:'从原到期日继续计算', complete:'确认已续费', saving:'正在保存…', saved:'已记录续费', partial:'部分保存失败，请重试剩余项目。', failed:'保存失败，请重试。' },
@@ -96,6 +97,7 @@ async function complete(e) {
   const count = applied.length
   busy.value = false; selected.value = failed
   success.value = failed.length === 0
+  if (success.value) haptics.success()
   message.value = failed.length ? `${count} / ${ids.length}. ${count ? c.value.partial : c.value.failed}` : `${c.value.saved}: ${count}`
 }
 onBeforeUnmount(() => clearTimeout(scrollTimer))

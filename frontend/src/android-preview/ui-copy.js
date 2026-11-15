@@ -25,3 +25,9 @@ const pullCopy={
  ru:{pullToSync:'Потяните для синхронизации',releaseToSync:'Отпустите для синхронизации',notConnected:'Сервер не подключён; данные хранятся только на устройстве'}
 }
 for(const language of Object.keys(pullCopy))Object.assign(uiCopy[language],pullCopy[language])
+const hapticsCopy={
+ zh:{haptics:'触感反馈',hapticsHint:'滚轮吸附、续费完成和删除时轻微振动。与"减少动态效果"互不影响，只对本机生效。'},
+ en:{haptics:'Haptic feedback',hapticsHint:'Short vibrations when the wheel snaps, renewals complete and items are deleted. Independent of reduced motion; applies to this device only.'},
+ ru:{haptics:'Тактильный отклик',hapticsHint:'Короткая вибрация при фиксации колеса, завершении продления и удалении. Не зависит от уменьшения движения; действует только на этом устройстве.'}
+}
+for(const language of Object.keys(hapticsCopy))Object.assign(uiCopy[language],hapticsCopy[language])
