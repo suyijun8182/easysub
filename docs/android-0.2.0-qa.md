@@ -33,3 +33,9 @@
 - 浏览器 `prefers-reduced-motion:reduce` 下，展开、选择、进度、滚轮、成功结果和页签导航可用；完成时粒子隐藏，活动动画数为 0，结果文字和静态对勾保留。
 - 截图：`1.4-{selection,wheel,success,navigation}-static-light-zh.png`；断言记录 `1.4-reduced.json`。本项沿用既有减少动态效果实现，没有改动行为。
 - 只读 ADB 检查时，真机三项动画比例均为 1.0、字号为 1.0；没有改动这些值。系统“移除动画”开启后的真机效果未验收，浏览器仿真通过不能替代该项。
+
+## 1.5 动效逐帧
+
+- `1.5-{completion,selection,stack,timeline,wheel,navigation,entry}-{before,middle,after}-light-zh.png` 共 21 张，另有 `1.5-contact.png` 联系表。入口跳转本身不增加转场。
+- 浏览器 CSS/WAAPI 暂停到动作中段以捕获中间帧，随后结束动画捕获结果；滚轮和滚动按实际时间采样。`1.5-motion.json` 保存实际 timing：收缩 200、对勾 260、粒子 450、选择 180/220、卡片 240/错峰 28、圆形扩散 320ms，符合规范。
+- 滚轮落到合法 60 天刻度；时间线停稳后更新当前项；成功结果保留静态文字。浏览器控制台无错误，真机逐帧未验收。没有录屏文件。
