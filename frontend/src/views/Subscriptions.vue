@@ -274,7 +274,7 @@
             <div style="flex:1">
               <label for="sf-currency">{{ t('sub.currency') }}</label>
               <select id="sf-currency" v-model="form.currency">
-                <option v-for="c in currencies" :key="c.code" :value="c.code">{{ c.code }} {{ c.symbol }}</option>
+                <option v-for="c in currencies" :key="c.code" :value="c.code">{{ androidPreview ? currencyName(c, locale) : c.code + ' ' + c.symbol }}</option>
               </select>
             </div>
           </div>
@@ -448,7 +448,7 @@ import { categoryIconName } from '../android-preview/bitmap-renderer.js'
 import { daysLeft, isImg, lifeBar, statusOf } from '../lifeline'
 import SubIcon from '../components/SubIcon.vue'
 import MobileSubscriptionList from '../android-preview/MobileSubscriptionList.vue'
-import { paymentName } from '../android-preview/display-names.js'
+import { paymentName, currencyName } from '../android-preview/display-names.js'
 import BaseModal from '../components/BaseModal.vue'
 
 const { t, locale } = useI18n()

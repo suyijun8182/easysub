@@ -12,7 +12,7 @@
     <form v-else-if="section === 'preferences'" class="card" @submit.prevent="savePrefs">
       <label>{{ t('mobile.language') }}<select v-model="prefs.locale"><option value="zh">中文</option><option value="en">English</option><option value="ru">Русский</option></select></label>
       <label>{{ t('mobile.theme') }}<select v-model="prefs.theme"><option v-for="th in ['light','dark','ocean','forest','purple','auto']" :key="th" :value="th">{{ t('mobile.' + th) }}</option></select></label>
-      <label>{{ t('mobile.baseCurrency') }}<select v-model="prefs.base_currency"><option v-for="c in data.currencies" :key="c.code" :value="c.code">{{ c.code }} {{ c.name }}</option></select></label>
+      <label>{{ t('mobile.baseCurrency') }}<select v-model="prefs.base_currency"><option v-for="c in data.currencies" :key="c.code" :value="c.code">{{ currencyName(c, locale) }}</option></select></label>
       <label>{{ t('mobile.budget') }}<input v-model.number="prefs.monthly_budget" type="number" min="0"></label>
       <button class="btn" type="submit">{{ t('common.save') }}</button>
     </form>
@@ -75,7 +75,7 @@ import { settingsCopy } from './settings-copy.js'
 import { icon } from '../icons.js'
 import { aboutBackgroundStyle } from './bitmap-assets.js'
 import { useUnsavedChanges } from './useUnsavedChanges.js'
-import { paymentName } from './display-names.js'
+import { paymentName, currencyName } from './display-names.js'
 import SettingsTopBar from './SettingsTopBar.vue'
 const clone = value => JSON.parse(JSON.stringify(value))
 const settingIcons = { preferences:'theme-light', categories:'category-other', 'payment-methods':'card', bundles:'package', currencies:'wallet', rates:'trending', reminders:'notifications', channels:'send', '/notifications':'inbox', '/logs':'logs', backup:'backup', calendar:'calendar', privacy:'lock', about:'help' }

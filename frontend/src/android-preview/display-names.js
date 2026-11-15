@@ -13,3 +13,11 @@ const payments = {
 }
 const language = locale => ({zh:0,en:1,ru:2}[locale] ?? 1)
 export const paymentName = (row,locale) => row?.is_system ? payments[row.name]?.[language(locale)] || row.name : row?.name || ''
+export function currencyName(row,locale) {
+  let name=row.name
+  if (!row.is_custom) {
+    try { name=new Intl.DisplayNames([locale],{type:'currency'}).of(row.code) }
+    catch { name=row.code } // Older WebViews retain the complete currency code.
+  }
+  return name && name!==row.code ? `${row.code} · ${name}` : row.code
+}
