@@ -37,3 +37,25 @@ class StaticSafetyTests(unittest.TestCase):
             response = self.client.get(path)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.text, 'safe SPA index')
+
+
+class IconSafetyTests(unittest.TestCase):
+    setUp = StaticSafetyTests.setUp
+    tearDown = StaticSafetyTests.tearDown
+
+    def test_uploaded_svg_is_sandboxed_when_opened_directly(self):
+        from app.deps import get_current_user
+        from app.models import User
+        self.main.app.dependency_overrides[get_current_user] = lambda: User(id=7)
+        svg = b'<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'
+        response = self.client.post('/api/icons/upload', files={'file': ('icon.svg', svg, 'image/svg+xml')})
+        self.assertEqual(response.status_code, 200, response.text)
+        response = self.client.get(response.json()['url'])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, svg)
+        self.assertEqual(response.headers.get('Content-Security-Policy'), "default-src 'none'; style-src 'unsafe-inline'; sandbox")
+        self.assertEqual(response.headers.get('X-Content-Type-Options'), 'nosniff')
+        cached = self.client.get(response.url, headers={'If-None-Match': response.headers['etag']})
+        self.assertEqual(cached.status_code, 304)
+        self.assertIn('sandbox', cached.headers.get('Content-Security-Policy', ''))
+        self.assertEqual(cached.headers.get('X-Content-Type-Options'), 'nosniff')
