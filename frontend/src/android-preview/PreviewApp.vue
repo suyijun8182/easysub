@@ -1,7 +1,6 @@
 <template>
   <div class="android-preview">
     <header class="mobile-masthead"><router-link to="/dashboard" class="mobile-brand"><span aria-hidden="true" v-html="icon('easysub-mark')"></span>EasySub</router-link><details class="mobile-build"><summary :aria-label="t('sync.nativeApp')">ALPHA</summary><p>{{ t(preview.isAndroid ? 'sync.nativeHint' : preview.isLocal ? 'sync.appHint' : 'mobile.previewHint') }}</p></details><router-link :to="preview.isLocal ? '/settings/sync' : '/settings'" class="mobile-account" :aria-label="t('sync.title')"><span aria-hidden="true" v-html="icon('settings')"></span></router-link></header>
-    <router-link v-if="route.path === '/dashboard'" class="mobile-renew-entry" to="/renewals"><span class="renew-entry-icon" aria-hidden="true" v-html="icon('renew')"></span><span>{{ deskLabel }}</span><span aria-hidden="true" v-html="icon('chevron')"></span></router-link>
     <main ref="main" tabindex="-1" class="app-content"><section v-if="missingRates.length && ['/dashboard','/reports'].includes(route.path)" class="card" role="status"><h2>{{ t('mobile.unknownRate') }}</h2><p>{{ t('mobile.missingRate', { currencies: missingRates.join('、') }) }}</p><router-link to="/settings/currencies" class="btn">{{ t('mobile.manualRate') }}</router-link><router-link to="/subscriptions" class="btn ghost">{{ t('mobile.manage') }}</router-link></section><router-view v-else v-slot="{ Component, route: current }"><component :is="Component" :key="current.fullPath" /></router-view></main>
     <nav ref="bottomNav" class="app-bottom" :aria-label="t('sync.nav')"><router-link v-for="item in tabs" :key="item.path" :to="item.path" custom v-slot="{ href, navigate }"><a :href="href" :class="{ 'router-link-active': selectedTab === item.path }" :aria-current="selectedTab === item.path ? (route.path === item.path ? 'page' : 'location') : undefined" @click="navigateTab($event, item.path, navigate)"><span aria-hidden="true" v-html="icon(item.icon)"></span><span>{{ t(item.label) }}</span></a></router-link></nav>
   </div>
@@ -55,7 +54,6 @@ const missingRates = computed(() => {
   return [...new Set([preview.state.user.base_currency, ...preview.state.subscriptions.filter(s => s.is_active).map(s => s.currency)])].filter(c => !(preview.state.rates[c] > 0))
 })
 const { t, locale } = useI18n()
-const deskLabel = computed(() => ({ zh: '续费计划', en: 'Renewal plan', ru: 'План продлений' }[locale.value] || 'Renewal plan'))
 const tabs = [
   { path: '/dashboard', icon: 'dashboard', label: 'sync.navHome' },
   { path: '/subscriptions', icon: 'subscriptions', label: 'sync.navSubscriptions' },

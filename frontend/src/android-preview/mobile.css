@@ -25,6 +25,18 @@ html[data-desk-navigation] .app-page-enter-active, html[data-desk-navigation] .a
   font-size: var(--es-text-body);
   line-height: 1.55;
 }
+.android-preview .dash { display:flex; flex-direction:column; }
+.android-preview .dash > .page-head { order:0; }
+.android-preview .dash > .figures { order:1; }
+.android-preview .dash > .horizon { order:2; }
+.android-preview .dash > .mobile-renew-entry { order:3; margin:0 0 var(--es-space-6); }
+.android-preview .dash > .split { order:4; }
+.android-preview .dash > .card:not(.figures):not(.horizon) { order:5; }
+.android-preview .dash .page-head > div { display:flex; align-items:baseline; flex-wrap:wrap; gap:var(--es-space-2); }
+.android-preview .dash .page-head h1 { font-size:var(--es-text-section); margin:0; }
+.android-preview .dash .page-head .lede { margin:0; }
+.android-preview .app-add-fab { position:fixed; right:max(var(--es-space-4),calc((100vw - var(--es-content-max))/2 + var(--es-space-4))); bottom:calc(var(--mobile-nav-height,84px) + var(--es-space-4)); width:var(--es-control-min); height:var(--es-control-min); padding:var(--es-space-3); border-radius:var(--es-radius-card); z-index:45; box-shadow:var(--es-shadow-float); }
+.android-preview .app-add-fab svg { width:var(--es-icon-nav); height:var(--es-icon-nav); }
 [data-theme="dark"] .android-preview { --danger-fill: #af352b; --ok: #3dd68c; }
 .preview-info { padding: 0 var(--es-space-4); border-bottom: var(--es-border-width) solid var(--border); color: var(--text-soft); font-size: var(--es-text-label); }
 .preview-info summary { display: flex; justify-content: space-between; align-items: center; min-height: var(--es-control-min); cursor: pointer; }

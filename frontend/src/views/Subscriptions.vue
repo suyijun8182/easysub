@@ -9,9 +9,10 @@
           <span v-if="!lateN && !soonN && subs.length" class="lede-ok">{{ t('dashboard.summaryClear') }}</span>
         </p>
       </div>
-      <button class="btn" @click="openNew"><span class="i" v-html="icon('plus')"></span>{{ t('sub.add') }}</button>
+      <button v-if="!androidPreview" class="btn" @click="openNew"><span class="i" v-html="icon('plus')"></span>{{ t('sub.add') }}</button>
     </header>
 
+    <button v-if="androidPreview" class="app-add-fab btn" :aria-label="t('sub.add')" @click="openNew"><span aria-hidden="true" v-html="icon('plus')"></span></button>
     <div class="toolbar">
       <div class="seg">
         <button :class="{ on: filter === '' }" :aria-pressed="filter === ''" @click="setFilter('')">{{ t('sub.filterAll') }}</button>

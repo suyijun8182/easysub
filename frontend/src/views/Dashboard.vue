@@ -9,7 +9,7 @@
           <span v-if="!lateList.length && !soonCount" class="sum ok">{{ t('dashboard.summaryClear') }}</span>
         </p>
       </div>
-      <router-link to="/subscriptions" class="btn"><span v-html="icon('plus')"></span>{{ t('sub.add') }}</router-link>
+      <router-link v-if="!androidPreview" to="/subscriptions" class="btn"><span v-html="icon('plus')"></span>{{ t('sub.add') }}</router-link>
     </header>
 
     <div v-if="loading" class="card skeleton" aria-busy="true"></div>
@@ -49,6 +49,8 @@
           </div>
         </div>
       </section>
+
+      <router-link v-if="androidPreview && renewalCount" class="mobile-renew-entry" to="/renewals"><span class="renew-entry-icon" aria-hidden="true" v-html="icon('renew')"></span><span>{{ t('mobile.renewals', { n: renewalCount }) }}</span><span aria-hidden="true" v-html="icon('chevron')"></span></router-link>
 
       <!-- 支出概况：一条横向读数，而非四张同质卡片 -->
       <section class="card figures">
@@ -174,12 +176,15 @@ import api from '../api'
 import { useAuth } from '../stores/auth'
 import { icon } from '../icons'
 import { categoryIconName } from '../android-preview/bitmap-renderer.js'
+import { upcomingRenewals } from '../android-preview/renewal-desk.js'
 import { daysLeft, lifeBar, statusOf } from '../lifeline'
 import SubIcon from '../components/SubIcon.vue'
 
 const { t } = useI18n()
 const auth = useAuth()
 const androidPreview = inject('preview', null)
+const previewRevision = inject('previewRevision', null)
+const renewalCount = computed(() => { if (previewRevision) previewRevision.value; return androidPreview ? upcomingRenewals(androidPreview.state.subscriptions, 30).length : 0 })
 const loading = ref(true)
 const data = ref({ upcoming: [], recent: [] })
 const breakdown = ref([])
