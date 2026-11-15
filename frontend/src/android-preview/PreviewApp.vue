@@ -1,8 +1,8 @@
 <template>
   <div class="android-preview">
     <header v-if="!settingsSubpage" class="mobile-masthead"><router-link to="/dashboard" class="mobile-brand"><span aria-hidden="true" v-html="icon('easysub-mark')"></span>EasySub</router-link><details class="mobile-build"><summary :aria-label="t('sync.nativeApp')">ALPHA</summary><p>{{ t(preview.isAndroid ? 'sync.nativeHint' : preview.isLocal ? 'sync.appHint' : 'mobile.previewHint') }}</p></details><router-link to="/settings/sync" class="mobile-account" :aria-label="connectionLabel"><span aria-hidden="true" v-html="icon('category-cloud')"></span><i class="app-sync-dot" :class="connectionStatus" aria-hidden="true"></i></router-link></header>
-    <main ref="main" tabindex="-1" class="app-content"><section v-if="missingRates.length && ['/dashboard','/reports'].includes(route.path)" class="card" role="status"><h2>{{ t('mobile.unknownRate') }}</h2><p>{{ t('mobile.missingRate', { currencies: missingRates.join('、') }) }}</p><router-link to="/settings/currencies" class="btn">{{ t('mobile.manualRate') }}</router-link><router-link to="/subscriptions" class="btn ghost">{{ t('mobile.manage') }}</router-link></section><router-view v-else v-slot="{ Component, route: current }"><component :is="Component" :key="current.fullPath" /></router-view></main>
-    <div v-if="deletionEntries.length" class="app-delete-notices"><div v-for="entry in deletionEntries" :key="entry.row.id" class="app-delete-notice" role="status"><span>{{ entry.row.name }} · {{ t('mobile.' + (entry.status === 'failed' ? 'deleteFailed' : entry.status === 'saving' ? 'deleting' : 'deleted')) }}</span><button v-if="entry.status === 'pending'" class="btn ghost" @click="preview.deletions.undo(entry.row.id)">{{ t('mobile.undo') }}</button><button v-else-if="entry.status === 'failed'" class="btn ghost" @click="preview.deletions.retry(entry.row.id)">{{ t('mobile.retry') }}</button></div></div>
+    <main ref="main" tabindex="-1" class="app-content"><div v-if="pullEnabled" class="app-pull" :class="{ dragging: pullDistance > 0, ready: pullDistance >= PULL_THRESHOLD }" :style="{ '--pull': Math.min(pullDistance * 0.5, 64) + 'px' }" aria-hidden="true"><span>{{ t(pullDistance >= PULL_THRESHOLD ? 'mobile.releaseToSync' : 'mobile.pullToSync') }}</span></div><section v-if="missingRates.length && ['/dashboard','/reports'].includes(route.path)" class="card" role="status"><h2>{{ t('mobile.unknownRate') }}</h2><p>{{ t('mobile.missingRate', { currencies: missingRates.join('、') }) }}</p><router-link to="/settings/currencies" class="btn">{{ t('mobile.manualRate') }}</router-link><router-link to="/subscriptions" class="btn ghost">{{ t('mobile.manage') }}</router-link></section><router-view v-else v-slot="{ Component, route: current }"><component :is="Component" :key="current.fullPath" /></router-view></main>
+    <div v-if="deletionEntries.length || pullNotice" class="app-delete-notices"><div v-if="pullNotice" class="app-delete-notice" role="status"><span>{{ t(pullNotice) }}</span></div><div v-for="entry in deletionEntries" :key="entry.row.id" class="app-delete-notice" role="status"><span>{{ entry.row.name }} · {{ t('mobile.' + (entry.status === 'failed' ? 'deleteFailed' : entry.status === 'saving' ? 'deleting' : 'deleted')) }}</span><button v-if="entry.status === 'pending'" class="btn ghost" @click="preview.deletions.undo(entry.row.id)">{{ t('mobile.undo') }}</button><button v-else-if="entry.status === 'failed'" class="btn ghost" @click="preview.deletions.retry(entry.row.id)">{{ t('mobile.retry') }}</button></div></div>
     <nav ref="bottomNav" class="app-bottom" :aria-label="t('sync.nav')"><router-link v-for="item in tabs" :key="item.path" :to="item.path" custom v-slot="{ href, navigate }"><a :href="href" :class="{ 'router-link-active': selectedTab === item.path }" :aria-current="selectedTab === item.path ? (route.path === item.path ? 'page' : 'location') : undefined" @click="navigateTab($event, item.path, navigate)"><span aria-hidden="true" v-html="icon(item.icon)"></span><span>{{ t(item.label) }}</span></a></router-link></nav>
   </div>
 </template>
@@ -13,6 +13,7 @@ import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, watch } fr
 import { useRoute, useRouter } from 'vue-router'
 import { activeTab } from './ui-behavior.js'
 import { syncStatus } from './sync-status.js'
+import { PULL_THRESHOLD, bindPullRefresh, createPullRefresh } from './pull-refresh.js'
 const preview = inject('preview'), revision = inject('previewRevision'), route = useRoute()
 const localSync = inject('localSync')
 const connectionStatus = computed(() => { revision.value; return syncStatus(localSync?.status) })
@@ -20,6 +21,19 @@ const connectionLabel = computed(() => `${t('sync.title')}: ${t('mobile.syncStat
 const settingsSubpage = computed(() => route.path.startsWith('/settings/'))
 const deletionEntries = computed(() => { revision.value;return preview.deletions.entries })
 const main = ref(null)
+const pullEnabled = computed(() => ['/dashboard', '/subscriptions'].includes(route.path))
+const pullDistance = ref(0), pullNotice = ref('')
+const pullRefresh = createPullRefresh({ status: () => localSync?.status, sync: () => localSync.sync() })
+let pullBinding, pullNoticeTimer
+async function releasePull(distance) {
+  pullDistance.value = 0
+  const result = await pullRefresh.release(distance)
+  // Connected results surface through the masthead sync dot; only local mode needs words.
+  if (result !== 'local') return
+  pullNotice.value = 'mobile.notConnected'
+  clearTimeout(pullNoticeTimer); pullNoticeTimer = setTimeout(() => { pullNotice.value = '' }, 3000)
+}
+watch(pullEnabled, () => pullBinding?.refresh(), { flush: 'post' })
 const selectedTab = computed(() => activeTab(route.path))
 const router = useRouter()
 let navigationTransition
@@ -49,8 +63,9 @@ onMounted(() => {
   measureViewport(); window.visualViewport?.addEventListener('resize', measureViewport); window.addEventListener('resize', measureViewport)
   navObserver = new ResizeObserver(() => document.documentElement.style.setProperty('--mobile-nav-height', `${bottomNav.value.getBoundingClientRect().height}px`))
   navObserver.observe(bottomNav.value)
+  pullBinding = bindPullRefresh(main.value, { enabled: () => pullEnabled.value, onMove: distance => { pullDistance.value = distance }, onEnd: releasePull })
 })
-onBeforeUnmount(() => { preview.deletions.dispose();navObserver?.disconnect(); window.visualViewport?.removeEventListener('resize', measureViewport); window.removeEventListener('resize', measureViewport); document.documentElement.style.removeProperty('--preview-viewport-height'); document.documentElement.style.removeProperty('--mobile-nav-height') })
+onBeforeUnmount(() => { pullBinding?.dispose(); clearTimeout(pullNoticeTimer); preview.deletions.dispose();navObserver?.disconnect(); window.visualViewport?.removeEventListener('resize', measureViewport); window.removeEventListener('resize', measureViewport); document.documentElement.style.removeProperty('--preview-viewport-height'); document.documentElement.style.removeProperty('--mobile-nav-height') })
 async function focusPage() {
   await nextTick()
   const heading = main.value?.querySelector('h1, h2')

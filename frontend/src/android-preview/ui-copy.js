@@ -19,4 +19,9 @@ const deletionCopy={
  ru:{deleteHint:'Удалить эти подписки? Отмена доступна 5 секунд. Затем удаление будет сохранено и добавлено в очередь синхронизации.',deleted:'Удалено',deleting:'Удаление…',deleteFailed:'Не удалось удалить; подписка сохранена',undo:'Отменить',retry:'Повторить'}
 }
 for(const language of Object.keys(deletionCopy))Object.assign(uiCopy[language],deletionCopy[language])
-
+const pullCopy={
+ zh:{pullToSync:'下拉同步',releaseToSync:'松开同步',notConnected:'未连接服务器，数据只保存在本机'},
+ en:{pullToSync:'Pull to sync',releaseToSync:'Release to sync',notConnected:'Not connected to a server; data stays on this device'},
+ ru:{pullToSync:'Потяните для синхронизации',releaseToSync:'Отпустите для синхронизации',notConnected:'Сервер не подключён; данные хранятся только на устройстве'}
+}
+for(const language of Object.keys(pullCopy))Object.assign(uiCopy[language],pullCopy[language])
