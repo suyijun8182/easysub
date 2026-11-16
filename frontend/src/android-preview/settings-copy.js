@@ -211,14 +211,6 @@ export const settingsCopy = {
     "en": "This browser preview cannot validate Android app lock, secure storage or system authentication.",
     "ru": "Браузерный макет не проверяет блокировку Android, защищённое хранилище и системную аутентификацию."
   },
-  "删除预览数据的确认口令为": {
-    "en": "Preview deletion confirmation:",
-    "ru": "Подтверждение удаления в макете:"
-  },
-  "。正式 App 将使用删除确认和设备认证，不沿用网站账号密码。": {
-    "en": "The Android app will use deletion confirmation and device authentication, not a website password.",
-    "ru": "Android-приложение использует подтверждение удаления и проверку устройства, не пароль сайта."
-  },
   "EasySub · Android 设计预览": {
     "en": "EasySub · Android design preview",
     "ru": "EasySub · макет Android"
