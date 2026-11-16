@@ -6,6 +6,8 @@ import android.os.Bundle;
 public class MainActivity extends BridgeActivity {
     @Override public void onCreate(Bundle savedInstanceState) {
         registerPlugin(EasySubDevicePlugin.class);
+        registerPlugin(AppLockPlugin.class);
+        AppLockPlugin.applyWindowPolicy(this);
         super.onCreate(savedInstanceState);
     }
 }
