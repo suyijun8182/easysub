@@ -6,9 +6,6 @@ import android.os.Build;
 import android.net.Uri;
 import android.provider.Settings;
 import androidx.core.app.NotificationManagerCompat;
-import android.security.keystore.KeyGenParameterSpec;
-import android.security.keystore.KeyProperties;
-import android.util.AtomicFile;
 import androidx.activity.result.ActivityResult;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -16,16 +13,8 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyStore;
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.GCMParameterSpec;
 
 @CapacitorPlugin(name = "EasySubDevice")
 public class EasySubDevicePlugin extends Plugin {
@@ -48,41 +37,42 @@ public class EasySubDevicePlugin extends Plugin {
             }
         });
     }
-    private static final String ALIAS = "easysub.local.v1";
-    private SecretKey key(boolean create) throws Exception {
-        KeyStore store = KeyStore.getInstance("AndroidKeyStore"); store.load(null);
-        if (store.containsAlias(ALIAS)) return (SecretKey) store.getKey(ALIAS, null);
-        if (!create) throw new IllegalStateException("Local encryption key is unavailable");
-        KeyGenerator generator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
-        generator.init(new KeyGenParameterSpec.Builder(ALIAS, KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
-            .setBlockModes(KeyProperties.BLOCK_MODE_GCM).setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE).setKeySize(256).build());
-        return generator.generateKey();
+    @PluginMethod public void load(PluginCall call) {
+        try { call.resolve(new JSObject().put("json", (Object) EncryptedFile.read(getContext(), "local-v1.enc"))); }
+        catch (Exception error) { call.reject("Cannot decrypt local data. Existing files were kept.", "LOCAL_READ_FAILED"); }
     }
-    private AtomicFile file() { return new AtomicFile(new File(getContext().getNoBackupFilesDir(), "local-v1.enc")); }
+    @PluginMethod public void save(PluginCall call) {
+        try { EncryptedFile.write(getContext(), "local-v1.enc", call.getString("json")); call.resolve(); }
+        catch (Exception error) { call.reject("Cannot save local data", "LOCAL_WRITE_FAILED"); }
+    }
 
-    @PluginMethod public synchronized void load(PluginCall call) {
+    // Background change check: see docs/android-native-background-check.md.
+    @PluginMethod public void setBackgroundCheck(PluginCall call) {
         try {
-            AtomicFile file = file();
-            if (!file.getBaseFile().exists() && !new File(file.getBaseFile() + ".bak").exists()) { call.resolve(new JSObject().put("json", (Object) null)); return; }
-            byte[] bytes = file.readFully();
-            if (bytes.length < 29 || bytes[0] != 1) throw new IllegalStateException("Invalid encrypted database");
-            byte[] iv = new byte[12]; System.arraycopy(bytes, 1, iv, 0, 12);
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding"); cipher.init(Cipher.DECRYPT_MODE, key(false), new GCMParameterSpec(128, iv));
-            String json = new String(cipher.doFinal(bytes, 13, bytes.length - 13), StandardCharsets.UTF_8);
-            call.resolve(new JSObject().put("json", json));
-        } catch (Exception error) { call.reject("Cannot decrypt local data. Existing files were kept.", "LOCAL_READ_FAILED"); }
-    }
-    @PluginMethod public synchronized void save(PluginCall call) {
-        FileOutputStream stream = null; AtomicFile file = file();
-        try {
-            String json = call.getString("json");
-            if (json == null || json.length() > 50 * 1024 * 1024) throw new IllegalArgumentException("Database size limit exceeded");
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding"); cipher.init(Cipher.ENCRYPT_MODE, key(true));
-            byte[] encrypted = cipher.doFinal(json.getBytes(StandardCharsets.UTF_8));
-            byte[] bytes = ByteBuffer.allocate(13 + encrypted.length).put((byte) 1).put(cipher.getIV()).put(encrypted).array();
-            stream = file.startWrite(); stream.write(bytes); file.finishWrite(stream); stream = null;
+            BackgroundCheck.Snapshot s = new BackgroundCheck.Snapshot();
+            s.server = call.getString("server"); s.accessToken = call.getString("access_token", ""); s.refreshToken = call.getString("refresh_token", "");
+            s.epoch = call.getString("epoch"); s.locale = call.getString("locale", "zh");
+            Long cursor = call.getLong("cursor");
+            if (s.server == null || s.epoch == null || cursor == null || !BackgroundCheck.safeServer(s.server)) { call.reject("Invalid background check snapshot", "INVALID_ARGUMENT"); return; }
+            s.cursor = cursor;
+            BackgroundCheckStore.save(getContext(), s);
+            BackgroundCheckScheduler.sync(getContext());
             call.resolve();
-        } catch (Exception error) { if (stream != null) file.failWrite(stream); call.reject("Cannot save local data", "LOCAL_WRITE_FAILED"); }
+        } catch (Exception error) { call.reject("Cannot save background check snapshot", "LOCAL_WRITE_FAILED"); }
+    }
+    @PluginMethod public void clearBackgroundCheck(PluginCall call) {
+        BackgroundCheckStore.delete(getContext());
+        BackgroundCheckScheduler.cancel(getContext());
+        call.resolve();
+    }
+    @PluginMethod public void backgroundCheckStatus(PluginCall call) {
+        call.resolve(new JSObject().put("enabled", BackgroundCheckScheduler.enabled(getContext())));
+    }
+    @PluginMethod public void setBackgroundCheckEnabled(PluginCall call) {
+        Boolean enabled = call.getBoolean("enabled");
+        if (enabled == null) { call.reject("Missing enabled", "INVALID_ARGUMENT"); return; }
+        BackgroundCheckScheduler.setEnabled(getContext(), enabled);
+        call.resolve(new JSObject().put("enabled", enabled));
     }
     @PluginMethod public void exportFile(PluginCall call) {
         String text = call.getString("text"), name = call.getString("name");

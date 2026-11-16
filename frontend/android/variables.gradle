@@ -4,6 +4,8 @@ ext {
     targetSdkVersion = 36
     androidxActivityVersion = '1.11.0'
     androidxBiometricVersion = '1.1.0'
+    androidxWorkVersion = '2.12.0'
+    orgJsonVersion = '20250517'
     androidxAppCompatVersion = '1.7.1'
     androidxCoordinatorLayoutVersion = '1.3.0'
     androidxCoreVersion = '1.17.0'
