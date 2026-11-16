@@ -35,6 +35,12 @@ test('specified timezone observes DST rather than adding fixed 24 hour days', ()
   const rows = schedule([sub({ next_renewal_date:'2028-03-12',remind_days_before:'1,0' })],{now:new Date('2028-03-10T00:00:00Z'),timeZone:'America/Los_Angeles'})
   assert.deepEqual(rows.map(n=>n.at.toISOString()),['2028-03-11T17:00:00.000Z','2028-03-12T16:00:00.000Z'])
 })
+test('quiet-end inside a spring DST gap advances by the gap and fall fold uses earlier occurrence',()=>{
+  const rows=schedule([sub({billing_type:'one_time',trial_end:'2028-03-12'})],{now:new Date('2028-03-11T23:00:00Z'),timeZone:'America/Los_Angeles',settings:{quiet_start:'08:00',quiet_end:'02:30'}})
+  assert.equal(rows[0].at.toISOString(),'2028-03-12T10:30:00.000Z')
+  const fall=schedule([sub({billing_type:'one_time',trial_end:'2028-11-04'})],{now:new Date('2028-11-04T12:00:00Z'),timeZone:'America/Los_Angeles',settings:{quiet_start:'08:00',quiet_end:'01:30'}})
+  assert.equal(fall[0].at.toISOString(),'2028-11-05T08:30:00.000Z')
+})
 test('past times, invalid dates, inactive subscriptions and beyond 60 calendar days are excluded', () => {
   const now=new Date('2028-01-01T10:00:00Z')
   const rows=schedule([sub({next_renewal_date:'2028-01-01',remind_days_before:'0'}),sub({id:2,next_renewal_date:'2028-03-01',remind_days_before:'0'}),sub({id:3,next_renewal_date:'2028-03-02',remind_days_before:'0'}),sub({id:4,is_active:false}),sub({id:5,next_renewal_date:'2028-02-30'})],{now})
@@ -54,4 +60,10 @@ test('all three languages contain identity and amount with different event text'
     assert.match(n.body,/DEVICE_TEST_NOTIFY/);assert.match(n.body,/12.50 USD/)
   }
   assert.equal(new Set(titles).size,3)
+})
+test('known hash collision is resolved deterministically without overwriting a reminder',()=>{
+  const subscriptions=[sub({id:1231,remind_days_before:'0'}),sub({id:81539,remind_days_before:'0'})]
+  const rows=schedule(subscriptions)
+  assert.equal(rows.length,2);assert.equal(new Set(rows.map(n=>n.id)).size,2)
+  assert.deepEqual(rows,schedule([...subscriptions].reverse()))
 })
