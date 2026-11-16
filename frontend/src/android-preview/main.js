@@ -88,7 +88,7 @@ const app = createApp(PreviewApp)
 const reminderState=reactive({})
 const reminders=createReminderController({
   native:isAndroid, state:reminderState,
-  load:async()=> (await import('@capacitor/local-notifications')).LocalNotifications,
+  load:async()=> ({plugin:(await import('@capacitor/local-notifications')).LocalNotifications}),
   nativeStatus:()=>device.notificationStatus(),
   compute:()=>reminderSchedule({subscriptions:store.state.subscriptions,settings:store.state.user.notify_settings,locale:store.state.user.locale}),
   channelName:()=>uiCopy[store.state.user.locale]?.reminderChannel || 'EasySub'

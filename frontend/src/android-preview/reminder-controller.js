@@ -4,12 +4,12 @@ export function reminderDestination(extra, subscriptions) {
 }
 
 export function createReminderController({native,load,nativeStatus,compute,state,channelName=()=> 'EasySub'}) {
-  let plugin, queue=Promise.resolve(), timer, appliedSignature
+  let loadedPlugin, queue=Promise.resolve(), timer, appliedSignature
   Object.assign(state,{permission:native()?'loading':'preview',planned:0,error:false})
-  const getPlugin=async()=>plugin ||= await load()
+  const getPlugin=async()=>loadedPlugin ||= await load()
   async function refresh() {
     if(!native())return
-    const p=await getPlugin(), [status,permission]=await Promise.all([nativeStatus(),p.checkPermissions()])
+    const {plugin:p}=await getPlugin(), [status,permission]=await Promise.all([nativeStatus(),p.checkPermissions()])
     state.required=status.required
     state.permission=!status.enabled || permission.display!=='granted' ? 'denied' : status.required ? 'allowed' : 'notRequired'
   }
@@ -21,7 +21,7 @@ export function createReminderController({native,load,nativeStatus,compute,state
     if(signature===appliedSignature) {state.error=false;return}
     // A partial replacement must not leave the previous schedule marked as applied.
     appliedSignature=undefined
-    const p=await getPlugin(), pending=await p.getPending()
+    const {plugin:p}=await getPlugin(), pending=await p.getPending()
     const owned=pending.notifications.filter(n=>n.extra?.easysubKind==='reminder').map(n=>({id:n.id}))
     if(owned.length)await p.cancel({notifications:owned})
     if(state.permission==='denied') {appliedSignature=signature;state.error=false;return}
@@ -37,11 +37,12 @@ export function createReminderController({native,load,nativeStatus,compute,state
     async refresh() {try{await refresh()}catch{state.error=true}},
     async requestPermission() {
       if(!native())return
-      try {await (await getPlugin()).requestPermissions();await rebuild()}catch{state.error=true}
+      try {const {plugin:p}=await getPlugin();await p.requestPermissions();await rebuild()}catch{state.error=true}
     },
     async listen(handler) {
       if(!native())return
-      return (await getPlugin()).addListener('localNotificationActionPerformed',event=>{
+      const {plugin:p}=await getPlugin()
+      return p.addListener('localNotificationActionPerformed',event=>{
         if(event.notification.extra?.easysubKind==='reminder')handler(event.notification.extra)
       })
     }
