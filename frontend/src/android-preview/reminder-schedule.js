@@ -46,7 +46,7 @@ function hash(key) {
 
 export function reminderSchedule({subscriptions,settings={},now=new Date(),timeZone=Intl.DateTimeFormat().resolvedOptions().timeZone,locale='zh'}) {
   const zone=zonedClock(timeZone), today=zone.day(now), last=addDays(today,60)
-  const start=clock(settings.quiet_start), end=clock(settings.quiet_end)
+  const start=clock(settings?.quiet_start), end=clock(settings?.quiet_end)
   const language=copy[locale] || copy.zh, events=new Map()
   for(const sub of subscriptions) {
     if(!sub.is_active)continue

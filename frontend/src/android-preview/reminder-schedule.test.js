@@ -5,6 +5,13 @@ import { reminderSchedule, parseReminderDays } from './reminder-schedule.js'
 const sub = (patch = {}) => ({ id: 1, name: 'DEVICE_TEST_NOTIFY', amount: 12.5, currency: 'USD', is_active: true, billing_type: 'recurring', next_renewal_date: '2028-03-01', remind_days_before: '1,0', ...patch })
 const schedule = (subscriptions = [sub()], patch = {}) => reminderSchedule({ subscriptions, settings: {}, now: new Date('2028-02-28T00:00:00Z'), timeZone: 'UTC', locale: 'en', ...patch })
 
+test('null or partial user notification settings mean no quiet hours',()=>{
+  for(const settings of [null,undefined,{}, {quiet_start:'22:00'}, {quiet_end:'08:00'}]) {
+    const rows=schedule([sub({billing_type:'one_time',trial_end:'2028-03-02'})],{settings})
+    assert.equal(rows.length,3);assert.ok(rows.every(n=>n.at.getUTCHours()===9))
+  }
+})
+
 test('reminder days accept nonnegative integers, ignore invalid entries and deduplicate', () => {
   assert.deepEqual(parseReminderDays('7, 1,1,0,-2,1.5,no,, +3'), [0,1,7])
   assert.deepEqual(parseReminderDays(null), [])
