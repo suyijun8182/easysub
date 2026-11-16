@@ -1,8 +1,13 @@
 import { App } from '@capacitor/app'
 
-export async function setupAndroidLifecycle(router, sync) {
-  await App.addListener('appStateChange', ({ isActive }) => { if (isActive) sync() })
+export async function setupAndroidLifecycle(router, sync, lock) {
+  await App.addListener('appStateChange', async ({ isActive }) => {
+    if(!isActive){lock?.background();return}
+    if(lock)await lock.resume()
+    if(!lock || lock.canAccess())sync()
+  })
   await App.addListener('backButton', () => {
+    if(lock?.state.covered){lock.exit();return}
     const dialogs = document.querySelectorAll('[role="dialog"]')
     if (dialogs.length) { dialogs[dialogs.length - 1].dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); return }
     const back = router.options.history.state?.back

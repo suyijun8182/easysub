@@ -23,9 +23,30 @@ import { setIconRenderer } from '../icons.js'
 import { bitmapIcon } from './bitmap-assets.js'
 import { createDeferredDeletion } from './deferred-deletion.js'
 import { haptics } from './haptics.js'
+import { App } from '@capacitor/app'
+import { appLockDevice } from '../native/app-lock.js'
+import { createAppLockController } from './app-lock.js'
+import AppLockScreen from './AppLockScreen.vue'
 setIconRenderer(bitmapIcon)
 for (const [language, messages] of Object.entries(uiCopy)) i18n.global.mergeLocaleMessage(language, { mobile: messages })
 for (const [language, messages] of Object.entries(syncCopy)) i18n.global.mergeLocaleMessage(language, { sync: messages })
+
+const lockState=reactive({})
+const appLock=createAppLockController({
+  state:lockState,native:isAndroid,readStatus:()=>appLockDevice.status(),
+  authenticate:()=>appLockDevice.authenticate({reason:i18n.global.t('mobile.lockReason')}),
+  saveSettings:value=>appLockDevice.setEnabled({...value,reason:i18n.global.t('mobile.lockSettingsReason')}),
+  exit:()=>App.exitApp()
+})
+const lockRoot=document.createElement('div')
+document.body.appendChild(lockRoot)
+createApp(AppLockScreen,{lock:appLock}).use(i18n).mount(lockRoot)
+watch(()=>lockState.covered,covered=>{
+  const root=document.getElementById('app');root.inert=covered
+  root.style.visibility=covered?'hidden':''
+  if(covered)root.setAttribute('aria-hidden','true');else root.removeAttribute('aria-hidden')
+},{immediate:true,flush:'sync'})
+await appLock.start()
 
 const store = createPreviewStore()
 const revision = ref(0)
@@ -85,6 +106,7 @@ const routes = [
 const router = createRouter({ history: createWebHashHistory(), routes, scrollBehavior(to, from, saved) { return saved || { top: 0 } } })
 const pinia = createPinia()
 const app = createApp(PreviewApp)
+app.provide('appLock',appLock)
 const reminderState=reactive({})
 const reminders=createReminderController({
   native:isAndroid, state:reminderState,
@@ -106,13 +128,15 @@ applyTheme(savedAppearance.theme)
 app.mount('#app')
 watch(revision,()=>reminders.enqueue())
 if(isAndroid()) {
-  reminders.listen(async extra=>{await router.isReady();router.push(reminderDestination(extra,store.state.subscriptions))}).catch(()=>{reminderState.error=true})
+  reminders.listen(async extra=>{await appLock.whenUnlocked();await router.isReady();router.push(reminderDestination(extra,store.state.subscriptions))}).catch(()=>{reminderState.error=true})
   reminders.enqueue()
 }
 if (local) {
   if (!isAndroid() && import.meta.env.PROD && 'serviceWorker' in navigator) navigator.serviceWorker.register('./local-sw.js').catch(() => {})
-  const sync = () => { if (navigator.onLine && document.visibilityState === 'visible') local.sync().catch(() => {}) }
-  window.addEventListener('online', sync); document.addEventListener('visibilitychange', sync)
+  const sync = () => { if (appLock.canAccess() && navigator.onLine && document.visibilityState === 'visible') local.sync().catch(() => {}) }
+  const resume = async () => {await appLock.resume();if(appLock.canAccess()){reminders.enqueue();sync()}}
+  window.addEventListener('online', sync)
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)appLock.background();else if(isAndroid())void resume();else sync()})
   setInterval(sync, 15000); sync()
-  if (isAndroid()) import('../native/lifecycle.js').then(({ setupAndroidLifecycle }) => setupAndroidLifecycle(router, () => { reminders.enqueue();sync() })).catch(() => {})
+  if (isAndroid()) import('../native/lifecycle.js').then(({ setupAndroidLifecycle }) => setupAndroidLifecycle(router, () => { reminders.enqueue();sync() }, appLock)).catch(() => {})
 }
