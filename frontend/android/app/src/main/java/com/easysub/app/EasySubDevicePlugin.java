@@ -52,7 +52,7 @@ public class EasySubDevicePlugin extends Plugin {
             BackgroundCheck.Snapshot s = new BackgroundCheck.Snapshot();
             s.server = call.getString("server"); s.accessToken = call.getString("access_token", ""); s.refreshToken = call.getString("refresh_token", "");
             s.epoch = call.getString("epoch"); s.locale = call.getString("locale", "zh");
-            Long cursor = call.getLong("cursor");
+            Long cursor = BackgroundCheck.cursor(call.getData().opt("cursor"));
             if (s.server == null || s.epoch == null || cursor == null || !BackgroundCheck.safeServer(s.server)) { call.reject("Invalid background check snapshot", "INVALID_ARGUMENT"); return; }
             s.cursor = cursor;
             BackgroundCheckStore.save(getContext(), s);

@@ -58,6 +58,14 @@ final class BackgroundCheck {
         }
     }
 
+    /** Sync cursor from a JS number. Capacitor passes small numbers as Integer, so PluginCall.getLong() is not usable. */
+    static Long cursor(Object raw) {
+        if (!(raw instanceof Number)) return null;
+        double value = ((Number) raw).doubleValue();
+        if (Double.isNaN(value) || value < 0 || value != Math.floor(value)) return null;
+        return ((Number) raw).longValue();
+    }
+
     /** Same rules as serverUrl() in src/sync/transport.js. */
     static boolean safeServer(String value) {
         try {

@@ -144,4 +144,12 @@ public class BackgroundCheckTest {
         assertEquals(199, fresh.notifiedCursor);
         assertEquals("epoch-1", fresh.notifiedEpoch);
     }
+
+    @Test public void cursorFromJavaScriptAcceptsAnyWholeNonNegativeNumber() {
+        // Capacitor delivers small JS numbers as Integer; PluginCall.getLong() would return null for them.
+        assertEquals(Long.valueOf(198), BackgroundCheck.cursor(198));
+        assertEquals(Long.valueOf(5000000000L), BackgroundCheck.cursor(5000000000L));
+        assertEquals(Long.valueOf(7), BackgroundCheck.cursor(7.0));
+        for (Object bad : new Object[]{null, -1, 1.5, "198", Double.NaN}) assertNull(String.valueOf(bad), BackgroundCheck.cursor(bad));
+    }
 }
