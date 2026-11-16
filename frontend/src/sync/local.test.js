@@ -150,3 +150,35 @@ test('first connection preserves offline preferences and notification secrets as
   const notification = Object.values(f.records).find(record => record.kind === 'notification-config')
   assert.deepEqual(notification.data, {})
 })
+
+test('successful sync hands the background check a cursor that already covers this device uploads', async () => {
+  const f = fixture(), store = createPreviewStore(), snapshots = []
+  const local = await createLocal(store, f.storage, () => {}, f.transport, { synced: snapshot => snapshots.push(snapshot) })
+  await local.connect({ ...f.candidate, tokens: { access_token: 'access', refresh_token: 'refresh' } })
+  await local.request('post', '/api/subscriptions', { name: 'Own edit' })
+  await local.sync()
+  const serverCursor = (await f.transport().changes(f.candidate.caps.epoch, 0)).next_cursor
+  const last = snapshots.at(-1)
+  assert.deepEqual({ ...last, cursor: undefined }, { server: 'https://example.com', epoch: f.candidate.caps.epoch, cursor: undefined, tokens: { access_token: 'access', refresh_token: 'refresh' } })
+  assert.equal(last.cursor, serverCursor)
+  assert.equal(local.status.cursor, serverCursor)
+})
+test('failed sync keeps the previous background snapshot; pausing, logout and auth loss revoke it', async () => {
+  const f = fixture(), store = createPreviewStore(), events = []
+  const local = await createLocal(store, f.storage, () => {}, f.transport, { synced: () => events.push('synced'), unlinked: () => events.push('unlinked') })
+  await local.connect({ ...f.candidate, tokens: { access_token: 'access', refresh_token: 'refresh' } })
+  events.length = 0
+  f.offline(true); await assert.rejects(local.sync(), /offline/); assert.deepEqual(events, [])
+  f.offline(false); await local.enable(false); assert.deepEqual(events, ['unlinked'])
+  await local.enable(true); assert.deepEqual(events, ['unlinked', 'synced'])
+  await local.logout(); assert.deepEqual(events, ['unlinked', 'synced', 'unlinked'])
+})
+test('authentication loss during sync revokes the background snapshot', async () => {
+  const f = fixture(), store = createPreviewStore(), events = []
+  let deny = false
+  const transport = () => ({ ...f.transport(), capabilities: async () => { if (deny) throw Object.assign(new Error('刷新令牌无效'), { status: 401 }); return f.candidate.caps } })
+  const local = await createLocal(store, f.storage, () => {}, transport, { unlinked: () => events.push('unlinked') })
+  await local.connect({ ...f.candidate, tokens: { access_token: 'access', refresh_token: 'refresh' } })
+  deny = true; await assert.rejects(local.sync(), /刷新令牌无效/)
+  assert.deepEqual(events, ['unlinked']); assert.equal(local.status.enabled, false)
+})

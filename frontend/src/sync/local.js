@@ -4,7 +4,9 @@ const kinds = { categories: 'categories', 'payment-methods': 'payment_methods', 
 const relations = { category_id: 'categories', payment_method_id: 'payment-methods', bundle_id: 'bundles' }
 const clone = value => structuredClone(value)
 const prefs = ['base_currency', 'monthly_budget', 'notify_settings', 'category_order']
-export async function createLocal(store, storage, changed, transportFactory = createTransport) {
+// hooks.synced receives { server, tokens, epoch, cursor } after each complete sync; hooks.unlinked
+// fires when sync stops being usable. Android uses them to drive its background change check.
+export async function createLocal(store, storage, changed, transportFactory = createTransport, hooks = {}) {
   const defaultSettings = {
     preferences: { ...Object.fromEntries(prefs.map(key => [key, clone(store.state.user[key] ?? null)])), monthly_budget: null, category_order: [] },
     'notification-config': clone(store.state.config)
@@ -21,6 +23,8 @@ export async function createLocal(store, storage, changed, transportFactory = cr
   const serial = fn => { const result = queue.then(fn); queue = result.catch(() => {}); return result }
   const save = async () => { doc.local = clone(store.state); await storage.save(doc); changed() }
   const key = (kind, id) => `${kind}:${id}`
+  const notify = (name, value) => { try { hooks[name]?.(value) } catch { /* Hooks must never break sync. */ } }
+  const snapshot = () => ({ server: doc.link.server, tokens: { access_token: doc.tokens.access_token, refresh_token: doc.tokens.refresh_token }, epoch: doc.sync.epoch, cursor: doc.sync.cursor })
   function identity(kind, id) {
     if (id == null) return null
     return doc.mappings[key(kind, id)] ||= crypto.randomUUID()
@@ -123,7 +127,11 @@ export async function createLocal(store, storage, changed, transportFactory = cr
         const result = await transport.request('/api/icons/upload', { method: 'POST', body: form })
         op.data.icon = result.url
       }
+      const outgoing = Object.keys(doc.sync.pending).length > 0 || doc.sync.inflight?.length > 0
       await synchronize(doc.sync, transport, async () => { project(); await save() })
+      // Pull this device's own uploads back so the saved cursor covers them; otherwise the
+      // background check would report them as new server changes.
+      if (outgoing) await synchronize(doc.sync, transport, async () => { project(); await save() })
       for (const record of Object.values(doc.sync.records)) if (!record.deleted && /^\/(static\/icons|api\/icons\/library)\//.test(record.data.icon || '') && doc.iconCache[record.id]?.source !== record.data.icon) {
         try {
           const blob = await transport.request('/api/sync/v1/icons/' + record.id, { asBlob: true })
@@ -133,11 +141,12 @@ export async function createLocal(store, storage, changed, transportFactory = cr
         } catch { /* Missing server files retain their source URL and retry next time. */ }
       }
       doc.error = ''; project(); await save()
+      notify('synced', snapshot())
     } catch (error) {
       if (error.name === 'AbortError') return
       // Persistent progress from successful pages remains valid even if a later request fails.
       doc.error = error.message
-      if ([401, 403].includes(error.status) || ['RESET_REQUIRED', 'SYNC_PROTOCOL_UNAVAILABLE'].includes(error.code)) doc.sync.enabled = false
+      if ([401, 403].includes(error.status) || ['RESET_REQUIRED', 'SYNC_PROTOCOL_UNAVAILABLE'].includes(error.code)) { doc.sync.enabled = false; notify('unlinked') }
       try { project(); await save() } catch { doc = previous; store.loadState(doc.local); changed(); throw error }
       throw error
     } finally { activeTransport = null; syncing = false; changed() }
@@ -202,8 +211,8 @@ export async function createLocal(store, storage, changed, transportFactory = cr
       doc.sync.enabled = true; project(); await save(); await run()
     }),
     sync: () => syncQueued ||= serial(run).finally(() => { syncQueued = null }),
-    enable: enabled => serial(async () => { doc.sync.enabled = enabled; await save(); if (enabled) await run() }),
-    logout: () => serial(async () => { doc.sync.enabled = false; doc.tokens = {}; await save() }),
+    enable: enabled => serial(async () => { doc.sync.enabled = enabled; await save(); if (enabled) await run(); else notify('unlinked') }),
+    logout: () => serial(async () => { doc.sync.enabled = false; doc.tokens = {}; await save(); notify('unlinked') }),
     resolve: (id, choice) => serial(async () => {
       if (choice === 'local' && doc.sync.conflicts[id]?.error?.startsWith('CURRENCY_CODE_COLLISION')) throw new Error('同一服务器不能有两个相同币种代码。请另建新代码并修改相关订阅后再采用网页版本；当前本地版本仍已保留。')
       resolveConflict(doc.sync, id, choice); project(); await save(); await run()
