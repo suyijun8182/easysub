@@ -22,7 +22,7 @@
       <label>{{ text("免打扰开始") }}<input v-model="prefs.notify_settings.quiet_start" type="time"></label><label>{{ text("免打扰结束") }}<input v-model="prefs.notify_settings.quiet_end" type="time"></label>
       <label class="check-label"><input type="checkbox" v-model="prefs.notify_settings.digest_enabled">{{ text("启用每周摘要") }}</label>
       <label>{{ text("摘要星期") }}<select v-model.number="prefs.notify_settings.digest_weekday"><option v-for="(d,i) in ['mon','tue','wed','thu','fri','sat','sun']" :value="i" :key="i">{{ t('wk.' + d) }}</option></select></label>
-      <p class="muted">{{ text("网页版的今天／明天紧急续费提醒可突破免打扰，手机端需在通知权限页明确告知。系统权限、通知点击跳转及重启恢复待真机实现。") }}</p><button class="btn">{{ text("保存提醒设置") }}</button>
+      <ReminderPermission /><button class="btn">{{ text("保存提醒设置") }}</button>
     </form>
     <NotifyChannels v-else-if="section === 'channels'" />
     <template v-else-if="['categories','payment-methods','bundles','currencies'].includes(section)">
@@ -79,6 +79,7 @@ import { useUnsavedChanges } from './useUnsavedChanges.js'
 import { hapticsEnabled, setHapticsEnabled } from './haptics.js'
 import { paymentName, currencyName } from './display-names.js'
 import SettingsTopBar from './SettingsTopBar.vue'
+import ReminderPermission from './ReminderPermission.vue'
 const clone = value => JSON.parse(JSON.stringify(value))
 const settingIcons = { preferences:'theme-light', categories:'category-other', 'payment-methods':'card', bundles:'package', currencies:'wallet', rates:'trending', reminders:'notifications', channels:'send', '/notifications':'inbox', '/logs':'logs', backup:'backup', calendar:'calendar', privacy:'lock', about:'help' }
 const localSync = inject('localSync')

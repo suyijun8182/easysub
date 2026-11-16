@@ -23,10 +23,6 @@ export const settingsCopy = {
     "en": "Save reminder settings",
     "ru": "Сохранить напоминания"
   },
-  "网页版的今天／明天紧急续费提醒可突破免打扰，手机端需在通知权限页明确告知。系统权限、通知点击跳转及重启恢复待真机实现。": {
-    "en": "Urgent renewal reminders for today or tomorrow can bypass quiet hours. Android system permissions and restart recovery still need device validation.",
-    "ru": "Срочные напоминания на сегодня и завтра могут обходить тихие часы. Разрешения Android и восстановление после перезапуска ещё требуют проверки."
-  },
   "删除分类或支付方式会解除订阅关联，删除捆绑包不会删除订阅；在用币种不能删除。": {
     "en": "Deleting a category, payment method or bundle keeps its subscriptions. A currency in use cannot be deleted.",
     "ru": "Удаление категории, способа оплаты или пакета сохраняет подписки. Используемую валюту удалить нельзя."
