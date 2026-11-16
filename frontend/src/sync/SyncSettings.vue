@@ -15,6 +15,7 @@
           <button v-if="status.link" class="btn ghost" :disabled="busy" @click="action(() => local.logout())">{{ t('sync.logout') }}</button>
         </div>
       </section>
+      <BackgroundCheckToggle v-if="backgroundCheck && status.link" />
       <section v-if="error" ref="errorSummary" class="card sync-error" role="alert" aria-labelledby="sync-errors-title" tabindex="-1">
         <h2 id="sync-errors-title">{{ t('sync.errorTitle') }}</h2><p>{{ message }}</p>
         <ul v-if="Object.keys(errors).length"><li v-for="(value,field) in errors" :key="field"><a :href="'#sync-' + field" @click.prevent="focusField(field)">{{ t('sync.' + field) }}: {{ value }}</a></li></ul>
@@ -57,9 +58,10 @@ import { useI18n } from 'vue-i18n'
 import { createTransport, serverUrl } from './transport.js'
 import { validateConnection } from './validation.js'
 import SettingsTopBar from '../android-preview/SettingsTopBar.vue'
+import BackgroundCheckToggle from '../android-preview/BackgroundCheckToggle.vue'
 import { showRawSyncError } from '../android-preview/sync-status.js'
 const { t, locale } = useI18n()
-const local = inject('localSync'), revision = inject('previewRevision')
+const local = inject('localSync'), revision = inject('previewRevision'), backgroundCheck = inject('backgroundCheck', null)
 const status = computed(() => { revision.value; return local?.status })
 const server = ref(status.value?.link?.server || ''), username = ref(status.value?.link?.username || ''), password = ref(''), otp = ref('')
 const candidate = ref(null), registration = ref(''), message = ref(''), error = ref(false), busy = ref(false), errors = ref({})

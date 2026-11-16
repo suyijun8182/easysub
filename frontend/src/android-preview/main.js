@@ -26,6 +26,7 @@ import { haptics } from './haptics.js'
 import { App } from '@capacitor/app'
 import { appLockDevice } from '../native/app-lock.js'
 import { createAppLockController } from './app-lock.js'
+import { createBackgroundCheck } from './background-check.js'
 import AppLockScreen from './AppLockScreen.vue'
 setIconRenderer(bitmapIcon)
 for (const [language, messages] of Object.entries(uiCopy)) i18n.global.mergeLocaleMessage(language, { mobile: messages })
@@ -49,11 +50,12 @@ watch(()=>lockState.covered,covered=>{
 await appLock.start()
 
 const store = createPreviewStore()
+const backgroundCheck = createBackgroundCheck({ native: isAndroid, device, locale: () => store.state.user.locale, state: reactive({}) })
 const revision = ref(0)
 const isLocal = isAndroid() || location.pathname.endsWith('/android-app.html')
 let local
 if (isLocal) {
-  try { local = await createLocal(store, await openStorage(), () => { revision.value++ }) }
+  try { local = await createLocal(store, await openStorage(), () => { revision.value++ }, undefined, { synced: snapshot => backgroundCheck.synced(snapshot), unlinked: () => backgroundCheck.unlinked() }) }
   catch (error) { document.getElementById('app').textContent = '无法启动本地应用：' + error.message; throw error }
 }
 export const preview = {
@@ -107,6 +109,7 @@ const router = createRouter({ history: createWebHashHistory(), routes, scrollBeh
 const pinia = createPinia()
 const app = createApp(PreviewApp)
 app.provide('appLock',appLock)
+app.provide('backgroundCheck', backgroundCheck)
 const reminderState=reactive({})
 const reminders=createReminderController({
   native:isAndroid, state:reminderState,
