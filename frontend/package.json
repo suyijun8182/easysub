@@ -20,6 +20,7 @@
     "@capacitor/app": "^8.1.2",
     "@capacitor/core": "^8.6.0",
     "@capacitor/haptics": "^8.0.2",
+    "@capacitor/local-notifications": "8.3.1",
     "@fontsource-variable/onest": "^5.3.1",
     "axios": "^1.7.9",
     "pinia": "^2.3.0",

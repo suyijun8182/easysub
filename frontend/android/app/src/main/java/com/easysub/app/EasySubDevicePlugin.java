@@ -2,6 +2,10 @@ package com.easysub.app;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
+import android.net.Uri;
+import android.provider.Settings;
+import androidx.core.app.NotificationManagerCompat;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import android.util.AtomicFile;
@@ -25,6 +29,25 @@ import javax.crypto.spec.GCMParameterSpec;
 
 @CapacitorPlugin(name = "EasySubDevice")
 public class EasySubDevicePlugin extends Plugin {
+    @PluginMethod public void notificationStatus(PluginCall call) {
+        call.resolve(new JSObject().put("enabled", NotificationManagerCompat.from(getContext()).areNotificationsEnabled())
+            .put("required", Build.VERSION.SDK_INT >= 33));
+    }
+    @PluginMethod public void openNotificationSettings(PluginCall call) {
+        getActivity().runOnUiThread(() -> {
+            try {
+                Intent intent = Build.VERSION.SDK_INT >= 26
+                    ? new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, getContext().getPackageName())
+                    : new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getContext().getPackageName()));
+                getActivity().startActivity(intent); call.resolve();
+            } catch (Exception error) {
+                try {
+                    getActivity().startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getContext().getPackageName())));
+                    call.resolve();
+                } catch (Exception fallback) { call.reject("Cannot open notification settings", "SETTINGS_UNAVAILABLE"); }
+            }
+        });
+    }
     private static final String ALIAS = "easysub.local.v1";
     private SecretKey key(boolean create) throws Exception {
         KeyStore store = KeyStore.getInstance("AndroidKeyStore"); store.load(null);

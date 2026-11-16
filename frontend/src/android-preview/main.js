@@ -1,4 +1,4 @@
-import { createApp, ref } from 'vue'
+import { createApp, reactive, ref, watch } from 'vue'
 import { createPinia } from 'pinia'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import api from '../api/index.js'
@@ -16,7 +16,9 @@ import { openStorage } from '../sync/storage.js'
 import { createLocal } from '../sync/local.js'
 import { syncCopy } from '../sync/copy.js'
 import { appearance } from './ui-behavior.js'
-import { isAndroid } from '../native/device.js'
+import { device, isAndroid } from '../native/device.js'
+import { reminderSchedule } from './reminder-schedule.js'
+import { createReminderController, reminderDestination } from './reminder-controller.js'
 import { setIconRenderer } from '../icons.js'
 import { bitmapIcon } from './bitmap-assets.js'
 import { createDeferredDeletion } from './deferred-deletion.js'
@@ -83,6 +85,15 @@ const routes = [
 const router = createRouter({ history: createWebHashHistory(), routes, scrollBehavior(to, from, saved) { return saved || { top: 0 } } })
 const pinia = createPinia()
 const app = createApp(PreviewApp)
+const reminderState=reactive({})
+const reminders=createReminderController({
+  native:isAndroid, state:reminderState,
+  load:async()=> (await import('@capacitor/local-notifications')).LocalNotifications,
+  nativeStatus:()=>device.notificationStatus(),
+  compute:()=>reminderSchedule({subscriptions:store.state.subscriptions,settings:store.state.user.notify_settings,locale:store.state.user.locale}),
+  channelName:()=>uiCopy[store.state.user.locale]?.reminderChannel || 'EasySub'
+})
+app.provide('reminders',{...reminders,state:reminderState,openSettings:()=>device.openNotificationSettings()})
 app.provide('preview', preview)
 app.provide('localSync', local)
 app.provide('previewRevision', revision)
@@ -93,10 +104,15 @@ const savedAppearance = appearance(preview.state.user)
 i18n.global.locale.value = savedAppearance.locale
 applyTheme(savedAppearance.theme)
 app.mount('#app')
+watch(revision,()=>reminders.enqueue())
+if(isAndroid()) {
+  reminders.listen(async extra=>{await router.isReady();router.push(reminderDestination(extra,store.state.subscriptions))}).catch(()=>{reminderState.error=true})
+  reminders.enqueue()
+}
 if (local) {
   if (!isAndroid() && import.meta.env.PROD && 'serviceWorker' in navigator) navigator.serviceWorker.register('./local-sw.js').catch(() => {})
   const sync = () => { if (navigator.onLine && document.visibilityState === 'visible') local.sync().catch(() => {}) }
   window.addEventListener('online', sync); document.addEventListener('visibilitychange', sync)
   setInterval(sync, 15000); sync()
-  if (isAndroid()) import('../native/lifecycle.js').then(({ setupAndroidLifecycle }) => setupAndroidLifecycle(router, sync)).catch(() => {})
+  if (isAndroid()) import('../native/lifecycle.js').then(({ setupAndroidLifecycle }) => setupAndroidLifecycle(router, () => { reminders.enqueue();sync() })).catch(() => {})
 }
