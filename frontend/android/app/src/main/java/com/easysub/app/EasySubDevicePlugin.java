@@ -56,6 +56,7 @@ public class EasySubDevicePlugin extends Plugin {
             if (s.server == null || s.epoch == null || cursor == null || !BackgroundCheck.safeServer(s.server)) { call.reject("Invalid background check snapshot", "INVALID_ARGUMENT"); return; }
             s.cursor = cursor;
             BackgroundCheckStore.save(getContext(), s);
+            BackgroundCheckWorker.dismiss(getContext());
             BackgroundCheckScheduler.sync(getContext());
             call.resolve();
         } catch (Exception error) { call.reject("Cannot save background check snapshot", "LOCAL_WRITE_FAILED"); }

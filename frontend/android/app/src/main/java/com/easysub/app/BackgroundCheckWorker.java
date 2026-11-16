@@ -24,6 +24,9 @@ public class BackgroundCheckWorker extends Worker {
     static final String CHANNEL = "easysub-sync-v1";
     private static final String TAG = "easysub-sync";
     private static final int ID = 1;
+
+    /** The app just synced, so a pending "new changes" notification is stale. */
+    static void dismiss(Context context) { NotificationManagerCompat.from(context).cancel(TAG, ID); }
     private static final int MAX_BODY = 64 * 1024;
 
     public BackgroundCheckWorker(@NonNull Context context, @NonNull WorkerParameters params) { super(context, params); }
