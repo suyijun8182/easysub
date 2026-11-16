@@ -9,6 +9,8 @@ final class AppLockPolicy {
             case BiometricPrompt.ERROR_NEGATIVE_BUTTON: return "CANCELED";
             case BiometricPrompt.ERROR_LOCKOUT:
             case BiometricPrompt.ERROR_LOCKOUT_PERMANENT: return "LOCKOUT";
+            // The system closes an unanswered prompt; the user can simply retry.
+            case BiometricPrompt.ERROR_TIMEOUT: return "TIMEOUT";
             default: return "UNAVAILABLE";
         }
     }

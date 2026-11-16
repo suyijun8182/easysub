@@ -36,6 +36,13 @@ test('three cancellations allow only exit and a new controller starts a new atte
   await f.lock.exit();assert.equal(f.exits(),1)
   const fresh=fixture();await fresh.lock.start();assert.equal(fresh.state.cancels,0)
 })
+test('prompt timeouts and transient errors stay retryable without spending the cancel budget',async()=>{
+  for(const code of ['TIMEOUT','UNAVAILABLE']) {
+    const f=fixture({authenticate:async()=>{throw {code}}});void f.lock.start()
+    await tick();await f.lock.unlock();await f.lock.unlock();await f.lock.unlock();await f.lock.unlock()
+    assert.equal(f.state.cancels,0);assert.equal(f.state.error,code);assert.equal(f.authCalls(),5);assert.equal(f.lock.canAccess(),false)
+  }
+})
 test('unavailable device never silently disables an enabled lock',async()=>{
   const f=fixture({available:false});void f.lock.start();await tick();await f.lock.unlock()
   assert.equal(f.state.enabled,true);assert.equal(f.state.available,false);assert.equal(f.authCalls(),0);assert.equal(f.lock.canAccess(),false)

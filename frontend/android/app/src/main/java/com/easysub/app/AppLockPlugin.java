@@ -52,7 +52,7 @@ public class AppLockPlugin extends Plugin {
                 }
                 @Override public void onAuthenticationError(int code, CharSequence message) {
                     if (pending != call) return;
-                    pending = null; prompt = null; call.reject("Device authentication ended", AppLockPolicy.errorCode(code));
+                    pending = null; prompt = null; call.reject("Device authentication ended", AppLockPolicy.errorCode(code), new JSObject().put("nativeCode", code));
                 }
             });
             try { prompt.authenticate(new BiometricPrompt.PromptInfo.Builder().setTitle("EasySub").setSubtitle(reason).setAllowedAuthenticators(AUTHENTICATORS).build()); }

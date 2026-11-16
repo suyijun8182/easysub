@@ -14,3 +14,8 @@ test('browser app lock settings explain limitations and disable native controls'
   const html=await renderClass('./AppLockSettings.vue','app-lock-settings',{lock,t,changeEnabled(){},changeMinutes(){}})
   assert.match(html,/mobile.lockPreview/);assert.match(html,/<input[^>]+disabled/);assert.match(html,/<select[^>]+disabled/)
 })
+test('every native authentication error code has copy in all languages',async()=>{
+  const { uiCopy }=await import('./ui-copy.js')
+  for(const language of ['zh','en','ru'])for(const code of ['CANCELED','LOCKOUT','TIMEOUT','UNAVAILABLE'])assert.ok(uiCopy[language]['lockError_'+code],language+' '+code)
+  assert.doesNotMatch(uiCopy.zh.lockError_UNAVAILABLE,/锁屏/)
+})

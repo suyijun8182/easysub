@@ -11,4 +11,7 @@ public class AppLockPolicyTest {
         for (int code : new int[]{7,9}) assertEquals("LOCKOUT", AppLockPolicy.errorCode(code));
         for (int code : new int[]{1,2,12,14}) assertEquals("UNAVAILABLE", AppLockPolicy.errorCode(code));
     }
+    @Test public void promptTimeoutIsRetryableAndNotReportedAsMissingScreenLock() {
+        assertEquals("TIMEOUT", AppLockPolicy.errorCode(3));
+    }
 }
