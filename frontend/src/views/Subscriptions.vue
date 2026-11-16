@@ -199,7 +199,7 @@
                aria-describedby="del-tip" :placeholder="androidPreview ? 'preview' : t('sub.pwdPh')" @keyup.enter="confirmDelete" />
         <p v-if="delErr" class="err" role="alert">{{ delErr }}</p>
         <div class="row" style="justify-content:flex-end;margin-top:16px">
-          <button class="btn ghost" @click="closeDelete">{{ t('sub.cancel') }}</button>
+          <button v-if="!androidPreview" class="btn ghost" @click="closeDelete">{{ t('sub.cancel') }}</button>
           <button class="btn danger" :disabled="deleting || (!androidPreview && !delPwd)" @click="confirmDelete">{{ t('sub.delete') }}</button>
         </div>
     </BaseModal>
