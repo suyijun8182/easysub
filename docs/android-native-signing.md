@@ -96,15 +96,15 @@ gradle.taskGraph.whenReady { graph ->
 
 用户决定采用 CI 签名后，再单独修改工作流。keystore 转为 base64 后存入 GitHub Actions secret `EASYSUB_KEYSTORE_BASE64`，另外保存上述两个密码及别名的同名 secrets。路径由 runner 临时目录生成，不需要保存为 secret。base64 只是编码，不提供加密保护，参见 [GitHub Actions secrets 文档](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets)。
 
-签名流程只接受 tag 推送，事件过滤与签名 job 条件都限定 `refs/tags/v*` 或 `refs/tags/android-v*`；分支、PR 和手动触发不进入签名 job。示意条件如下：
+签名流程只接受 tag 推送，事件过滤与签名 job 条件都限定 `refs/tags/android-v*`；网页使用的 `v*` tag、分支、PR 和手动触发均不进入签名 job，避免与网页版 Docker 发布和 Release 工作流混用。示意条件如下：
 
 ```yaml
 on:
   push:
-    tags: ['v*', 'android-v*']
+    tags: ['android-v*']
 
 # Inside the signing job:
-if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/android-v'))
+if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/android-v')
 ```
 
 建议使用临时 Ubuntu runner，并将签名放在独立 job，避免向 PR 或不可信脚本提供 secrets。步骤顺序为：
@@ -117,7 +117,7 @@ if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/v') || sta
 
 若使用 Play 与独立 APK 两种渠道，分别配置 upload 与 release 密钥来源，不能让同一组 secrets 随渠道隐式切换身份。文件 SHA-256 用于核对下载内容，证书 SHA-256 用于核对签名身份，两者都要记录。
 
-本提案不创建 tag，不改现有工作流，也不发布或上传任何产物。正式落地时需测试非 tag 无签名、缺 secret 失败、成功与失败均清理临时密钥、产物无密钥文件。
+本提案不创建 tag，不改现有工作流，也不发布或上传任何产物。正式落地时需测试网页 `v*` tag 及非 tag 均无签名、缺 secret 失败、成功与失败均清理临时密钥、产物无密钥文件。
 
 ## 是否采用 Play App Signing
 
