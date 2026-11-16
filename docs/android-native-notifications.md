@@ -1,6 +1,6 @@
 # Android 本地到期通知设计
 
-日期：2026-11-16。状态：设计草案，付款卡频率及官方依赖内部的 Kotlin 构建待用户确认；尚未接入或真机验收。
+日期：2026-11-16。状态：规则与依赖选择已由用户确认，进入实现；尚未真机验收。
 
 ## 范围与已核实事实
 
@@ -12,15 +12,15 @@
 - 试用和取消截止：分别针对 `trial_end`、`cancel_by` 的提前 3、1、0 天；有效的一次性订阅也可有这两类提醒。
 - 付款卡：`card_expiry` 为 MM/YY 或 MM/YYYY，换算为该月最后一天，剩余 0 至 45 天时符合条件。
 
-**付款卡频率有冲突，尚未决定。** 后端 `run_date_reminders` 每天执行，`_card_expiring` 在整个窗口内每天返回真，`_send_event` 只按当天去重，所以实际每天提醒；计划同时要求“不每天轰炸”和“后端怎么做就怎么做”。已请求用户在“提前 45、30、7、1、0 天”与“严格跟随后端每天提醒”之间选择。未得到答案前不固定付款卡排程或相关测试期望，也不修改后端。
+用户确认 Android 付款卡提醒只在到期日前 45、30、7、1、0 天发送，到期日按有效期当月最后一天计算，与 `_card_expiring` 一致。网页端在 45 天窗口内每天提醒；此差异是明确的产品选择，网页端和后端不改。
 
 ## 依赖与原生能力
 
 npm 元数据核实的最新稳定版为 `@capacitor/local-notifications` 8.3.1，peer dependency 为 `@capacitor/core >=8.0.0`。已将发布 tarball 解到忽略目录检查，尚未修改依赖清单。该版本 SDK 默认值为 compileSdk 36、minSdk 24，使用 JDK 21，与当前工程一致。
 
-**依赖语言限制待确认。** 官方插件 8.3.1 的 Android 源码已使用 Kotlin，其模块会加载 `kotlin-gradle-plugin` 2.0.21 并应用 `kotlin-android`。计划要求不引入 Kotlin，故已询问是否允许官方依赖内部使用 Kotlin。EasySub 自己新增的原生方法仍使用 Java，不向 App 模块增加 Kotlin 插件。未经确认不安装，也不擅自降级到旧版来规避“最新稳定版”要求。
+用户允许官方依赖内部使用 Kotlin：8.3.1 模块加载 `kotlin-gradle-plugin` 2.0.21 并应用 `kotlin-android`。EasySub 新增原生代码仍只写 Java，不向 App 模块增加 Kotlin 插件。必须通过 `build-apk.ps1` 构建，报告中列出 Kotlin / AGP 警告。
 
-若选用 8.3.1，接入须处理以下已核实的行为：
+使用 8.3.1，接入须处理以下已核实的行为：
 
 - 插件 manifest 声明 `POST_NOTIFICATIONS`、`RECEIVE_BOOT_COMPLETED`、`WAKE_LOCK`，也声明 `SCHEDULE_EXACT_ALARM`。App manifest 用 `tools:node="remove"` 删除精确闹钟权限，且不加入 `USE_EXACT_ALARM`。构建后检查最终合并 manifest。
 - 每条通知显式传 `isExactNotification: false`，使用普通调度，不调用精确闹钟设置入口。可能有数分钟偏差；省电、Doze 或厂商后台限制可能造成更长延迟，不承诺准点。
@@ -69,4 +69,4 @@ Android 系统设置入口用现有 Java 设备插件增加通知设置方法，
 
 真机逐项记录：通知出现与三语文案、点击详情、重启后恢复、拒绝权限路径、删除订阅后排程消失。截图保存到 `artifacts/android/qa-0.3.0/`，区分浏览器与真机证据。
 
-当前仅完成规则与插件源码核对；没有安装依赖，没有排程代码或原生代码，没有真机通知、权限、重启、删除验收。上述两项决策未确认前，不将草案标为已实现或已验收。
+当前进入实现阶段；构建、自动测试及真机通知、权限、重启、删除验收结果另见执行报告，不将设计或源码核对当作验收通过。
