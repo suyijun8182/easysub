@@ -221,11 +221,11 @@ Telegram [@Aiden_SU](https://t.me/Aiden_SU) · 📧 aidensu8182@gmail.com
 
 ## English
 
-**Android 0.3.0 Alpha:** adds system renewal notifications, an app lock with device authentication, and background change alerts. Install over the same-signed 0.2.0 to keep local data; the APK still uses a debug signature. See the [Android 0.3.0 notes](docs/android-0.3.0.md) (Chinese).
-
 **Self-hosted subscription / renewal manager that reminds you over 14 channels (Telegram, WeCom, Feishu …) so you never let a subscription — or a SIM keep-alive plan — expire.**
 
 **Highlights:** multi-user (JWT, admin/user roles, open sign-up — admin approval optional) · redesigned UI with per-card **remaining-cycle bar**, **renewal timeline** dashboard and mobile **bottom tab bar** · recurring & one-time subscriptions with **bulk actions** (renew / enable / disable / move / delete) and drag-or-button reordering · keyboard & screen-reader friendly · **14 notification channels** (Telegram / Feishu / QQ / Bark / Email / Pushplus / ServerChan / WeCom / DingTalk / Discord / Slack / ntfy / Gotify / Webhook) with quiet hours & weekly digest · trial/cancel/card-expiry tracking · monthly budget · built-in service library (100s of presets incl. dozens of carriers & eSIM) · dashboard & reports + **CSV export** · Apple-style calendar + **.ics feed** · multi-currency with live FX · per-user **and admin full-site** backup/restore + **daily auto-backup** + CSV import/export · **2FA · API tokens · encrypted secrets** · **auto DB reconnect** & auto-migration · **PWA installable** · **in-app update check** · Home Assistant integration · multi-language (中/EN/RU) · 6 themes incl. system-follow · connects to **your existing MySQL 8** (no bundled DB).
+
+**Android 0.3.0 Alpha:** adds system renewal notifications, an app lock with device authentication, and background change alerts. Install over the same-signed 0.2.0 to keep local data; the APK still uses a debug signature. See the [Android 0.3.0 notes](docs/android-0.3.0.md) (Chinese).
 
 ```bash
 docker run -d --name easysub -p 8842:8000 \
@@ -242,11 +242,11 @@ NAS guides: [各厂家NAS安装教程.md](./各厂家NAS安装教程.md) · Dock
 
 ## Русский
 
-**Android 0.3.0 Alpha:** системные уведомления о продлении, блокировка приложения с системной аутентификацией и фоновые уведомления об изменениях. Установка поверх 0.2.0 с той же подписью сохраняет локальные данные; APK пока подписан отладочным ключом. См. [описание Android 0.3.0](docs/android-0.3.0.md) (на китайском).
-
 **Самостоятельно размещаемый менеджер подписок с напоминаниями по 14 каналам (Telegram, WeCom, Feishu …) — чтобы ни одна подписка (и SIM для поддержания номера) не истекла.**
 
 **Возможности:** мультипользовательский режим (открытая регистрация, одобрение администратором — по желанию) · новый интерфейс: **полоса оставшегося периода** на карточках, **лента продлений** на дашборде, **нижняя панель вкладок** на телефоне · регулярные и разовые подписки с **массовыми действиями** (продление / вкл. / откл. / перенос / удаление) и сортировкой перетаскиванием или кнопками · доступность с клавиатуры и для скринридеров · **14 каналов уведомлений** (Telegram / Feishu / QQ / Bark / Email / Pushplus / ServerChan / WeCom / DingTalk / Discord / Slack / ntfy / Gotify / Webhook), тихие часы и еженедельная сводка · отслеживание пробного периода/срока карты · месячный бюджет · библиотека сервисов (сотни пресетов, десятки операторов и eSIM) · дашборд и отчёты + **экспорт CSV** · календарь Apple + **.ics** · мультивалютность · бэкап пользователя **и всего сайта** + **ежедневный авто-бэкап** + CSV импорт/экспорт · **2FA · API-токены · шифрование секретов** · авто-переподключение к БД · **PWA** · **проверка обновлений** · интеграция Home Assistant · мультиязычность (中/EN/RU) · 6 тем · подключение к **вашему MySQL 8**.
+
+**Android 0.3.0 Alpha:** системные уведомления о продлении, блокировка приложения с системной аутентификацией и фоновые уведомления об изменениях. Установка поверх 0.2.0 с той же подписью сохраняет локальные данные; APK пока подписан отладочным ключом. См. [описание Android 0.3.0](docs/android-0.3.0.md) (на китайском).
 
 ```bash
 docker run -d --name easysub -p 8842:8000 \
