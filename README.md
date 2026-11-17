@@ -24,7 +24,7 @@ docker run -d -p 8842:8000 -v easysub_data:/app/data suyijun8182/easysub:latest
 
 **v2.0.2：** 修复中国大陆添加订阅时服务图标加载慢、页面卡顿的问题（[#2](https://github.com/suyijun8182/easysub/issues/2)）：镜像自带的服务图标直接从本地读取，下载不到时显示首字母占位图。直接更新镜像即可，无需改配置。
 
-**Android 0.2.0 Alpha：** 删除改为确认弹窗加 5 秒撤销，新增下拉同步和触感反馈，订阅卡更紧凑，总览首屏突出本月支出。详见 [Android 0.2.0 说明](docs/android-0.2.0.md)。
+**Android 0.3.0 Alpha：** 新增到期系统通知、应用锁与后台变更提醒；覆盖安装同签名的 0.2.0 保留资料，仍为调试签名。详见 [Android 0.3.0 说明](docs/android-0.3.0.md)。
 
 **v2.0.1：安全修复。** 修复匿名文件读取、公开 JWT 示例密钥、默认管理员凭据、安装接口探测、SVG 脚本执行、依赖漏洞、跨 IP 登录锁定及 API Token 明文存储。请阅读 [升级与回滚步骤](docs/update-v2.0.1.md)。原来使用示例 JWT 密钥的设备需重新登录；自动密钥保存在 `data/jwt_secret`，必须保留数据卷。API Token 只在创建时显示一次。Android 0.1.3 仍为 Alpha。
 
@@ -221,6 +221,8 @@ Telegram [@Aiden_SU](https://t.me/Aiden_SU) · 📧 aidensu8182@gmail.com
 
 ## English
 
+**Android 0.3.0 Alpha:** adds system renewal notifications, an app lock with device authentication, and background change alerts. Install over the same-signed 0.2.0 to keep local data; the APK still uses a debug signature. See the [Android 0.3.0 notes](docs/android-0.3.0.md) (Chinese).
+
 **Self-hosted subscription / renewal manager that reminds you over 14 channels (Telegram, WeCom, Feishu …) so you never let a subscription — or a SIM keep-alive plan — expire.**
 
 **Highlights:** multi-user (JWT, admin/user roles, open sign-up — admin approval optional) · redesigned UI with per-card **remaining-cycle bar**, **renewal timeline** dashboard and mobile **bottom tab bar** · recurring & one-time subscriptions with **bulk actions** (renew / enable / disable / move / delete) and drag-or-button reordering · keyboard & screen-reader friendly · **14 notification channels** (Telegram / Feishu / QQ / Bark / Email / Pushplus / ServerChan / WeCom / DingTalk / Discord / Slack / ntfy / Gotify / Webhook) with quiet hours & weekly digest · trial/cancel/card-expiry tracking · monthly budget · built-in service library (100s of presets incl. dozens of carriers & eSIM) · dashboard & reports + **CSV export** · Apple-style calendar + **.ics feed** · multi-currency with live FX · per-user **and admin full-site** backup/restore + **daily auto-backup** + CSV import/export · **2FA · API tokens · encrypted secrets** · **auto DB reconnect** & auto-migration · **PWA installable** · **in-app update check** · Home Assistant integration · multi-language (中/EN/RU) · 6 themes incl. system-follow · connects to **your existing MySQL 8** (no bundled DB).
@@ -239,6 +241,8 @@ NAS guides: [各厂家NAS安装教程.md](./各厂家NAS安装教程.md) · Dock
 <a name="русский"></a>
 
 ## Русский
+
+**Android 0.3.0 Alpha:** системные уведомления о продлении, блокировка приложения с системной аутентификацией и фоновые уведомления об изменениях. Установка поверх 0.2.0 с той же подписью сохраняет локальные данные; APK пока подписан отладочным ключом. См. [описание Android 0.3.0](docs/android-0.3.0.md) (на китайском).
 
 **Самостоятельно размещаемый менеджер подписок с напоминаниями по 14 каналам (Telegram, WeCom, Feishu …) — чтобы ни одна подписка (и SIM для поддержания номера) не истекла.**
 
