@@ -1,46 +1,8 @@
-
-## Linux 一键部署（v2.1.0）
-
-提供 x86_64 / aarch64 单文件安装器，业务后端仍为同一份 Python 代码。Rust 部分静态链接，内置 Python 与 wheel 使用 GNU ABI，要求 **glibc ≥ 2.17，不支持 Alpine**。建议使用 Debian 12 或 Ubuntu 20.04 及更新版本；首次注册的账号成为管理员，请及时注册。
-
-```bash
-curl -fsSL https://github.com/suyijun8182/easysub/releases/latest/download/install.sh | sudo bash
-# 自定义参数示例
-curl -fsSL https://github.com/suyijun8182/easysub/releases/latest/download/install.sh | sudo bash -s -- --port 8842 --bind 0.0.0.0 --data /var/lib/easysub
-# 升级：下载与 SHA256 校验由脚本完成，健康检查失败自动回滚程序
-curl -fsSL https://github.com/suyijun8182/easysub/releases/latest/download/install.sh | sudo bash -s -- --upgrade
-sudo easysub status
-easysub version
-sudo easysub uninstall         # 保留数据和 env
-sudo easysub uninstall --purge # 打印路径，输入 yes 后才清除数据与 env
-```
-
-运行目录 `/opt/easysub/current` 指向 releases 下的版本目录（保留当前及上一个 release）；每个 release 中的 data 软链接指向 `/var/lib/easysub`（或 `--data` 指定的专用绝对路径）。数据和备份位于该目录。`/etc/easysub/easysub.env` 保存首次随机生成的 JWT_SECRET、EASYSUB_DB、TZ、PORT、BIND 和 DATA_DIR；升级不会覆盖该文件。修改参数后执行 `sudo systemctl restart easysub`，需要开放端口时自行调整防火墙。
-
-无 systemd 或无 root 的环境，可以在一个可写目录执行 `./easysub run`：运行时展开到 `./.easysub-runtime/`，数据默认在 `./easysub-data/`，支持 BIND / PORT 环境变量。已有系统安装时，run 使用安装目录和既有 env。备份需自行设置至少 12 位 BACKUP_PASSWORD。内置 Python 仅随发布更新，普通本地 cargo 构建不带运行时，只能测试维护逻辑。
-
-升级前先导出完整备份并保存 data/，自动回滚仅切换程序版本，不会倒退数据库迁移。同版本升级也会创建独立 release。重新安装会保留既有 env；自定义数据目录时须再次传入原 --data。
-
-从 Docker / MySQL 迁移：先在旧实例导出有密码的完整备份；安装新实例并注册管理员，在设置页导入整站备份，核对订阅、分类和通知配置后切换入口。图标文件需另行保留旧 data/icons 并放入新数据目录，确保属于 easysub 用户；不要混用 Docker 与新服务的数据目录同时运行。保留旧实例用于回退。若直接迁移 SQLite 文件，先停旧服务，并整体迁移数据目录（含 WAL/SHM），不要只复制运行中的 db 文件。
-
-
-## v2.1.0：SQLite 部署与迁移
-
-新用户首选 SQLite：运行 `docker compose -f docker-compose.sqlite.yml up -d`，或在首次安装向导选择「SQLite（推荐）」；单进程即可使用，无需额外数据库服务。已有 MySQL 配置不带 engine 字段时仍按 MySQL 读取，原有 compose 文件保持兼容。
-
-SQLite 配置是 `{"engine":"sqlite","path":"data/easysub.db"}`，路径必须位于 data/ 内。设置 `EASYSUB_DB=sqlite` 可在首次启动时自动初始化；已有配置不会被覆盖。data/ 要持久化且可写。
-
-从 MySQL 迁移：在旧实例用管理员导出「完整备份」，保存备份密码；另起一个使用独立数据卷的 SQLite 实例，注册管理员，在设置中导入整站备份，核对账号、订阅、分类和通知配置后再切换入口。保留旧实例及其数据以便回退。旧客户端需重新同步，完整备份不携带旧同步游标，服务端会生成新同步记录。不要直接复制 MySQL 数据文件。
-
-配置至少 12 位 `BACKUP_PASSWORD` 后，每日自动备份仍生成加密 JSON；SQLite 额外使用在线 backup API 生成 data/backups/sqlite-日期.db，保留最近 7 份。数据库快照包含敏感资料，目录权限应仅允许服务账号访问；快照不包含图标等文件，跨数据库迁移请使用完整备份。WAL 数据库不可直接复制正在使用的 db 文件。
-
-<!-- v2.1.0 更新预告：月末续费保留锚定日，日期预览遵循本地日历。 -->
-
 <div align="center">
 
 # 省心订阅 EasySub
 
-**自托管的订阅 / 续费 / 保号管理系统 —— 通过 Telegram、企业微信、飞书等 14 种渠道提醒你按时续费，再也不怕忘记导致掉号、过期。**
+**自托管的订阅 / 续费 / 保号管理系统：通过 Telegram、企业微信、飞书等 14 种渠道提醒你按时续费，不再因为忘记而掉号或过期。**
 
 [![License](https://img.shields.io/github/license/suyijun8182/easysub?color=blue)](./LICENSE)
 [![Docker Pulls](https://img.shields.io/docker/pulls/suyijun8182/easysub?logo=docker)](https://hub.docker.com/r/suyijun8182/easysub)
@@ -51,199 +13,257 @@ SQLite 配置是 `{"engine":"sqlite","path":"data/easysub.db"}`，路径必须�
 **中文 | [English](#english) | [Русский](#русский)**
 
 ```bash
-docker run -d -p 8842:8000 -e EASYSUB_DB=sqlite -v easysub_data:/app/data suyijun8182/easysub:latest
+docker run -d --name easysub -p 8842:8000 -e EASYSUB_DB=sqlite \
+  -v easysub_data:/app/data --restart unless-stopped suyijun8182/easysub:latest
 ```
 
-不再预置 `admin/admin123`。不设置 `ADMIN_PASSWORD` 时，第一个注册的账号就是管理员。如需预置账号，可取消注释示例 `# ADMIN_PASSWORD=your-strong-password` 并填写自己的强密码。
-
-首次启动后请尽快完成安装向导，不要把未完成安装的实例暴露到公网。
+打开 `http://<服务器IP>:8842`，注册的第一个账号就是管理员。
 
 </div>
 
-**v2.0.2：** 修复中国大陆添加订阅时服务图标加载慢、页面卡顿的问题（[#2](https://github.com/suyijun8182/easysub/issues/2)）：镜像自带的服务图标直接从本地读取，下载不到时显示首字母占位图。直接更新镜像即可，无需改配置。
-
-**Android 0.3.0 Alpha：** 新增到期系统通知、应用锁与后台变更提醒；覆盖安装同签名的 0.2.0 保留资料，仍为调试签名。详见 [Android 0.3.0 说明](docs/android-0.3.0.md)。
-
-**v2.0.1：安全修复。** 修复匿名文件读取、公开 JWT 示例密钥、默认管理员凭据、安装接口探测、SVG 脚本执行、依赖漏洞、跨 IP 登录锁定及 API Token 明文存储。请阅读 [升级与回滚步骤](docs/update-v2.0.1.md)。原来使用示例 JWT 密钥的设备需重新登录；自动密钥保存在 `data/jwt_secret`，必须保留数据卷。API Token 只在创建时显示一次。Android 0.1.3 仍为 Alpha。
-
 > 🌐 **在线体验**：<https://easysub.vviip.dpdns.org:8443/>
-> 测试账号 `guest` / `guest123`；也可自行注册，注册后即可直接登录使用。
+> 测试账号 `guest` / `guest123`，也可以自己注册，注册后直接可用。
+
+## 🆕 v2.1.0 更新
+
+- **支持 SQLite，并设为新安装的默认数据库**：不用再准备 MySQL，一条命令就能跑起来。原来用 MySQL 的部署升级后照常运行，不用改任何配置。
+- **Linux 一键安装**：一个单文件程序，不用装 Docker，支持 x86_64 和 aarch64，自动注册 systemd 服务。升级失败会自动退回旧版本。
+- **修复月末续费日期漂移**：1 月 31 日的月付订阅续费后会依次变成 2/28、3/31，不会再停在 28 号。也修复了美洲等时区下续费预览比实际少一天的问题。
+  已经漂移到 28 号的订阅，系统无法知道原来是几号，请手动把“下次续费日”改回正确日期一次，之后就不会再漂移。
+
+完整变更见 [CHANGELOG](./CHANGELOG.md)。
 
 ---
 
-## ✨ 功能特性
+## ✨ 功能
 
 | | |
 |---|---|
-| 👥 **多用户** | JWT 鉴权，管理员 / 普通用户分层，数据按用户隔离；开放注册、注册即用（可选开启邮箱验证与管理员审核） |
-| 💳 **订阅管理** | 周期订阅 + 一次性买断，自动计算下次续费日，到期 / 即将到期醒目提醒，列表搜索；**批量操作**（续费 / 启用停用 / 改分类 / 删除），拖拽或按钮调整顺序 |
-| 📱 **保号场景** | 针对电信运营商保号：续费后从当前时间重新计算周期（无论提前还是过期续费） |
-| 🔔 **多渠道通知（14 种）** | **Telegram / 飞书 / QQ / Bark / Email / Pushplus / Server酱 / 企业微信（群机器人 **或** 自建应用）/ 钉钉 / Discord / Slack / ntfy / Gotify / Webhook**，可分别启用与测试；提前天数自定义（默认倒数 7 天每天提醒）；**免打扰时段 + 每周汇总** |
-| 🧪 **试用 / 卡到期跟踪** | 记录试用结束日、取消截止日、付款卡有效期，到点提醒，避免被自动扣费 |
-| 💰 **月度预算** | 设定预算，仪表盘进度条与**超支预警** |
-| 📚 **内置服务库** | 数百个常用服务预置图标与官网（流媒体 / AI / 游戏 / VPS / **数十家电信运营商与 eSIM** 等），按分类浏览、直接选用 |
-| 📊 **仪表盘 & 报表** | 月度 / 年度支出、支出洞察与排行、永久购买、即将续费、分类明细，**报表导出 CSV** |
-| 🗓️ **日历视图 & 订阅** | 苹果风格日历；生成 **.ics 订阅链接**接入 Apple / Google / Outlook 日历 |
-| 💱 **多货币** | 全球主流货币 + 自定义货币，实时汇率自动更新 |
-| 💾 **备份恢复** | 单用户 JSON 备份 + 管理员**整站备份/恢复**（含通知配置）+ **每日本地自动备份** + **CSV 导入/导出** |
-| 🔒 **安全** | **两步验证 2FA** · **API Token** · 登录失败限流 · 忘记密码（邮件重置）· 通知密钥**加密存储** |
-| 🛡️ **稳定自愈** | 宿主机 / 容器重启后**数据库断线自动重连**；新增列启动**自动迁移**，升级不丢数据 |
-| 🔄 **版本检测** | Web 端自动检测新版本并提示升级方式 |
-| 📱 **PWA & 集成** | 可**安装到手机主屏**（PWA）；`/api/integrations/summary` 供 Home Assistant 轮询 |
-| 🎨 **界面** | 「Countdown」设计：每张订阅卡带**剩余周期条**，绿 / 黄 / 红只表达到期状态（已过期整卡警示）；仪表盘以**续费时间轴**开场；手机端**底部标签栏** + 底部抽屉弹窗；线性 SVG 图标；遵循「减少动态效果」；**键盘与读屏可完整操作**（表单标签、弹窗焦点、错误播报） |
-| 🌍 **多语言 / 多主题** | 中文 / English / Русский；浅色 / 深色 / **跟随系统** 等 6 套主题 |
-| 🗄️ **接入你的 MySQL** | 不内置数据库，连接你已有的 MySQL 8，网页向导一键初始化 |
+| 👥 **多用户** | 管理员和普通用户分级，数据按用户隔离；开放注册，注册后直接可用（可选开启邮箱验证和管理员审核） |
+| 💳 **订阅管理** | 周期订阅和一次性买断；自动计算下次续费日，月末日期不漂移；到期和即将到期醒目提示；批量续费、启用、停用、改分类、删除；可拖拽排序 |
+| 📱 **保号场景** | 为运营商保号设计：续费后从当天重新计算周期，提前或过期续费都适用 |
+| 🔔 **14 种通知渠道** | Telegram、飞书、QQ、Bark、Email、Pushplus、Server酱、企业微信（群机器人或自建应用）、钉钉、Discord、Slack、ntfy、Gotify、Webhook；可自定义提前天数，支持免打扰时段和每周汇总 |
+| 🧪 **试用和卡片到期** | 记录试用结束日、取消截止日和付款卡有效期，到点提醒，避免被自动扣费 |
+| 💰 **月度预算** | 仪表盘显示预算进度，超支时预警 |
+| 📚 **内置服务库** | 数百个常用服务自带图标和官网，包括流媒体、AI、游戏、VPS、几十家运营商和 eSIM；图标随镜像发布，国内打开也很快 |
+| 📊 **仪表盘和报表** | 月度和年度支出、支出排行、即将续费、分类明细，报表可导出 CSV |
+| 🗓️ **日历** | 日历视图，并可生成 `.ics` 订阅链接，导入 Apple、Google、Outlook 日历 |
+| 💱 **多货币** | 支持全球主流货币和自定义货币，汇率自动更新 |
+| 💾 **备份和恢复** | 个人 JSON 备份、管理员整站备份和恢复、每日自动加密备份、CSV 导入导出；SQLite 额外保留最近 7 份数据库快照 |
+| 🔒 **安全** | 两步验证（2FA）、API Token、登录失败限流、邮件找回密码、通知密钥加密存储 |
+| 📲 **Android 客户端** | 数据保存在手机本地，可与网页版双向同步；支持到期系统通知、应用锁和后台变更提醒（Alpha 版） |
+| 🔄 **稳定性** | 数据库断线后自动重连，新增字段在启动时自动迁移，升级不丢数据；网页端提示新版本 |
+| 🏠 **集成** | 可安装为 PWA；`/api/integrations/summary` 接口供 Home Assistant 轮询 |
+| 🎨 **界面** | 每张订阅卡片显示剩余周期条，仪表盘以续费时间轴开头，手机端使用底部标签栏；键盘和读屏可以完整操作；中文、English、Русский 三种语言，6 套主题 |
 
 ---
 
-## 🚀 快速开始
+## 🚀 安装
 
-> 镜像已发布到 **Docker Hub** 与 **GHCR**，无需源码、无需构建。
-> 本项目**不内置数据库**，需准备一个可用的 **MySQL 8** 和一个空库，首次访问由网页向导引导配置。
+有四种安装方式，按自己的情况选一种：
 
-### 方式 A：拉取镜像运行（推荐）
+| 方式 | 适合 | 数据库 |
+|---|---|---|
+| [A. Docker + SQLite](#a-docker--sqlite推荐) | 大多数个人和家庭用户、NAS | 内置 SQLite，不需要额外安装 |
+| [B. Docker + MySQL](#b-docker--mysql) | 已经有 MySQL，或需要多实例共用数据库 | 你自己的 MySQL 8 |
+| [C. Linux 一键安装](#c-linux-一键安装不需要-docker) | 没有 Docker 的 VPS 或小主机 | 内置 SQLite |
+| [D. 从源码构建](#d-从源码构建自带-caddy-自动-https) | 想自己改代码，或需要自动 HTTPS | 两种都可以 |
+
+### A. Docker + SQLite（推荐）
 
 ```bash
 docker run -d --name easysub \
   -p 8842:8000 \
-  -e ADMIN_EMAIL=admin@example.com -e TZ=Asia/Shanghai \
+  -e EASYSUB_DB=sqlite \
+  -e TZ=Asia/Shanghai \
   -v easysub_data:/app/data \
   --restart unless-stopped \
   suyijun8182/easysub:latest
 ```
 
-或使用仓库内的 compose 文件：
+也可以用仓库里的 compose 文件：
+
+```bash
+docker compose -f docker-compose.sqlite.yml up -d
+```
+
+设置 `EASYSUB_DB=sqlite` 后，首次启动会自动初始化数据库，跳过安装向导。打开 `http://<服务器IP>:8842` 后注册第一个账号，它就是管理员。所有数据都保存在 `easysub_data` 数据卷里，**这个卷一定要保留**。
+
+> 国内拉取镜像慢，可以改用 GHCR：`ghcr.io/suyijun8182/easysub:latest`
+
+### B. Docker + MySQL
+
+先准备一个 MySQL 8 和一个空数据库，然后：
 
 ```bash
 docker compose -f docker-compose.hub.yml up -d
 ```
 
-> 国内拉取慢可改用 GHCR 镜像：`ghcr.io/suyijun8182/easysub:latest`
+打开 `http://<服务器IP>:8842`，在安装向导中选择“MySQL”，填写连接信息，点“测试”，再点“保存并初始化”，然后注册管理员。
 
-启动后访问 `http://<服务器IP>:8842` → 进入「数据库安装向导」→ 填入 MySQL 连接 → 测试 → 「保存并初始化」→ 注册第一个管理员账号 → 登录。
+> 容器里不能填 `localhost`，要填 MySQL 的实际 IP 或服务名。
 
-### 方式 B：从源码构建（自带 Caddy 自动 HTTPS）
+### C. Linux 一键安装（不需要 Docker）
+
+```bash
+curl -fsSL https://github.com/suyijun8182/easysub/releases/latest/download/install.sh | sudo bash
+```
+
+脚本会自动选择对应架构的程序，校验 SHA256 后安装为 systemd 服务，默认监听 8000 端口。安装完成后，按屏幕上显示的地址打开网页，注册第一个账号。
+
+- **系统要求**：x86_64 或 aarch64，glibc ≥ 2.17（Debian、Ubuntu、CentOS 7 及更新版本均可）。**不支持 Alpine。**
+- **自定义端口和数据目录**：`curl -fsSL …/install.sh | sudo bash -s -- --port 8842 --data /var/lib/easysub`
+- **升级**：再运行一次安装命令即可，脚本会自动识别已安装的版本。新版本启动失败时会自动退回旧版本。
+- **常用命令**：
+
+  ```bash
+  sudo easysub status             # 查看状态、版本、数据目录
+  sudo easysub uninstall          # 卸载程序，保留数据
+  sudo easysub uninstall --purge  # 连同数据一起删除（需要输入 yes 确认）
+  ```
+
+- **文件位置**：程序在 `/opt/easysub`，数据在 `/var/lib/easysub`，配置在 `/etc/easysub/easysub.env`。修改配置后执行 `sudo systemctl restart easysub`。
+- **没有 systemd 或没有 root 权限**：下载 Release 里的 `easysub-linux-x86_64`（或 `aarch64`），在一个可写目录里运行 `./easysub run`，数据会保存在当前目录下的 `easysub-data/`。
+
+### D. 从源码构建（自带 Caddy 自动 HTTPS）
 
 ```bash
 git clone https://github.com/suyijun8182/easysub.git
 cd easysub
-cp .env.example .env          # 可选配置强 JWT_SECRET 和初始管理员；留空时自动生成密钥，首个注册用户为管理员
-vi Caddyfile                  # 可选：把 your-domain.com 改成你的域名
+cp .env.example .env   # 可选：设置强 JWT_SECRET、初始管理员等；留空时会自动生成密钥
+vi Caddyfile           # 把 your-domain.com 改成你的域名
 docker compose up -d --build
 ```
 
-### 🖥️ NAS 部署
+### 🖥️ NAS
 
-群晖 Synology / 威联通 QNAP / 飞牛 fnOS / Unraid / TrueNAS 的图形界面分步教程，详见
-**[各厂家 NAS 安装教程](./各厂家NAS安装教程.md)**。
+群晖、威联通、飞牛 fnOS、Unraid、TrueNAS 的图形界面安装步骤，见 **[各厂家 NAS 安装教程](./各厂家NAS安装教程.md)**。新安装推荐粘贴 `docker-compose.sqlite.yml` 的内容。
 
 ---
 
 ## 🔄 升级
 
-数据都在**你自己的 MySQL** 里，升级只换镜像、不会丢数据；新增数据库列由程序启动时**自动迁移**（幂等）。
+升级只更换程序，数据不会丢失，新增的数据库字段会在启动时自动迁移。
 
 ```bash
-# 方式 A（拉取镜像部署）
-docker compose -f docker-compose.hub.yml pull && docker compose -f docker-compose.hub.yml up -d
+# Docker Compose
+docker compose -f docker-compose.sqlite.yml pull && docker compose -f docker-compose.sqlite.yml up -d
+# （MySQL 部署把文件名换成 docker-compose.hub.yml）
 
-# docker run 部署：拉新镜像后重建容器（保持 -v easysub_data:/app/data 与环境变量不变）
+# docker run：拉取新镜像后重建容器，数据卷和环境变量保持不变
 docker pull suyijun8182/easysub:latest && docker rm -f easysub && docker run -d --name easysub ... suyijun8182/easysub:latest
 
-# 方式 B（源码构建部署）
-git pull && docker compose up -d --build   # 或执行 ./update.sh
+# Linux 一键安装：再运行一次安装命令
+curl -fsSL https://github.com/suyijun8182/easysub/releases/latest/download/install.sh | sudo bash
+
+# 源码部署
+git pull && docker compose up -d --build
 ```
 
-NAS 图形界面：在镜像里重新拉取 `latest`，再重建容器（保持 `/app/data` 映射不变）。保留强自定义 `JWT_SECRET`；自动密钥保存在 `/app/data/jwt_secret`。升级前保存 MySQL 快照、数据卷副本和环境配置，回滚时一并恢复，详见 [v2.0.1 升级说明](docs/update-v2.0.1.md)。
+> 💡 **升级前先备份**：在网页“设置 → 数据备份”导出一份 JSON，管理员可以导出整站备份。旧版本的备份可以直接导入新版本。
 
-> 💡 **升级前先备份**：网页 **设置 → 数据备份** 导出一份 JSON；管理员可用 **整站备份** 导出全部成员数据。
-> 旧版本导出的备份可安全导入新版本。
+### 从 MySQL 换成 SQLite
+
+1. 在旧实例中，用管理员账号到“设置 → 数据备份”导出**整站备份**，记住备份密码。
+2. 用方式 A 或 C 新建一个 SQLite 实例（**使用新的数据卷或数据目录**），注册管理员。
+3. 在新实例的“设置 → 数据备份”中导入整站备份，核对账号、订阅、分类和通知设置。
+4. 确认无误后，把访问入口切换到新实例。旧实例先保留一段时间，以便回退。
+
+上传过的自定义图标不包含在备份里，需要把旧实例 `data/icons` 目录复制到新实例。Android 客户端在切换后需要重新同步一次。
 
 ---
 
 ## ⚙️ 环境变量
 
-| 变量 | 必填 | 说明 |
-|------|:---:|------|
-| `JWT_SECRET` | | 可选强自定义密钥（`openssl rand -hex 32`）；未设置或为示例值时自动保存到 `data/jwt_secret`，必须保留数据卷 |
-| `ADMIN_USERNAME` / `ADMIN_PASSWORD` / `ADMIN_EMAIL` | | 可选初始管理员；不设置密码时，第一个注册的账号就是管理员 |
-| `TZ` | | 时区，如 `Asia/Shanghai` |
-| `REMINDER_SCAN_TIME` | | 每天扫描到期订阅、发送提醒的时间，如 `09:00` |
-| `REQUIRE_ADMIN_APPROVAL` | | 新用户注册后是否需管理员审核，默认 `false`（注册即用） |
-| `TELEGRAM_BOT_TOKEN` | | 可留空，后续在网页「设置」里配置 |
-| `EXCHANGE_API_BASE` / `EXCHANGE_API_URL` | | 汇率数据源（已给默认免费源） |
+都是可选项。
+
+| 变量 | 说明 |
+|---|---|
+| `EASYSUB_DB` | 设为 `sqlite` 时，首次启动自动初始化 SQLite，跳过安装向导；已有数据库配置时不起作用 |
+| `JWT_SECRET` | 登录令牌密钥（可用 `openssl rand -hex 32` 生成）。不设置时会自动生成并保存在 `data/jwt_secret`，所以必须保留数据卷 |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD` / `ADMIN_EMAIL` | 预置管理员账号。不设置密码时，第一个注册的账号就是管理员 |
+| `BACKUP_PASSWORD` | 每日自动备份的加密密码，至少 12 位；留空则不做自动备份 |
+| `TZ` | 时区，例如 `Asia/Shanghai` |
+| `REMINDER_SCAN_TIME` | 每天检查到期并发送提醒的时间，默认 `09:00` |
+| `REQUIRE_ADMIN_APPROVAL` | 新用户注册后是否需要管理员审核，默认 `false` |
+| `OUTBOUND_PRIVATE_ALLOWLIST` | 允许通知请求访问的内网地址，例如 `nas.lan:5000,192.168.1.10:7890` |
+| `TELEGRAM_BOT_TOKEN` | 可以留空，之后在网页设置中填写 |
+| `EXCHANGE_API_BASE` / `EXCHANGE_API_URL` | 汇率数据源，已有默认的免费源 |
 
 完整示例见 [.env.example](./.env.example)。
 
 ---
 
-## 🧰 技术栈
+## 📖 使用说明
 
-| 组件 | 技术 |
-|------|------|
-| 后端 | FastAPI · SQLAlchemy · APScheduler |
-| 前端 | Vue 3 · Vite · vue-i18n · Pinia |
-| 数据库 | MySQL 8（网页向导中配置你已有的实例） |
-| 部署 | Docker（多架构 amd64 / arm64）· Caddy 自动 HTTPS |
-
-数据持久化在**你自己的 MySQL** 中；容器 `/app/data` 仅存数据库连接配置与上传的图标。
-
----
-
-## 📖 使用要点
-
-- **第一次登录**：按网页向导填 MySQL 连接（容器内不要用 `localhost`，填实际 IP / 服务名），初始化后用管理员账号登录。
-- **通知渠道**：**设置 → 通知**，在 14 个标签页里配置各渠道（Telegram / 飞书 / QQ / Bark / Email / Pushplus / Server酱 / 企业微信 / 钉钉 / Discord / Slack / ntfy / Gotify / Webhook），每个可单独启用并「测试通知」。可设免打扰时段与每周汇总。
-  - **企业微信**支持两种模式：**群机器人**（贴一个 Webhook 地址即可）与**自建应用**（企业ID + 应用ID + 应用Secret + 可选 API 代理，可指定成员 / 部门 / 标签，配合「微信插件」可直接在微信里收提醒）。面板内置折叠的取值步骤、企业可信 IP 白名单提示与 Nginx / socat 反代示例，填完可点「检查应用」校验。
-- **安全**：设置里可开启两步验证（2FA）、创建 API Token（供脚本 / Home Assistant 用）、找回密码（需管理员配置 SMTP）。
-- **升级**：设置 → 版本与更新 可检测新版并查看升级命令；有新版时页面顶部会提示。
-- **续费规则**：点击续费后系统从当前时间重新计算下次到期（保号场景），循环订阅可选择按原到期日累加。
-- **批量与排序**：订阅页工具栏点「多选」可勾选多个订阅批量续费 / 启用 / 停用 / 改分类 / 删除；点「排序」用上移 / 下移按钮调整订阅与分类顺序（也可直接拖拽）。
-- **备份**：设置 → 数据备份，导出 / 导入 JSON；管理员可整站备份与恢复全部成员数据。
-- **API 文档**：启动后访问 `http://<host>:8000/docs`（Swagger UI）。
-
-更多文档：[更新日志](./CHANGELOG.md) · [各厂家NAS安装教程](./各厂家NAS安装教程.md) · [Docker Hub 说明](./DOCKERHUB.md) · [技术方案](./技术方案.md)
+- **通知渠道**：在“设置 → 通知”中，每个渠道都可以单独启用并发送测试通知，也可以设置免打扰时段和每周汇总。
+  企业微信支持两种模式：**群机器人**（只要一个 Webhook 地址），以及**自建应用**（填写企业 ID、应用 ID、Secret，可指定成员、部门或标签，配合微信插件可以直接在微信里收到提醒）。面板中附有取值步骤、可信 IP 说明和反向代理示例。
+- **续费的两种方式**：
+  - **从今天起算**：适合保号，从当天重新计算一个周期。
+  - **常规循环**：从原到期日往后加一个周期，提前续费不会损失已付的时间。月末日期会保持在原来的日子，例如 31 号的订阅遇到 2 月会变成 28 号（闰年为 29 号），下个月再回到 31 号。
+- **批量操作和排序**：在订阅页点“多选”可以批量操作，点“排序”可以调整顺序，也可以直接拖拽。
+- **安全**：在设置中可以开启两步验证、创建 API Token（供脚本或 Home Assistant 使用）。找回密码需要管理员先配置 SMTP。
+- **Android 客户端**：从 [Releases](https://github.com/suyijun8182/easysub/releases) 下载 APK。在 App 的“账号与同步”中填写服务器地址和账号即可双向同步。说明见 [Android 0.3.0](docs/android-0.3.0.md)。
+- **API 文档**：启动后访问 `http://<服务器IP>:<端口>/docs`。
 
 ---
 
 ## ❓ 常见问题
 
 <details>
-<summary><b>数据库连接失败？</b></summary>
+<summary><b>应该选 SQLite 还是 MySQL？</b></summary>
 
-- 容器内不能用 `localhost`，要填 MySQL 的实际 IP / 服务名。
-- 确认账号允许从容器网段远程连接，端口对局域网开放，`bind-address` 不是只绑 `127.0.0.1`。
+个人和家庭使用选 SQLite 就够了：不用额外安装数据库，备份时只需保留一个数据卷。如果你已经有 MySQL，或者要让多个实例共用一个数据库，再选 MySQL。之后也可以通过整站备份在两者之间迁移。
 </details>
 
 <details>
-<summary><b>如何升级而不丢数据？</b></summary>
+<summary><b>MySQL 连接失败？</b></summary>
 
-数据都在你的 MySQL 中，升级只换镜像：
-```bash
-docker compose -f docker-compose.hub.yml pull && docker compose -f docker-compose.hub.yml up -d
-```
-建议升级前先在「设置 → 数据备份」导出一份。
+- 容器里不能用 `localhost`，要填 MySQL 的实际 IP 或服务名。
+- 确认这个账号允许从容器所在网段远程连接，并且 MySQL 的 `bind-address` 不是只绑定了 `127.0.0.1`。
+</details>
+
+<details>
+<summary><b>月付订阅的续费日从 31 号变成了 28 号？</b></summary>
+
+这是 v2.1.0 之前的问题。升级后，请把这条订阅的“下次续费日”手动改回正确日期一次，之后就不会再漂移了。
+</details>
+
+<details>
+<summary><b>Linux 一键安装提示“不支持 Alpine”或 glibc 版本太低？</b></summary>
+
+安装包里的 Python 运行时需要 glibc 2.17 或更高版本，而 Alpine 使用的是 musl。这种情况请改用 Docker 部署。
 </details>
 
 <details>
 <summary><b>Telegram 收不到消息？</b></summary>
 
-确认 Bot Token 正确、已和机器人对过话拿到 Chat ID；中国大陆需在设置里配置代理。
+确认 Bot Token 正确，并且已经和机器人对话过、获取了 Chat ID。在中国大陆需要在设置中配置代理。
 </details>
 
 <details>
 <summary><b>支持 HTTPS 吗？</b></summary>
 
-支持。方式 B 自带 Caddy 自动签发证书，编辑 `Caddyfile` 填域名并把 DNS 解析到服务器即可。
+支持。方式 D 自带 Caddy，会自动申请证书：在 `Caddyfile` 中填写域名，并把域名的 DNS 解析到服务器即可。其他方式可以放在你自己的反向代理后面。
 </details>
 
 ---
 
+## 🧰 技术栈
+
+| 组件 | 技术 |
+|---|---|
+| 后端 | FastAPI · SQLAlchemy · APScheduler |
+| 前端 | Vue 3 · Vite · vue-i18n · Pinia |
+| 数据库 | SQLite（默认）或 MySQL 8 |
+| Android | Capacitor（数据保存在手机本地，可选同步） |
+| 部署 | Docker（amd64 / arm64）· Linux 单文件安装器（Rust）· Caddy 自动 HTTPS |
+
 ## 🤝 贡献
 
-欢迎 Issue 与 PR！Fork → 建分支 → 提交 → 发起 Pull Request，详见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
+欢迎提交 Issue 和 PR，详见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
-仓库已配置 GitHub Actions：推送到 `main` 或打 `v*` tag 会自动构建并发布多架构镜像到 Docker Hub 和 GHCR，同步 Docker Hub 说明，并按 CHANGELOG 自动创建 GitHub Release。
+推送到 `main` 或打 `v*` tag 后，GitHub Actions 会自动构建多架构镜像并发布到 Docker Hub 和 GHCR，同步 Docker Hub 页面说明，创建 GitHub Release，并编译 Linux 安装包。
 
 ## 📝 许可
 
@@ -259,20 +279,24 @@ Telegram [@Aiden_SU](https://t.me/Aiden_SU) · 📧 aidensu8182@gmail.com
 
 ## English
 
-**Self-hosted subscription / renewal manager that reminds you over 14 channels (Telegram, WeCom, Feishu …) so you never let a subscription — or a SIM keep-alive plan — expire.**
+**A self-hosted subscription and renewal manager. It reminds you over 14 channels (Telegram, WeCom, Feishu, Email, ntfy, Webhook and more), so no subscription or SIM keep-alive plan expires unnoticed.**
 
-**Highlights:** multi-user (JWT, admin/user roles, open sign-up — admin approval optional) · redesigned UI with per-card **remaining-cycle bar**, **renewal timeline** dashboard and mobile **bottom tab bar** · recurring & one-time subscriptions with **bulk actions** (renew / enable / disable / move / delete) and drag-or-button reordering · keyboard & screen-reader friendly · **14 notification channels** (Telegram / Feishu / QQ / Bark / Email / Pushplus / ServerChan / WeCom / DingTalk / Discord / Slack / ntfy / Gotify / Webhook) with quiet hours & weekly digest · trial/cancel/card-expiry tracking · monthly budget · built-in service library (100s of presets incl. dozens of carriers & eSIM) · dashboard & reports + **CSV export** · Apple-style calendar + **.ics feed** · multi-currency with live FX · per-user **and admin full-site** backup/restore + **daily auto-backup** + CSV import/export · **2FA · API tokens · encrypted secrets** · **auto DB reconnect** & auto-migration · **PWA installable** · **in-app update check** · Home Assistant integration · multi-language (中/EN/RU) · 6 themes incl. system-follow · connects to **your existing MySQL 8** (no bundled DB).
+**New in v2.1.0:** SQLite is now the default database, so no MySQL is needed (existing MySQL setups keep working) · a one-command Linux installer that needs no Docker (x86_64 / aarch64, systemd, upgrades that roll back on failure) · month-end renewals stay on their day (Jan 31 → Feb 28 → Mar 31), and the renewal preview no longer shows a day early in time zones west of UTC.
 
-**Android 0.3.0 Alpha:** adds system renewal notifications, an app lock with device authentication, and background change alerts. Install over the same-signed 0.2.0 to keep local data; the APK still uses a debug signature. See the [Android 0.3.0 notes](docs/android-0.3.0.md) (Chinese).
+**Features:** multi-user with open sign-up · recurring and one-time subscriptions with bulk actions and drag reordering · 14 notification channels with quiet hours and a weekly digest · trial, cancel-by and card-expiry tracking · monthly budget · built-in library of hundreds of services · dashboard, reports and CSV export · calendar with an `.ics` feed · multi-currency with live exchange rates · personal and full-site backups plus daily encrypted auto-backups · 2FA, API tokens and encrypted secrets · Android app (local-first, optional two-way sync) · PWA · Home Assistant endpoint · Chinese, English and Russian · 6 themes.
 
 ```bash
-docker run -d --name easysub -p 8842:8000 \
-  -v easysub_data:/app/data --restart unless-stopped \
-  suyijun8182/easysub:latest
+# Docker + SQLite (recommended), then open http://<host>:8842
+docker run -d --name easysub -p 8842:8000 -e EASYSUB_DB=sqlite \
+  -v easysub_data:/app/data --restart unless-stopped suyijun8182/easysub:latest
+
+# Linux without Docker (glibc ≥ 2.17, not Alpine), listens on port 8000
+curl -fsSL https://github.com/suyijun8182/easysub/releases/latest/download/install.sh | sudo bash
 ```
 
-Open `http://<host>:8842`, finish the DB wizard (connect your MySQL 8), and register the first administrator. Without JWT_SECRET, a persistent key is generated in /app/data/jwt_secret; keep the data volume. Build from source: `git clone https://github.com/suyijun8182/easysub.git && cd easysub && cp .env.example .env && docker compose up -d --build`.
-NAS guides: [各厂家NAS安装教程.md](./各厂家NAS安装教程.md) · Docker Hub: [suyijun8182/easysub](https://hub.docker.com/r/suyijun8182/easysub) · License MIT · TG [@Aiden_SU](https://t.me/Aiden_SU).
+Register after opening the page. The first account becomes the administrator. Keep the data volume, which also holds the auto-generated JWT key. To use your own MySQL 8 instead, run `docker compose -f docker-compose.hub.yml up -d` and choose MySQL in the setup wizard. If a monthly renewal date already drifted to the 28th before v2.1.0, set the correct date once by hand.
+
+NAS guides: [各厂家NAS安装教程.md](./各厂家NAS安装教程.md) · Docker Hub: [suyijun8182/easysub](https://hub.docker.com/r/suyijun8182/easysub) · [Changelog](./CHANGELOG.md) · MIT License · TG [@Aiden_SU](https://t.me/Aiden_SU)
 
 ---
 
@@ -280,17 +304,21 @@ NAS guides: [各厂家NAS安装教程.md](./各厂家NAS安装教程.md) · Dock
 
 ## Русский
 
-**Самостоятельно размещаемый менеджер подписок с напоминаниями по 14 каналам (Telegram, WeCom, Feishu …) — чтобы ни одна подписка (и SIM для поддержания номера) не истекла.**
+**Самостоятельно размещаемый менеджер подписок и продлений. Напоминает о продлении по 14 каналам (Telegram, WeCom, Feishu, Email, ntfy, Webhook и др.), чтобы ни одна подписка и ни одна SIM-карта не истекла незаметно.**
 
-**Возможности:** мультипользовательский режим (открытая регистрация, одобрение администратором — по желанию) · новый интерфейс: **полоса оставшегося периода** на карточках, **лента продлений** на дашборде, **нижняя панель вкладок** на телефоне · регулярные и разовые подписки с **массовыми действиями** (продление / вкл. / откл. / перенос / удаление) и сортировкой перетаскиванием или кнопками · доступность с клавиатуры и для скринридеров · **14 каналов уведомлений** (Telegram / Feishu / QQ / Bark / Email / Pushplus / ServerChan / WeCom / DingTalk / Discord / Slack / ntfy / Gotify / Webhook), тихие часы и еженедельная сводка · отслеживание пробного периода/срока карты · месячный бюджет · библиотека сервисов (сотни пресетов, десятки операторов и eSIM) · дашборд и отчёты + **экспорт CSV** · календарь Apple + **.ics** · мультивалютность · бэкап пользователя **и всего сайта** + **ежедневный авто-бэкап** + CSV импорт/экспорт · **2FA · API-токены · шифрование секретов** · авто-переподключение к БД · **PWA** · **проверка обновлений** · интеграция Home Assistant · мультиязычность (中/EN/RU) · 6 тем · подключение к **вашему MySQL 8**.
+**Новое в v2.1.0:** SQLite стал базой данных по умолчанию, MySQL больше не нужен (существующие установки с MySQL продолжают работать) · установка на Linux одной командой без Docker (x86_64 / aarch64, systemd, автоматический откат при неудачном обновлении) · даты продления в конце месяца больше не сдвигаются (31.01 → 28.02 → 31.03), а предпросмотр продления больше не показывает дату на день раньше в часовых поясах западнее UTC.
 
-**Android 0.3.0 Alpha:** системные уведомления о продлении, блокировка приложения с системной аутентификацией и фоновые уведомления об изменениях. Установка поверх 0.2.0 с той же подписью сохраняет локальные данные; APK пока подписан отладочным ключом. См. [описание Android 0.3.0](docs/android-0.3.0.md) (на китайском).
+**Возможности:** несколько пользователей и открытая регистрация · регулярные и разовые подписки, массовые действия, сортировка перетаскиванием · 14 каналов уведомлений, тихие часы и еженедельная сводка · отслеживание пробного периода и срока действия карты · месячный бюджет · библиотека из сотен сервисов · дашборд, отчёты и экспорт в CSV · календарь и ссылка `.ics` · мультивалютность · резервные копии пользователя и всего сайта, ежедневные зашифрованные копии · 2FA, API-токены, шифрование секретов · приложение для Android (данные на телефоне, синхронизация по желанию) · PWA · интеграция с Home Assistant · интерфейс на китайском, английском и русском · 6 тем.
 
 ```bash
-docker run -d --name easysub -p 8842:8000 \
-  -v easysub_data:/app/data --restart unless-stopped \
-  suyijun8182/easysub:latest
+# Docker + SQLite (рекомендуется), затем откройте http://<host>:8842
+docker run -d --name easysub -p 8842:8000 -e EASYSUB_DB=sqlite \
+  -v easysub_data:/app/data --restart unless-stopped suyijun8182/easysub:latest
+
+# Linux без Docker (glibc ≥ 2.17, Alpine не поддерживается), порт 8000
+curl -fsSL https://github.com/suyijun8182/easysub/releases/latest/download/install.sh | sudo bash
 ```
 
-Откройте `http://<host>:8842`, завершите мастер настройки БД (ваш MySQL 8) и зарегистрируйте первого администратора. Без JWT_SECRET ключ сохраняется в /app/data/jwt_secret; сохраняйте том данных.
-Инструкции для NAS: [各厂家NAS安装教程.md](./各厂家NAS安装教程.md) · Docker Hub: [suyijun8182/easysub](https://hub.docker.com/r/suyijun8182/easysub) · Лицензия MIT · TG [@Aiden_SU](https://t.me/Aiden_SU).
+После открытия страницы зарегистрируйтесь: первая учётная запись получает права администратора. Сохраняйте том данных: в нём же лежит автоматически созданный ключ JWT.
+
+Инструкции для NAS: [各厂家NAS安装教程.md](./各厂家NAS安装教程.md) · Docker Hub: [suyijun8182/easysub](https://hub.docker.com/r/suyijun8182/easysub) · [История изменений](./CHANGELOG.md) · Лицензия MIT · TG [@Aiden_SU](https://t.me/Aiden_SU)
