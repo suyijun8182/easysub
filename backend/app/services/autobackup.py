@@ -7,6 +7,8 @@
 import glob
 import json
 import os
+import sqlite3
+from contextlib import closing
 from datetime import datetime
 
 from app import database
@@ -16,6 +18,27 @@ from app.routers.backup import build_full_backup
 
 BACKUP_DIR = os.path.join("data", "backups")
 KEEP = 14  # 保留最近份数
+
+
+def sqlite_snapshot(stamp: str) -> str | None:
+    if database.engine is None or database.engine.dialect.name != "sqlite":
+        return None
+    os.makedirs(BACKUP_DIR, mode=0o700, exist_ok=True)
+    path = os.path.join(BACKUP_DIR, f"sqlite-{stamp}.db")
+    temporary = path + ".tmp"
+    source = database.engine.raw_connection()
+    try:
+        with closing(sqlite3.connect(temporary)) as target:
+            source.driver_connection.backup(target)
+        os.chmod(temporary, 0o600)
+        os.replace(temporary, path)
+    finally:
+        source.close()
+        if os.path.exists(temporary):
+            os.remove(temporary)
+    for old in sorted(glob.glob(os.path.join(BACKUP_DIR, "sqlite-*.db")))[:-7]:
+        os.remove(old)
+    return path
 
 
 def _prune() -> None:
@@ -56,6 +79,7 @@ def run_auto_backup() -> dict:
         if temporary and os.path.exists(temporary):
             os.remove(temporary)
     _prune()
+    sqlite_snapshot(stamp)
     return {"ok": True, "file": os.path.basename(path), "users": len(payload["users"])}
 
 

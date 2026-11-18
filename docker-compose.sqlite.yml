@@ -1,0 +1,15 @@
+# 新用户推荐：免安装数据库，数据保存在 app_data 卷。
+services:
+  app:
+    image: suyijun8182/easysub:latest
+    restart: unless-stopped
+    ports:
+      - "8842:8000"
+    environment:
+      EASYSUB_DB: sqlite
+      TZ: Asia/Shanghai
+      # BACKUP_PASSWORD: 请设置至少12位的备份密码
+    volumes:
+      - app_data:/app/data
+volumes:
+  app_data:

@@ -5,6 +5,12 @@
       <h1>{{ t('setup.title') }}</h1>
       <p class="sub">{{ t('setup.subtitle') }}</p>
 
+      <label for="st-engine">{{ t('setup.engine') }}</label>
+      <select id="st-engine" v-model="cfg.engine" @change="ok = false; msg = ''">
+        <option value="sqlite">{{ t('setup.sqlite') }}</option>
+        <option value="mysql">{{ t('setup.mysql') }}</option>
+      </select>
+      <template v-if="cfg.engine === 'mysql'">
       <div class="row">
         <div style="flex:2">
           <label for="st-host">{{ t('setup.host') }}</label>
@@ -29,6 +35,7 @@
       <input id="st-db" v-model="cfg.database" placeholder="baohao" />
 
       <p class="tip"><span class="tip-i" v-html="icon('note')"></span><span>{{ t('setup.tip') }}</span></p>
+      </template>
 
       <p v-if="msg" class="note" :class="ok ? 'ok' : 'late'" role="status">{{ msg }}</p>
 
@@ -57,7 +64,8 @@ import { icon } from '../icons'
 import axios from 'axios'
 
 const { t, locale } = useI18n()
-const cfg = reactive({ host: 'db', port: 3306, user: 'baohao', password: '', database: 'baohao' })
+const cfg = reactive({ engine: 'sqlite', host: 'db', port: 3306, user: 'baohao', password: '', database: 'baohao' })
+const payload = () => cfg.engine === 'sqlite' ? { engine: 'sqlite', path: 'data/easysub.db' } : { ...cfg }
 const msg = ref('')
 const ok = ref(false)
 const testing = ref(false)
@@ -69,7 +77,7 @@ function setLang(l) { locale.value = l; localStorage.setItem('locale', l) }
 async function testConn() {
   busy.value = true; testing.value = true; msg.value = ''; ok.value = false
   try {
-    const { data } = await axios.post('/api/setup/test', cfg)
+    const { data } = await axios.post('/api/setup/test', payload())
     ok.value = true; msg.value = `${t('setup.testOk')}: ${data.message || ''}`
   } catch (e) {
     ok.value = false; msg.value = `${t('setup.testFail')}: ${e.response?.data?.detail || e.message}`
@@ -79,7 +87,7 @@ async function testConn() {
 async function save() {
   busy.value = true; saving.value = true; msg.value = ''
   try {
-    await axios.post('/api/setup/save', cfg)
+    await axios.post('/api/setup/save', payload())
     msg.value = t('setup.done')
     setTimeout(() => { window.location.href = '/login' }, 800)
   } catch (e) {

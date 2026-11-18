@@ -3,7 +3,8 @@ import { createI18n } from 'vue-i18n'
 const zh = {
   app: { title: '省心订阅 EasySub', tagline: '订阅 / 续费 / 保号，一个都不漏' },
   setup: {
-    title: '数据库安装向导', subtitle: '首次使用，请配置 MySQL 数据库连接',
+    engine: '数据库类型', sqlite: 'SQLite（推荐，免安装，适合个人和家庭）', mysql: 'MySQL（已有 MySQL 或多实例）',
+    title: '数据库安装向导', subtitle: '首次使用，请选择数据库类型',
     host: '主机地址', port: '端口', user: '用户名', password: '密码', database: '数据库名',
     test: '测试连接', save: '保存并初始化', testing: '测试中...', saving: '初始化中...',
     testOk: '连接成功', testFail: '连接失败', tip: '提示：若数据库也在 Docker Compose 内，主机填服务名（如 db）；否则填 NAS 局域网 IP。',
@@ -200,7 +201,8 @@ const zh = {
 const en = {
   app: { title: 'EasySub', tagline: 'Never miss a renewal again' },
   setup: {
-    title: 'Database Setup', subtitle: 'First run — configure your MySQL connection',
+    engine: '数据库类型', sqlite: 'SQLite（推荐，免安装，适合个人和家庭）', mysql: 'MySQL（已有 MySQL 或多实例）',
+    title: 'Database Setup', subtitle: '首次使用，请选择数据库类型',
     host: 'Host', port: 'Port', user: 'User', password: 'Password', database: 'Database',
     test: 'Test connection', save: 'Save & initialize', testing: 'Testing...', saving: 'Initializing...',
     testOk: 'Connected', testFail: 'Connection failed', tip: 'Tip: if MySQL runs in the same Compose, use the service name (e.g. db) as host; otherwise use the NAS LAN IP.',
@@ -396,7 +398,8 @@ const en = {
 const ru = {
   app: { title: 'EasySub', tagline: 'Не пропустите ни одного продления' },
   setup: {
-    title: 'Настройка базы данных', subtitle: 'Первый запуск — укажите подключение MySQL',
+    engine: '数据库类型', sqlite: 'SQLite（推荐，免安装，适合个人和家庭）', mysql: 'MySQL（已有 MySQL 或多实例）',
+    title: 'Настройка базы данных', subtitle: '首次使用，请选择数据库类型',
     host: 'Хост', port: 'Порт', user: 'Пользователь', password: 'Пароль', database: 'База данных',
     test: 'Проверить', save: 'Сохранить и инициализировать', testing: 'Проверка...', saving: 'Инициализация...',
     testOk: 'Подключено', testFail: 'Ошибка подключения', tip: 'Подсказка: если MySQL в том же Compose — укажите имя сервиса (например db); иначе IP NAS в локальной сети.',

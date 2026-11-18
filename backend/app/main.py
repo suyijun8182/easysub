@@ -36,6 +36,7 @@ from app.routers.system import APP_VERSION
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    bootstrap.auto_configure()
     # 若磁盘上已有数据库配置，则尝试初始化；否则进入安装向导模式。
     # 宿主机/容器异常重启时，app 常比 MySQL 先起来——这里做多次重试，
     # 避免因 MySQL 尚未就绪而一次性失败、掉进「需要重新配置数据库」的状态。

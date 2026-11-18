@@ -1,0 +1,9 @@
+{
+  "export_version": 1, "app": "EasySub", "scope": "all",
+  "users": [{
+    "user": {"username": "migrated", "email": "migrated@example.test", "locale": "zh", "notify_config": {"telegram": {"enabled": true, "bot_token": "fixture-token", "chat_id": "123"}}},
+    "categories": [{"id": 91, "name": "家庭", "icon": "home", "color": "#123456"}],
+    "payment_methods": [], "bundles": [], "currencies": [],
+    "subscriptions": [{"name": "月末迁移", "amount": 19.99, "currency": "CNY", "category_id": 91, "billing_type": "recurring", "cycle": "month", "cycle_count": 1, "start_date": "2027-01-31", "next_renewal_date": "2027-02-28", "billing_anchor_day": 31, "notes": "旧 MySQL 完整备份字段", "is_active": true}]
+  }]
+}

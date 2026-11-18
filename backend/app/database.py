@@ -2,7 +2,7 @@
 import time
 
 from fastapi import HTTPException
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 
@@ -25,13 +25,23 @@ def init_engine(url: str):
     connect_args = {}
     if url.startswith("mysql"):
         connect_args = {"connect_timeout": 10}
+    elif url.startswith("sqlite"):
+        connect_args = {"check_same_thread": False, "timeout": 30}
     engine = create_engine(
         url,
         pool_pre_ping=True,
-        pool_recycle=1800,
         connect_args=connect_args,
-        **({"isolation_level": "READ COMMITTED"} if url.startswith("mysql") else {}),
+        **({"isolation_level": "READ COMMITTED", "pool_recycle": 1800} if url.startswith("mysql") else {}),
     )
+    if url.startswith("sqlite"):
+        @event.listens_for(engine, "connect")
+        def sqlite_pragmas(connection, _):
+            cursor = connection.cursor()
+            try:
+                for pragma in ("journal_mode=WAL", "foreign_keys=ON", "busy_timeout=30000", "synchronous=NORMAL"):
+                    cursor.execute("PRAGMA " + pragma)
+            finally:
+                cursor.close()
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     return engine
 
@@ -64,6 +74,7 @@ def connect_from_saved_config(force: bool = False) -> bool:
     from app.secrets_store import rotate_legacy_secrets_safely
     from app.services import scheduler
 
+    bootstrap.auto_configure()
     if not bootstrap.config_exists():
         return False
     try:

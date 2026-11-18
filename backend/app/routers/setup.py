@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from typing import Annotated, Literal
+from pydantic import BaseModel, Field, RootModel, field_validator, model_validator
 
 from app import bootstrap, database, migrate
 from app.seed import seed_all
@@ -9,12 +10,31 @@ from app.services import scheduler
 router = APIRouter(prefix="/api/setup", tags=["setup"])
 
 
-class DBConfig(BaseModel):
+class MySQLConfig(BaseModel):
+    engine: Literal["mysql"] = "mysql"
     host: str
     port: int = 3306
     user: str
     password: str = ""
     database: str
+
+
+class SQLiteConfig(BaseModel):
+    engine: Literal["sqlite"]
+    path: str = "data/easysub.db"
+
+    @field_validator("path")
+    @classmethod
+    def safe_path(cls, value):
+        bootstrap.sqlite_path(value)
+        return value
+
+
+class DBConfig(RootModel[Annotated[SQLiteConfig | MySQLConfig, Field(discriminator="engine")]]):
+    @model_validator(mode="before")
+    @classmethod
+    def legacy_mysql(cls, value):
+        return {"engine": "mysql", **value} if isinstance(value, dict) else value
 
 
 def _initialize(cfg: dict) -> None:
