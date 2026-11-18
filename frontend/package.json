@@ -8,7 +8,7 @@
     "dev": "vite",
     "preview:android": "vite --config vite.android-preview.config.js",
     "build:android-preview": "vite build --config vite.android-preview.config.js",
-    "test:android-preview": "node --test src/android-preview/*.test.js",
+    "test:android-preview": "node --test src/android-preview/*.test.js src/billing-date.test.js src/billing-offline.test.js",
     "test:sync": "node --test src/sync/*.test.js",
     "i18n:check": "node scripts/check-i18n.mjs",
     "prebuild": "node scripts/check-i18n.mjs",

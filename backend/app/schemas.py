@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 # ---------- Auth ----------
@@ -108,6 +108,7 @@ class CurrencyIn(BaseModel):
 
 # ---------- Subscription ----------
 class SubscriptionIn(BaseModel):
+    billing_anchor_day: int | None = Field(default=None, ge=1, le=31)
     name: str
     plan: str | None = None
     icon: str | None = None
@@ -139,6 +140,7 @@ class SubscriptionIn(BaseModel):
 
 
 class SubscriptionUpdate(BaseModel):
+    billing_anchor_day: int | None = Field(default=None, ge=1, le=31)
     name: str | None = None
     plan: str | None = None
     icon: str | None = None
@@ -170,6 +172,7 @@ class SubscriptionUpdate(BaseModel):
 
 
 class SubscriptionOut(BaseModel):
+    billing_anchor_day: int | None = None
     model_config = ConfigDict(from_attributes=True)
     id: int
     name: str

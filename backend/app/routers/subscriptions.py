@@ -9,7 +9,7 @@ from sqlalchemy import delete, or_, select
 from sqlalchemy.orm import Session
 
 from app import activity, icon_library
-from app.billing import add_cycle, compute_next_renewal
+from app.billing import add_cycle, compute_next_renewal, initial_anchor
 from app.database import get_db
 from app.deps import get_current_user
 from app.models import Category, NotificationLog, Subscription, User
@@ -57,6 +57,7 @@ def create_sub(
 ):
     data = payload.model_dump()
     data["start_date"] = data.get("start_date") or date.today()
+    data["billing_anchor_day"] = initial_anchor(data["cycle"], data["start_date"], data.get("next_renewal_date"), data.get("billing_anchor_day"))
     # 附加信息：常用订阅名自动补全官方网站
     if not data.get("url"):
         site = icon_library.website_for_name(data.get("name", ""))
@@ -64,7 +65,7 @@ def create_sub(
             data["url"] = site
     if data["billing_type"] == "recurring" and not data.get("next_renewal_date"):
         data["next_renewal_date"] = compute_next_renewal(
-            data["start_date"], data["cycle"], data["cycle_count"]
+            data["start_date"], data["cycle"], data["cycle_count"], anchor_day=data["billing_anchor_day"]
         )
     if data["billing_type"] == "one_time":
         data["next_renewal_date"] = None
@@ -80,7 +81,7 @@ def create_sub(
 # ---------- CSV 批量导入 / 导出（须声明在 /{sub_id} 之前，避免路径被吞） ----------
 _CSV_FIELDS = [
     "name", "plan", "category", "amount", "currency", "billing_type", "cycle",
-    "cycle_count", "start_date", "next_renewal_date", "remark", "url", "remind_days_before",
+    "cycle_count", "start_date", "next_renewal_date", "remark", "url", "remind_days_before", "billing_anchor_day",
 ]
 
 
@@ -100,7 +101,7 @@ def export_csv(user: User = Depends(get_current_user), db: Session = Depends(get
             s.billing_type, s.cycle, s.cycle_count,
             s.start_date.isoformat() if s.start_date else "",
             s.next_renewal_date.isoformat() if s.next_renewal_date else "",
-            s.remark or "", s.url or "", s.remind_days_before,
+            s.remark or "", s.url or "", s.remind_days_before, s.billing_anchor_day or "",
         ])
     return PlainTextResponse("﻿" + buf.getvalue(), media_type="text/csv; charset=utf-8",
                              headers={"Content-Disposition": "attachment; filename=easysub-subscriptions.csv"})
@@ -160,8 +161,13 @@ def import_csv(payload: CsvImportIn, user: User = Depends(get_current_user), db:
             remark=(row.get("remark") or None), url=(row.get("url") or None),
             remind_days_before=(row.get("remind_days_before") or "7,6,5,4,3,2,1").strip() or "7,6,5,4,3,2,1",
         )
+        try:
+            anchor = int(row["billing_anchor_day"]) if row.get("billing_anchor_day") else None
+            sub.billing_anchor_day = initial_anchor(sub.cycle, start, sub.next_renewal_date, anchor)
+        except (ValueError, TypeError):
+            raise HTTPException(422, "锚定日必须为 1–31")
         if billing_type == "recurring" and not sub.next_renewal_date:
-            sub.next_renewal_date = compute_next_renewal(start, sub.cycle, sub.cycle_count)
+            sub.next_renewal_date = compute_next_renewal(start, sub.cycle, sub.cycle_count, anchor_day=sub.billing_anchor_day)
         if billing_type == "one_time":
             sub.next_renewal_date = None
             sub.auto_renew = False
@@ -190,8 +196,14 @@ def update_sub(
     sub = db.get(Subscription, sub_id)
     if not sub or sub.user_id != user.id:
         raise HTTPException(404, "订阅不存在")
-    for k, v in payload.model_dump(exclude_unset=True).items():
+    changes = payload.model_dump(exclude_unset=True)
+    changes.pop("billing_anchor_day", None)
+    if "next_renewal_date" in changes and changes["next_renewal_date"] != sub.next_renewal_date:
+        sub.billing_anchor_day = changes["next_renewal_date"].day if changes["next_renewal_date"] else None
+    for k, v in changes.items():
         setattr(sub, k, v)
+    if sub.cycle not in ("month", "year"):
+        sub.billing_anchor_day = None
     if sub.billing_type == "one_time":
         sub.next_renewal_date = None
     db.commit()
@@ -231,10 +243,11 @@ def renew_sub(
 
     if mode == "due":
         base = sub.next_renewal_date or today
-        sub.next_renewal_date = add_cycle(base, sub.cycle, sub.cycle_count)
+        sub.next_renewal_date = add_cycle(base, sub.cycle, sub.cycle_count, sub.billing_anchor_day)
     else:  # today
         sub.start_date = today
-        sub.next_renewal_date = add_cycle(today, sub.cycle, sub.cycle_count)
+        sub.billing_anchor_day = initial_anchor(sub.cycle, today, today)
+        sub.next_renewal_date = add_cycle(today, sub.cycle, sub.cycle_count, sub.billing_anchor_day)
 
     sub.last_renewed_at = today
     db.commit()

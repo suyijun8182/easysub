@@ -12,6 +12,7 @@ from sqlalchemy.engine import Engine
 
 # (表名, 列名, 列定义) —— 仅追加，不删除/改名，确保安全幂等
 _COLUMNS = [
+    ("subscriptions", "billing_anchor_day", "SMALLINT NULL"),
     ("users", "email_code_sent_at", "DATETIME NULL"),
     ("users", "auth_version", "INTEGER NOT NULL DEFAULT 0"),
     ("users", "totp_pending_secret", "VARCHAR(64) NULL"),
@@ -47,36 +48,20 @@ _COLUMNS = [
 
 
 def _column_exists(conn, table: str, column: str) -> bool:
-    row = conn.execute(
-        text(
-            "SELECT COUNT(*) FROM information_schema.columns "
-            "WHERE table_schema = DATABASE() AND table_name = :t AND column_name = :c"
-        ),
-        {"t": table, "c": column},
-    ).scalar()
-    return bool(row)
+    return any(c['name'] == column for c in inspect(conn).get_columns(table))
 
 
 def _table_exists(conn, table: str) -> bool:
-    row = conn.execute(
-        text(
-            "SELECT COUNT(*) FROM information_schema.tables "
-            "WHERE table_schema = DATABASE() AND table_name = :t"
-        ),
-        {"t": table},
-    ).scalar()
-    return bool(row)
+    return inspect(conn).has_table(table)
 
 
 def run_migrations(engine: Engine) -> None:
-    """幂等补齐 MySQL 列，并迁移各数据库中的旧 API Token。"""
+    """幂等补齐 MySQL / SQLite 列，并迁移旧 API Token。"""
     if engine is None:
         return
-    if not engine.url.get_backend_name().startswith("mysql"):
-        _hash_legacy_api_tokens(engine)
-        return
+    mysql = engine.dialect.name == "mysql"
     with engine.begin() as conn:
-        for table in ("sync_records", "sync_changes", "sync_receipts"):
+        for table in (("sync_records", "sync_changes", "sync_receipts") if mysql else ()):
             data_type = conn.execute(text(
                 "SELECT DATA_TYPE FROM information_schema.columns "
                 "WHERE table_schema = DATABASE() AND table_name = :t AND column_name = 'payload'"
@@ -91,7 +76,8 @@ def run_migrations(engine: Engine) -> None:
                     continue
                 if _column_exists(conn, table, column):
                     continue
-                conn.execute(text(f"ALTER TABLE `{table}` ADD COLUMN `{column}` {ddl}"))
+                rendered = ddl if mysql else ddl.replace("TINYINT(1)", "INTEGER").replace("DOUBLE", "REAL")
+                conn.execute(text(f"ALTER TABLE `{table}` ADD COLUMN `{column}` {rendered}"))
                 print(f"[migrate] 已为 {table} 添加列 {column}")
             except Exception as e:  # noqa: BLE001
                 print(f"[migrate] 跳过 {table}.{column}：{e}")

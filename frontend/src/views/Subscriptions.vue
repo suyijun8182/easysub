@@ -439,6 +439,7 @@
 </template>
 
 <script setup>
+import { addCycle, todayYMD } from '../billing-date.js'
 import { computed, inject, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -535,32 +536,12 @@ const lateN = computed(() => subs.value.filter((s) => statusOf(s) === 'late').le
 const soonN = computed(() => subs.value.filter((s) => statusOf(s) === 'soon').length)
 
 /* ---------- 客户端续费日计算（与后端 billing.add_cycle 对齐） ---------- */
-function addMonths(d, months) {
-  const base = new Date(d)
-  const day = base.getDate()
-  const target = new Date(base.getFullYear(), base.getMonth() + months, 1)
-  const dim = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate()
-  target.setDate(Math.min(day, dim))
-  return target
-}
-function addCycle(dateStr, cycle, count) {
-  const n = Math.max(1, count || 1)
-  const d = new Date(dateStr)
-  if (cycle === 'day') { d.setDate(d.getDate() + n); return d }
-  if (cycle === 'week') { d.setDate(d.getDate() + n * 7); return d }
-  if (cycle === 'year') return addMonths(d, n * 12)
-  return addMonths(d, n)
-}
-function toISO(d) {
-  const x = new Date(d)
-  return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`
-}
 
 function blank() {
   return {
     id: null, name: '', plan: '', icon: '', amount: 0, currency: 'CNY',
     category_id: null, payment_method_id: null, bundle_id: null, billing_type: 'recurring',
-    cycle: 'month', cycle_count: 1, start_date: new Date().toISOString().slice(0, 10),
+    cycle: 'month', cycle_count: 1, start_date: todayYMD(),
     next_renewal_date: '', end_date: null, url: '', notes: '', remark: '', ipv4: '', ipv6: '',
     remind_days_before: '7,6,5,4,3,2,1', auto_renew: true, is_active: true,
     show_in_calendar: true, family_members: [],
@@ -572,7 +553,7 @@ let suppressAuto = false
 function recomputeNext() {
   if (form.value.billing_type !== 'recurring') { form.value.next_renewal_date = ''; return }
   if (form.value.start_date) {
-    form.value.next_renewal_date = toISO(addCycle(form.value.start_date, form.value.cycle, form.value.cycle_count))
+    form.value.next_renewal_date = addCycle(form.value.start_date, form.value.cycle, form.value.cycle_count)
   }
 }
 watch(
@@ -898,12 +879,12 @@ async function save() {
 function askRenew(s) { renewTarget.value = s; renewBulk.value = false; renewMode.value = 'today' }
 function closeRenew() { renewTarget.value = null; renewBulk.value = false }
 const previewToday = computed(() =>
-  renewTarget.value ? toISO(addCycle(new Date(), renewTarget.value.cycle, renewTarget.value.cycle_count)) : ''
+  renewTarget.value ? addCycle(todayYMD(), renewTarget.value.cycle, renewTarget.value.cycle_count) : ''
 )
 const previewDue = computed(() => {
   if (!renewTarget.value) return ''
-  const base = renewTarget.value.next_renewal_date ? new Date(renewTarget.value.next_renewal_date) : new Date()
-  return toISO(addCycle(base, renewTarget.value.cycle, renewTarget.value.cycle_count))
+  const base = renewTarget.value.next_renewal_date || todayYMD()
+  return addCycle(base, renewTarget.value.cycle, renewTarget.value.cycle_count, renewTarget.value.billing_anchor_day)
 })
 async function confirmRenew() {
   if (renewBulk.value) return confirmBulkRenew()

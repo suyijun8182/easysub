@@ -8,6 +8,7 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
+    SmallInteger,
     String,
     Text,
     UniqueConstraint,
@@ -160,6 +161,7 @@ class Subscription(Base):
 
     start_date: Mapped[date] = mapped_column(Date, default=date.today)
     next_renewal_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    billing_anchor_day: Mapped[int | None] = mapped_column(SmallInteger, nullable=True)
     end_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     last_renewed_at: Mapped[date | None] = mapped_column(Date, nullable=True)   # 最近付款/续费日
 

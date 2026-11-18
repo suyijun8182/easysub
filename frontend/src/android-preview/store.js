@@ -1,9 +1,11 @@
+import { addCycle, todayYMD } from '../billing-date.js'
+export { addCycle } from '../billing-date.js'
 // Isolated, in-memory design preview. Never connects to the production API.
 import seed from './seed.json' with { type: 'json' }
 import cachedIcons from './cached-icons.json' with { type: 'json' }
 
 const copy = x => JSON.parse(JSON.stringify(x))
-const isoToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` }
+const isoToday = todayYMD
 const round = x => Math.round(x * 100) / 100
 const csvCell = x => /[",\r\n]/.test(String(x ?? '')) ? `"${String(x).replaceAll('"', '""')}"` : String(x ?? '')
 const csv = rows => '\uFEFF' + rows.map(r => r.map(csvCell).join(',')).join('\r\n')
@@ -26,22 +28,12 @@ function parseCsv(text) {
   return rows.filter(r => r.some(Boolean)).map(r => Object.fromEntries(headers.map((h, i) => [h, r[i] || ''])))
 }
 
-export function addCycle(value, unit, count = 1) {
-  const d = new Date(value + 'T12:00:00Z'); const n = Math.max(1, Number(count) || 1)
-  if (unit === 'day' || unit === 'week') d.setUTCDate(d.getUTCDate() + n * (unit === 'week' ? 7 : 1))
-  else {
-    const day = d.getUTCDate(); d.setUTCDate(1); d.setUTCMonth(d.getUTCMonth() + n * (unit === 'year' ? 12 : 1))
-    const last = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate()
-    d.setUTCDate(Math.min(day, last))
-  }
-  return d.toISOString().slice(0, 10)
-}
 
 function normalize(s, today) {
   const out = { name: '', amount: 0, currency: 'CNY', billing_type: 'recurring', cycle: 'month', cycle_count: 1,
     plan: null, icon: null, url: null, notes: null, remark: null, ipv4: null, ipv6: null,
     category_id: null, payment_method_id: null, bundle_id: null, start_date: today, end_date: null,
-    next_renewal_date: today, last_renewed_at: null, trial_end: null, cancel_by: null,
+    billing_anchor_day: null, next_renewal_date: today, last_renewed_at: null, trial_end: null, cancel_by: null,
     card_last4: '', card_expiry: '', family_members: [], remind_days_before: '7,6,5,4,3,2,1',
     is_active: true, auto_renew: true, show_in_calendar: true, sort: 0, created_at: new Date().toISOString(), ...s }
   if (typeof out.name !== 'string' || !out.name.trim()) throw new Error('请输入服务名称')
@@ -57,7 +49,16 @@ function normalize(s, today) {
   if (out.card_last4 && !/^\d{4}$/.test(out.card_last4)) throw new Error('卡末四位应为四个数字')
   if (out.card_expiry && !/^(0[1-9]|1[0-2])\/(\d{2}|\d{4})$/.test(out.card_expiry)) throw new Error('卡有效期格式为 MM/YY')
   if (out.billing_type === 'one_time') { out.next_renewal_date = null; out.auto_renew = false }
-  else if (!out.next_renewal_date) out.next_renewal_date = today
+  if (!['month', 'year'].includes(out.cycle)) out.billing_anchor_day = null
+  else if (!Object.hasOwn(s, 'billing_anchor_day') || s.billing_anchor_day === '') out.billing_anchor_day = Number((s.next_renewal_date || out.start_date).slice(8))
+  else if (out.billing_anchor_day != null) {
+    out.billing_anchor_day = Number(out.billing_anchor_day)
+    if (!Number.isInteger(out.billing_anchor_day) || out.billing_anchor_day < 1 || out.billing_anchor_day > 31) throw new Error('锚定日必须为 1–31')
+  }
+  if (out.billing_type === 'recurring' && !s.next_renewal_date) {
+    out.next_renewal_date = out.start_date
+    for (let guard = 0; out.next_renewal_date < today && guard < 1000; guard++) out.next_renewal_date = addCycle(out.next_renewal_date, out.cycle, out.cycle_count, out.billing_anchor_day)
+  }
   return out
 }
 
@@ -160,14 +161,14 @@ export function createPreviewStore(fixedDay = null) {
     if (path === '/api/currencies/rate-table') return { base: state.user.base_currency, updated_at: state.rates_updated_at, items: state.currencies.filter(c => c.code !== state.user.base_currency).map(c => ({ ...c, per_unit_in_base: state.rates[c.code] && state.rates[state.user.base_currency] ? round(state.rates[state.user.base_currency] / state.rates[c.code]) : '未缓存' })) }
     if (path.startsWith('/api/currencies/rates/')) throw new Error('预览使用示例汇率，不伪装为实时汇率；可通过自定义币种体验手动汇率')
     if (path === '/api/subscriptions/reorder') { body.ordered_ids.forEach((id, sort) => { const s = state.subscriptions.find(s => s.id === id); if (s) s.sort = sort }); return { ok: true } }
-    if (path === '/api/subscriptions/export.csv') return csv([['name', 'plan', 'category', 'amount', 'currency', 'billing_type', 'cycle', 'cycle_count', 'start_date', 'next_renewal_date', 'remark', 'url', 'remind_days_before'], ...state.subscriptions.map(s => [s.name, s.plan, catName(s), s.amount, s.currency, s.billing_type, s.cycle, s.cycle_count, s.start_date, s.next_renewal_date, s.remark, s.url, s.remind_days_before])])
+    if (path === '/api/subscriptions/export.csv') return csv([['name', 'plan', 'category', 'amount', 'currency', 'billing_type', 'cycle', 'cycle_count', 'start_date', 'next_renewal_date', 'remark', 'url', 'remind_days_before', 'billing_anchor_day'], ...state.subscriptions.map(s => [s.name, s.plan, catName(s), s.amount, s.currency, s.billing_type, s.cycle, s.cycle_count, s.start_date, s.next_renewal_date, s.remark, s.url, s.remind_days_before, s.billing_anchor_day])])
     if (path === '/api/subscriptions/import-csv') {
       const before = copy(state)
       try {
         const rows = parseCsv(body.content)
         for (const row of rows) {
           const cat = row.category ? await request('post', '/api/categories', { name: row.category }) : null
-          await request('post', '/api/subscriptions', { ...row, category_id: cat?.id || null, amount: Number(row.amount || 0), cycle_count: Number(row.cycle_count || 1), start_date: row.start_date || today, next_renewal_date: row.next_renewal_date || today })
+          await request('post', '/api/subscriptions', { ...row, category_id: cat?.id || null, amount: Number(row.amount || 0), cycle_count: Number(row.cycle_count || 1), start_date: row.start_date || today, next_renewal_date: row.next_renewal_date || null })
         }
         return { ok: true, imported: rows.length }
       } catch (e) { state = before; throw e }
@@ -180,11 +181,12 @@ export function createPreviewStore(fixedDay = null) {
       if (!s) throw new Error('订阅不存在')
       if (subMatch[2]) {
         if (s.billing_type === 'one_time') throw new Error('买断无需续费')
-        s.next_renewal_date = addCycle(body.mode === 'due' ? s.next_renewal_date || today : today, s.cycle, s.cycle_count)
+        if (body.mode !== 'due') s.billing_anchor_day = ['month', 'year'].includes(s.cycle) ? Number(today.slice(8)) : null
+        s.next_renewal_date = addCycle(body.mode === 'due' ? s.next_renewal_date || today : today, s.cycle, s.cycle_count, s.billing_anchor_day)
         if (body.mode !== 'due') s.start_date = today
         s.last_renewed_at = today; log('subscription.renew', `续费「${s.name}」，${body.mode === 'due' ? '原到期日' : '今天'}起算`); return out(s)
       }
-      if (method === 'put') { Object.assign(s, normalize({ ...s, ...body, id: s.id }, today)); log('subscription.update', `编辑「${s.name}」`); return out(s) }
+      if (method === 'put') { const anchor = body.next_renewal_date !== undefined && body.next_renewal_date !== s.next_renewal_date ? Number((body.next_renewal_date || today).slice(8)) : s.billing_anchor_day; Object.assign(s, normalize({ ...s, ...body, billing_anchor_day: anchor, id: s.id }, today)); log('subscription.update', `编辑「${s.name}」`); return out(s) }
       if (method === 'delete') {
         state.subscriptions = state.subscriptions.filter(x => x.id !== id); state.notifications = state.notifications.filter(x => x.subscription_id !== id); log('subscription.delete', `删除「${s.name}」`); return { ok: true }
       }

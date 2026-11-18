@@ -12,6 +12,7 @@ from sqlalchemy import delete, event, inspect, or_, select
 from sqlalchemy.orm import Session
 
 from app import crypto
+from app.billing import initial_anchor, compute_next_renewal
 from app.config import settings
 from app.models import (Bundle, Category, Currency, ExchangeRate, NotificationLog,
                         PaymentMethod, Subscription, SyncChange, SyncReceipt, SyncRecord, SyncState, User)
@@ -271,6 +272,14 @@ def apply_operation(db, user, operation):
             if currency and currency.is_custom and currency.user_id != user.id:
                 raise ValueError("Wrong currency owner")
             data["start_date"] = data["start_date"] or date.today()
+            if row is not None and "billing_anchor_day" not in operation.data:
+                data.pop("billing_anchor_day", None)
+            elif row is None:
+                data["billing_anchor_day"] = initial_anchor(data["cycle"], data["start_date"], data["next_renewal_date"], data.get("billing_anchor_day"))
+            if data["cycle"] not in ("month", "year"):
+                data["billing_anchor_day"] = None
+            if data["billing_type"] == "recurring" and not data["next_renewal_date"]:
+                data["next_renewal_date"] = compute_next_renewal(data["start_date"], data["cycle"], data["cycle_count"], anchor_day=data.get("billing_anchor_day", row.billing_anchor_day if row else None))
             if data["created_at"] is None:
                 data.pop("created_at")
             if data["billing_type"] == "one_time":

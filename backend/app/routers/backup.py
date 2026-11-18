@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from app.backup_crypto import encrypt_backup, decrypt_backup
 from app import activity
 from app.config import settings
-from app.billing import compute_next_renewal
+from app.billing import compute_next_renewal, initial_anchor
 from app.database import get_db
 from app.deps import get_admin_user, get_current_user
 from app.models import Bundle, Category, Currency, ExchangeRate, NotificationLog, PaymentMethod, Subscription, User
@@ -49,6 +49,7 @@ def _sub_dict(s: Subscription) -> dict:
         "cycle_count": s.cycle_count,
         "start_date": s.start_date.isoformat() if s.start_date else None,
         "next_renewal_date": s.next_renewal_date.isoformat() if s.next_renewal_date else None,
+        "billing_anchor_day": s.billing_anchor_day,
         "end_date": s.end_date.isoformat() if s.end_date else None,
         "last_renewed_at": s.last_renewed_at.isoformat() if s.last_renewed_at else None,
         "is_active": s.is_active,
@@ -290,10 +291,11 @@ def _restore_entities(db: Session, user: User, data: dict, replace: bool) -> int
             card_last4=_s(s.get("card_last4"), 8),
             card_expiry=_s(s.get("card_expiry"), 7),
         )
+        sub.billing_anchor_day = initial_anchor(sub.cycle, start, sub.next_renewal_date, s.get("billing_anchor_day")) if "billing_anchor_day" not in s or s["billing_anchor_day"] is not None else None
         if s.get("created_at"):
             sub.created_at = datetime.fromisoformat(s["created_at"])
         if billing_type == "recurring" and not sub.next_renewal_date:
-            sub.next_renewal_date = compute_next_renewal(start, sub.cycle, sub.cycle_count)
+            sub.next_renewal_date = compute_next_renewal(start, sub.cycle, sub.cycle_count, anchor_day=sub.billing_anchor_day)
         if billing_type == "one_time":
             sub.next_renewal_date = None
         db.add(sub)
