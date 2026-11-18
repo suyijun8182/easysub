@@ -1,0 +1,86 @@
+name: Linux 单文件发布
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, aarch64]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.arch }}-unknown-linux-musl
+      - uses: docker/setup-qemu-action@v4
+      - name: 前端测试与构建
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run test:android-preview
+          npm run build
+      - name: 打包固定运行时和目标平台 wheel
+        run: python deploy/build_payload.py '${{ matrix.arch }}'
+      - name: 准备离线 Rust 依赖与交叉编译工具
+        run: |
+          python deploy/vendor_cargo.py
+          pip install cargo-zigbuild==0.20.1 ziglang==0.13.0
+      - name: 离线测试与构建
+        working-directory: deploy/easysub-cli
+        env:
+          EASYSUB_PAYLOAD: ${{ github.workspace }}/artifacts/${{ matrix.arch }}/payload.tar.gz
+        run: |
+          cargo test --offline --locked
+          cargo zigbuild --offline --locked --release --target '${{ matrix.arch }}-unknown-linux-musl'
+      - name: 索引、双发行版冒烟与 systemd 集成
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          mkdir -p release
+          cp "deploy/easysub-cli/target/$ARCH-unknown-linux-musl/release/easysub" "release/easysub-linux-$ARCH"
+          python deploy/index_payload.py "release/easysub-linux-$ARCH" "artifacts/$ARCH/payload.tar.gz"
+          chmod +x "release/easysub-linux-$ARCH"
+          bash deploy/tests/smoke.sh "$ARCH"
+          if [[ "$ARCH" == x86_64 ]]; then bash deploy/tests/systemd.sh; fi
+      - uses: actions/upload-artifact@v6
+        with:
+          name: linux-${{ matrix.arch }}
+          path: release/easysub-linux-${{ matrix.arch }}
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: linux-*
+          merge-multiple: true
+          path: release
+      - name: 上传通过验证的发布附件
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          cp deploy/install.sh release/install.sh
+          cd release
+          sha256sum easysub-linux-* install.sh > SHA256SUMS
+          gh release upload "$TAG" easysub-linux-* install.sh SHA256SUMS --clobber

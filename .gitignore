@@ -89,3 +89,6 @@ artifacts/
 *.keystore
 _notes.md
 easysub-backup-*.json
+deploy/easysub-cli/target/
+deploy/easysub-cli/vendor/
+deploy/easysub-cli/.cargo/

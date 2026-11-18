@@ -1,0 +1,7 @@
+# CPython 3.12 的两种架构均提供 manylinux2014 wheel。
+bcrypt==4.2.1
+cryptography==50.0.2
+pydantic-core==2.27.2
+uvloop==0.21.0
+httptools==0.6.4
+pillow==12.2.0

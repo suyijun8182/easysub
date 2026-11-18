@@ -1,0 +1,21 @@
+[Unit]
+Description=EasySub 订阅管理
+After=network.target
+
+[Service]
+Type=simple
+User=easysub
+Group=easysub
+WorkingDirectory=/opt/easysub/current
+EnvironmentFile=/etc/easysub/easysub.env
+Environment=PYTHONPATH=/opt/easysub/current/app
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/easysub/current/python/bin/python3 -m uvicorn app.main:app --host ${BIND} --port ${PORT}
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/easysub
+PrivateTmp=yes
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

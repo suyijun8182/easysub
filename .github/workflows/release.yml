@@ -28,3 +28,9 @@ jobs:
           test -s notes.md
           SUMMARY=$(git tag -l --format='%(contents:subject)' "$TAG")
           gh release create "$TAG" --title "$TAG · ${SUMMARY:-更新}" --notes-file notes.md --verify-tag
+
+  linux-binary:
+    needs: release
+    permissions:
+      contents: write
+    uses: ./.github/workflows/linux-binary.yml

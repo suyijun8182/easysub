@@ -1,3 +1,41 @@
+
+## Linux 一键部署（v2.1.0）
+
+提供 x86_64 / aarch64 单文件安装器，业务后端仍为同一份 Python 代码。Rust 部分静态链接，内置 Python 与 wheel 使用 GNU ABI，要求 **glibc ≥ 2.17，不支持 Alpine**。建议使用 Debian 12 或 Ubuntu 20.04 及更新版本；首次注册的账号成为管理员，请及时注册。
+
+```bash
+curl -fsSL https://github.com/suyijun8182/easysub/releases/latest/download/install.sh | sudo bash
+# 自定义参数示例
+curl -fsSL https://github.com/suyijun8182/easysub/releases/latest/download/install.sh | sudo bash -s -- --port 8842 --bind 0.0.0.0 --data /var/lib/easysub
+# 升级：下载与 SHA256 校验由脚本完成，健康检查失败自动回滚程序
+curl -fsSL https://github.com/suyijun8182/easysub/releases/latest/download/install.sh | sudo bash -s -- --upgrade
+sudo easysub status
+easysub version
+sudo easysub uninstall         # 保留数据和 env
+sudo easysub uninstall --purge # 打印路径，输入 yes 后才清除数据与 env
+```
+
+运行目录 `/opt/easysub/current` 指向 releases 下的版本目录（保留当前及上一个 release）；每个 release 中的 data 软链接指向 `/var/lib/easysub`（或 `--data` 指定的专用绝对路径）。数据和备份位于该目录。`/etc/easysub/easysub.env` 保存首次随机生成的 JWT_SECRET、EASYSUB_DB、TZ、PORT、BIND 和 DATA_DIR；升级不会覆盖该文件。修改参数后执行 `sudo systemctl restart easysub`，需要开放端口时自行调整防火墙。
+
+无 systemd 或无 root 的环境，可以在一个可写目录执行 `./easysub run`：运行时展开到 `./.easysub-runtime/`，数据默认在 `./easysub-data/`，支持 BIND / PORT 环境变量。已有系统安装时，run 使用安装目录和既有 env。备份需自行设置至少 12 位 BACKUP_PASSWORD。内置 Python 仅随发布更新，普通本地 cargo 构建不带运行时，只能测试维护逻辑。
+
+升级前先导出完整备份并保存 data/，自动回滚仅切换程序版本，不会倒退数据库迁移。同版本升级也会创建独立 release。重新安装会保留既有 env；自定义数据目录时须再次传入原 --data。
+
+从 Docker / MySQL 迁移：先在旧实例导出有密码的完整备份；安装新实例并注册管理员，在设置页导入整站备份，核对订阅、分类和通知配置后切换入口。图标文件需另行保留旧 data/icons 并放入新数据目录，确保属于 easysub 用户；不要混用 Docker 与新服务的数据目录同时运行。保留旧实例用于回退。若直接迁移 SQLite 文件，先停旧服务，并整体迁移数据目录（含 WAL/SHM），不要只复制运行中的 db 文件。
+
+
+## v2.1.0：SQLite 部署与迁移
+
+新用户首选 SQLite：运行 `docker compose -f docker-compose.sqlite.yml up -d`，或在首次安装向导选择「SQLite（推荐）」；单进程即可使用，无需额外数据库服务。已有 MySQL 配置不带 engine 字段时仍按 MySQL 读取，原有 compose 文件保持兼容。
+
+SQLite 配置是 `{"engine":"sqlite","path":"data/easysub.db"}`，路径必须位于 data/ 内。设置 `EASYSUB_DB=sqlite` 可在首次启动时自动初始化；已有配置不会被覆盖。data/ 要持久化且可写。
+
+从 MySQL 迁移：在旧实例用管理员导出「完整备份」，保存备份密码；另起一个使用独立数据卷的 SQLite 实例，注册管理员，在设置中导入整站备份，核对账号、订阅、分类和通知配置后再切换入口。保留旧实例及其数据以便回退。旧客户端需重新同步，完整备份不携带旧同步游标，服务端会生成新同步记录。不要直接复制 MySQL 数据文件。
+
+配置至少 12 位 `BACKUP_PASSWORD` 后，每日自动备份仍生成加密 JSON；SQLite 额外使用在线 backup API 生成 data/backups/sqlite-日期.db，保留最近 7 份。数据库快照包含敏感资料，目录权限应仅允许服务账号访问；快照不包含图标等文件，跨数据库迁移请使用完整备份。WAL 数据库不可直接复制正在使用的 db 文件。
+
+<!-- v2.1.0 更新预告：月末续费保留锚定日，日期预览遵循本地日历。 -->
+
 # EasySub · 省心订阅
 
 v2.0.2：修复中国大陆添加订阅时服务图标加载慢、页面卡顿的问题（[#2](https://github.com/suyijun8182/easysub/issues/2)）。镜像自带的服务图标直接从本地读取，下载不到时显示首字母占位图；直接更新镜像即可，无需改配置。Android 0.3.0 Alpha 客户端新增到期系统通知、应用锁与后台变更提醒，详见 [Android 0.3.0 说明](https://github.com/suyijun8182/easysub/blob/main/docs/android-0.3.0.md)。
@@ -13,8 +51,7 @@ Self-hosted subscription / renewal manager with **14 notification channels** so 
 - **GHCR mirror**: `ghcr.io/suyijun8182/easysub:latest`
 - **Changelog / 更新日志**: https://github.com/suyijun8182/easysub/blob/main/CHANGELOG.md
 
-> The image does **not** bundle a database. On first visit a web wizard asks for **your existing MySQL 8** connection.
-> 镜像**不内置数据库**，首次访问网页向导填入你已有的 MySQL 连接即可。
+> 镜像支持内置 SQLite（新用户推荐），也可以在安装向导连接已有的 MySQL。
 
 ## Quick start / 快速开始
 
