@@ -41,7 +41,12 @@
       <span class="i" v-html="icon('grip')"></span>{{ t('sub.sortHint') }}</p>
     <p v-else class="drag-hint muted"><span class="i" v-html="icon('grip')"></span>{{ t('sub.dragHint') }}</p>
 
-    <div v-if="!subs.length" class="card empty">
+    <p v-if="!subs.length && listLoading" class="muted" role="status">{{ t('common.loading') }}</p>
+    <div v-else-if="!subs.length && listError" class="card empty">
+      <p class="err" role="alert">{{ t('sub.listLoadFailed') }}</p>
+      <button class="btn" @click="load">{{ t('common.retry') }}</button>
+    </div>
+    <div v-else-if="!subs.length" class="card empty">
       <span v-html="icon('subscriptions')"></span>
       <b>{{ t('dashboard.none') }}</b>
       <button class="btn" style="margin-top:12px" @click="openNew"><span class="i" v-html="icon('plus')"></span>{{ t('sub.add') }}</button>
@@ -205,7 +210,7 @@
     </BaseModal>
 
     <!-- 添加/编辑订阅 -->
-    <BaseModal v-if="showForm" :page="!!androidPreview" :heading="androidPreview ? (form.id ? t('sub.edit') : t('sub.add')) : undefined" :submit-label="androidPreview ? t('sub.save') : undefined" :busy="saving" @submit="save" @close="closeForm" v-slot="{ titleId }">
+    <BaseModal v-if="showForm" :page="!!androidPreview" :heading="androidPreview ? (form.id ? t('sub.edit') : t('sub.add')) : undefined" :submit-label="androidPreview ? t('sub.save') : undefined" :busy="saving || formOptionsLoading" @submit="save" @close="closeForm" v-slot="{ titleId }">
         <h3 v-if="!androidPreview" :id="titleId">{{ form.id ? t('sub.edit') : t('sub.add') }}</h3>
 
         <div class="block">
@@ -218,7 +223,7 @@
               <label for="sf-name">{{ t('sub.name') }}</label>
               <input id="sf-name" v-model="form.name" @input="onNameInput" @keydown.esc="closeSuggest" autocomplete="off" />
               <div v-if="suggestions.length" class="suggest">
-                <button v-for="s in suggestions" :key="s.slug" type="button" class="suggest-i" @click="pickService(s)">
+                <button v-for="s in suggestions" :key="s.slug" type="button" class="suggest-i" :disabled="categoriesLoading" @click="pickService(s)">
                   <img :src="s.icon" alt="" class="ico" loading="lazy" decoding="async" /> {{ s.name }}
                 </button>
               </div>
@@ -246,7 +251,7 @@
 
           <button class="btn ghost sm browse-btn" @click="openBrowser"><span class="i" v-html="icon('library')"></span>{{ t('sub.browse') }}</button>
 
-          <details class="icon-lib">
+          <details class="icon-lib" @toggle="onIconDetailsToggle">
             <summary>{{ t('sub.icon') }} — {{ t('sub.iconLibrary') }} / URL / {{ t('sub.uploadIcon') }}</summary>
             <input v-model="form.icon" :aria-label="t('sub.icon')" placeholder="emoji / /static/... / https://..." style="margin:8px 0" />
             <div class="row" style="margin-bottom:8px">
@@ -256,7 +261,12 @@
                 <input type="file" accept="image/*" hidden @change="uploadIcon" />
               </label>
             </div>
-            <div class="lib-grid">
+            <p v-if="iconLibraryState === 'loading'" class="muted" role="status">{{ t('common.loading') }}</p>
+            <div v-else-if="iconLibraryState === 'error'">
+              <p class="err" role="alert">{{ t('sub.iconLoadFailed') }}</p>
+              <button class="btn ghost sm" @click="loadIconLibrary">{{ t('common.retry') }}</button>
+            </div>
+            <div v-else class="lib-grid">
               <button v-for="it in iconLib" :key="it.slug" type="button" class="lib-ico" :title="it.name"
                       :aria-label="it.name" :aria-pressed="form.icon === it.icon" @click="form.icon = it.icon">
                 <img :src="it.icon" alt="" loading="lazy" decoding="async" />
@@ -408,7 +418,7 @@
         <p v-if="formErr" ref="formErrEl" class="err" role="alert" tabindex="-1">{{ formErr }}</p>
         <div class="row" style="justify-content:flex-end;margin-top:16px">
           <button class="btn ghost" @click="closeForm">{{ t('sub.cancel') }}</button>
-          <button class="btn" :disabled="saving" @click="save">{{ t('sub.save') }}</button>
+          <button class="btn" :disabled="saving || formOptionsLoading" @click="save">{{ t('sub.save') }}</button>
         </div>
     </BaseModal>
 
@@ -423,12 +433,17 @@
         <div v-for="g in groupedLib" :key="g.key" class="lib-group">
           <div class="lib-group-t">{{ g.label }}</div>
           <div class="svc-grid">
-            <button v-for="s in g.items" :key="s.slug" class="svc" @click="pickFromBrowser(s)">
+            <button v-for="s in g.items" :key="s.slug" class="svc" :disabled="categoriesLoading" @click="pickFromBrowser(s)">
               <img :src="s.icon" alt="" class="svc-ico" loading="lazy" decoding="async" /> <span>{{ s.name }}</span>
             </button>
           </div>
         </div>
-        <p v-if="!groupedLib.length" class="muted">{{ t('reports.empty') }}</p>
+        <p v-if="iconLibraryState === 'loading'" class="muted" role="status">{{ t('common.loading') }}</p>
+        <div v-else-if="iconLibraryState === 'error'">
+          <p class="err" role="alert">{{ t('sub.iconLoadFailed') }}</p>
+          <button class="btn ghost sm" @click="loadIconLibrary">{{ t('common.retry') }}</button>
+        </div>
+        <p v-else-if="!groupedLib.length" class="muted">{{ t('reports.empty') }}</p>
     </BaseModal>
 
     <div class="toast-wrap" role="status" aria-live="polite">
@@ -440,7 +455,7 @@
 
 <script setup>
 import { addCycle, todayYMD } from '../billing-date.js'
-import { computed, inject, nextTick, onMounted, reactive, ref, watch } from 'vue'
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import api from '../api'
@@ -461,6 +476,17 @@ const categories = ref([])
 const methods = ref([])
 const bundles = ref([])
 const iconLib = ref([])
+const iconLibraryState = ref('idle')
+const formOptionsLoading = ref(true)
+const categoriesLoading = ref(true)
+const listLoading = ref(true)
+const listError = ref(false)
+const pageRequest = new AbortController()
+let listRequest
+onBeforeUnmount(() => {
+  pageRequest.abort()
+  listRequest?.abort()
+})
 const filter = ref('')
 const showForm = ref(false)
 const androidPreview = inject('preview', null)
@@ -482,7 +508,13 @@ const iconUrl = ref('')
 const bundleMode = ref('none')
 const newBundleName = ref('')
 function formSnapshot() { return JSON.stringify({ form: form.value, bundleMode: bundleMode.value, newBundleName: newBundleName.value, newMember: newMember.value, iconUrl: iconUrl.value }) }
-const suggestions = ref([])
+const suggesting = ref(false)
+const suggestions = computed(() => {
+  const q = (form.value.name || '').toLowerCase().trim()
+  return suggesting.value && q
+    ? iconLib.value.filter((s) => s.name.toLowerCase().includes(q)).slice(0, 6)
+    : []
+})
 
 const showBrowser = ref(false)
 const browserQ = ref('')
@@ -564,7 +596,7 @@ watch(
 /* ---------- 分组与拖拽排序 ---------- */
 // orderMap: { catKey: [subId, ...] } ; catOrder: [catKey, ...]
 const orderMap = reactive({})
-const catOrder = ref([])
+const manualCatOrder = ref(null)
 const NONE = 'none'
 
 function catKeyOf(s) { return s.category_id == null ? NONE : String(s.category_id) }
@@ -585,6 +617,11 @@ function rebuild() {
     byCat[k].sort((a, b) => (a.sort - b.sort) || (a.id - b.id))
     orderMap[k] = byCat[k].map((s) => s.id)
   }
+  manualCatOrder.value = null
+}
+
+const catOrder = computed(() => {
+  if (manualCatOrder.value) return manualCatOrder.value
   // 分类顺序：用户保存的顺序 → 其余出现的分类 → 未分类置底
   const present = new Set(Object.keys(orderMap))
   const saved = (auth.user?.category_order || []).map(String)
@@ -598,8 +635,8 @@ function rebuild() {
     })
   order.push(...rest)
   if (present.has(NONE)) order.push(NONE)
-  catOrder.value = order
-}
+  return order
+})
 
 const search = ref('')
 const grouped = computed(() => {
@@ -642,7 +679,7 @@ async function onCatDrop(key) {
   saveCatOrder(arr)
 }
 async function saveCatOrder(arr) {
-  catOrder.value = arr
+  manualCatOrder.value = arr
   // 持久化（只保存真实分类 id，未分类不存）
   const ids = arr.filter((k) => k !== NONE).map(Number)
   try { await auth.updateMe({ category_order: ids }) } catch { /* ignore */ }
@@ -715,19 +752,37 @@ async function onCardDrop(catKey, id) {
 }
 
 async function load() {
+  if (pageRequest.signal.aborted) return false
+  listRequest?.abort()
+  listRequest = new AbortController()
+  const { signal } = listRequest
   const params = filter.value ? { billing_type: filter.value } : {}
-  const { data } = await api.get('/api/subscriptions', { params })
-  subs.value = data
-  rebuild()
-  // 已删除或被筛选掉的订阅不再保留选中
-  const ids = new Set(data.map((s) => s.id))
-  for (const id of [...selected]) if (!ids.has(id)) selected.delete(id)
+  listLoading.value = true
+  listError.value = false
+  try {
+    const { data } = await api.get('/api/subscriptions', { params, signal })
+    if (signal.aborted) return false
+    subs.value = data
+    rebuild()
+    // 已删除或被筛选掉的订阅不再保留选中
+    const ids = new Set(data.map((s) => s.id))
+    for (const id of selected) if (!ids.has(id)) selected.delete(id)
+    return true
+  } catch {
+    if (!signal.aborted) {
+      listError.value = true
+      if (subs.value.length) toast(t('sub.listLoadFailed'), 'err')
+    }
+    return false
+  } finally {
+    if (!signal.aborted) listLoading.value = false
+  }
 }
 function setFilter(f) { filter.value = f; load() }
 
 function openNew() {
   form.value = blank(); formErr.value = ''; bundleMode.value = 'none'
-  newBundleName.value = ''; suggestions.value = []; showForm.value = true
+  newBundleName.value = ''; suggesting.value = false; showForm.value = true
   newMember.value = ''; iconUrl.value = ''
   recomputeNext()
   initialForm = formSnapshot()
@@ -735,7 +790,7 @@ function openNew() {
 function openEdit(s) {
   suppressAuto = true
   form.value = { ...s, next_renewal_date: s.next_renewal_date || '', family_members: [...(s.family_members || [])] }
-  formErr.value = ''; suggestions.value = []
+  formErr.value = ''; suggesting.value = false
   bundleMode.value = s.bundle_id ? 'join' : 'none'
   newBundleName.value = ''
   newMember.value = ''; iconUrl.value = ''
@@ -745,9 +800,8 @@ function openEdit(s) {
 }
 
 function onNameInput() {
-  const q = (form.value.name || '').toLowerCase().trim()
-  suggestions.value = q.length < 1 ? []
-    : iconLib.value.filter((s) => s.name.toLowerCase().includes(q)).slice(0, 6)
+  suggesting.value = !!form.value.name.trim()
+  if (suggesting.value) loadIconLibrary()
 }
 // 服务库分类 key -> 在用户分类名中查找的关键字
 const CAT_KEYWORDS = {
@@ -776,16 +830,36 @@ function pickService(s) {
     const cid = findCategoryByKey(s.category)
     if (cid) form.value.category_id = cid
   }
-  suggestions.value = []
+  suggesting.value = false
 }
-// 联想列表打开时，Esc 只关列表，不关整个弹窗
+// 联想加载中或已显示时，Esc 只取消联想
 function closeSuggest(e) {
-  if (!suggestions.value.length) return
+  if (!suggestions.value.length && !(suggesting.value && iconLibraryState.value === 'loading')) return
   e.stopPropagation()
-  suggestions.value = []
+  suggesting.value = false
 }
 
-function openBrowser() { browserQ.value = ''; showBrowser.value = true }
+async function loadIconLibrary() {
+  const { signal } = pageRequest
+  if (signal.aborted || iconLibraryState.value === 'loading' || iconLibraryState.value === 'ready') return
+  iconLibraryState.value = 'loading'
+  try {
+    const { data } = await api.get('/api/icons/library', { signal })
+    if (signal.aborted) return
+    iconLib.value = data
+    iconLibraryState.value = 'ready'
+  } catch {
+    if (!signal.aborted) iconLibraryState.value = 'error'
+  }
+}
+function onIconDetailsToggle(e) {
+  if (e.currentTarget.open) loadIconLibrary()
+}
+function openBrowser() {
+  browserQ.value = ''
+  showBrowser.value = true
+  loadIconLibrary()
+}
 const groupedLib = computed(() => {
   const q = browserQ.value.toLowerCase().trim()
   const groups = new Map()
@@ -844,7 +918,7 @@ async function importCsv(e) {
 }
 
 async function save() {
-  if (saving.value) return
+  if (saving.value || formOptionsLoading.value) return
   saving.value = true
   formErr.value = ''
   try {
@@ -999,21 +1073,29 @@ async function confirmBulkDelete() {
   }
 }
 
-onMounted(async () => {
-  const [c, cat, m, b, lib] = await Promise.all([
-    api.get('/api/currencies'),
-    api.get('/api/categories'),
-    api.get('/api/payment-methods'),
-    api.get('/api/bundles'),
-    api.get('/api/icons/library')
+async function loadOptions(path, options) {
+  const { signal } = pageRequest
+  try {
+    const { data } = await api.get(path, { signal })
+    if (!signal.aborted) options.value = data
+  } catch { /* Other options and the subscription list can still be used. */ }
+}
+async function loadFormOptions() {
+  await Promise.all([
+    loadOptions('/api/currencies', currencies),
+    loadOptions('/api/categories', categories).then(() => {
+      if (!pageRequest.signal.aborted) categoriesLoading.value = false
+    }),
+    loadOptions('/api/payment-methods', methods),
+    loadOptions('/api/bundles', bundles)
   ])
-  currencies.value = c.data
-  categories.value = cat.data
-  methods.value = m.data
-  bundles.value = b.data
-  iconLib.value = lib.data
-  await load()
-  if (androidPreview) {
+  if (!pageRequest.signal.aborted) formOptionsLoading.value = false
+}
+
+onMounted(async () => {
+  const list = load()
+  loadFormOptions()
+  if (await list && androidPreview && !pageRequest.signal.aborted) {
     const target = subs.value.find(s => s.id === Number(route.query.edit || route.query.renew || route.query.delete))
     if (target && route.query.edit) openEdit(target)
     else if (target && route.query.renew) askRenew(target)
