@@ -115,6 +115,7 @@ const zh = {
     bundleNone: '不使用捆绑包', bundleJoin: '加入已有捆绑包', bundleCreate: '创建捆绑包', bundleName: '捆绑包名称',
     showInCalendar: '在日历中显示', website: '官方网站',
     browse: '按分类浏览', browseTitle: '选择服务', searchPh: '搜索服务名…', pickHint: '点击下方服务快速填入名称、图标与官网',
+    listLoadFailed: '订阅列表加载失败', iconLoadFailed: '图标库加载失败',
     secTrialCard: '试用 / 付款卡', trialEnd: '试用结束日', cancelBy: '取消截止日', cardLast4: '卡尾号', cardExpiry: '卡有效期 (MM/YY)',
     csvImported: '已导入 {n} 个订阅', perMember: '人均', trialTag: '试用', cancelTag: '待取消', cardTag: '卡',
     renewTitle: '确认续费', renewMsg: '为「{name}」选择续费方式：',
@@ -195,7 +196,7 @@ const zh = {
     howto: '升级方式（数据不丢，自动迁移）：', view: '查看更新内容', banner: '发现新版本 v{v}，前往设置查看升级方式',
     backupTip: '升级前建议先在「数据备份」导出一份。'
   },
-  common: { loading: '加载中...', save: '保存', actions: '操作', status: '状态', date: '日期', confirm: '确认', cancel: '取消', close: '关闭' }
+  common: { loading: '加载中...', retry: '重试', save: '保存', actions: '操作', status: '状态', date: '日期', confirm: '确认', cancel: '取消', close: '关闭' }
 }
 
 const en = {
@@ -312,6 +313,7 @@ const en = {
     bundleNone: 'No bundle', bundleJoin: 'Join existing bundle', bundleCreate: 'Create bundle', bundleName: 'Bundle name',
     showInCalendar: 'Show in calendar', website: 'Website',
     browse: 'Browse by category', browseTitle: 'Pick a service', searchPh: 'Search services…', pickHint: 'Click a service to fill name, icon and website',
+    listLoadFailed: 'Could not load subscriptions', iconLoadFailed: 'Could not load the icon library',
     secTrialCard: 'Trial / Card', trialEnd: 'Trial ends', cancelBy: 'Cancel by', cardLast4: 'Card last 4', cardExpiry: 'Card expiry (MM/YY)',
     csvImported: 'Imported {n} subscriptions', perMember: 'per person', trialTag: 'trial', cancelTag: 'cancel', cardTag: 'card',
     renewTitle: 'Confirm renewal', renewMsg: 'Choose how to renew "{name}":',
@@ -392,7 +394,7 @@ const en = {
     howto: 'How to upgrade (data preserved, auto-migrated):', view: 'View changes', banner: 'New version v{v} available — see Settings to upgrade',
     backupTip: 'Export a backup from Data backup before upgrading.'
   },
-  common: { loading: 'Loading...', save: 'Save', actions: 'Actions', status: 'Status', date: 'Date', confirm: 'Confirm', cancel: 'Cancel', close: 'Close' }
+  common: { loading: 'Loading...', retry: 'Retry', save: 'Save', actions: 'Actions', status: 'Status', date: 'Date', confirm: 'Confirm', cancel: 'Cancel', close: 'Close' }
 }
 
 const ru = {
@@ -509,6 +511,7 @@ const ru = {
     bundleNone: 'Без пакета', bundleJoin: 'В существующий пакет', bundleCreate: 'Создать пакет', bundleName: 'Название пакета',
     showInCalendar: 'Показывать в календаре', website: 'Сайт',
     browse: 'По категориям', browseTitle: 'Выбор сервиса', searchPh: 'Поиск сервисов…', pickHint: 'Нажмите на сервис, чтобы заполнить название, иконку и сайт',
+    listLoadFailed: 'Не удалось загрузить подписки', iconLoadFailed: 'Не удалось загрузить библиотеку иконок',
     secTrialCard: 'Пробный / Карта', trialEnd: 'Конец пробного', cancelBy: 'Отменить до', cardLast4: 'Карта (4 цифры)', cardExpiry: 'Срок карты (ММ/ГГ)',
     csvImported: 'Импортировано подписок: {n}', perMember: 'на чел.', trialTag: 'проб', cancelTag: 'отмена', cardTag: 'карта',
     renewTitle: 'Подтвердить продление', renewMsg: 'Выберите способ продления «{name}»:',
@@ -589,7 +592,7 @@ const ru = {
     howto: 'Как обновить (данные сохраняются, авто-миграция):', view: 'Что нового', banner: 'Доступна версия v{v} — см. Настройки',
     backupTip: 'Перед обновлением сделайте резервную копию.'
   },
-  common: { loading: 'Загрузка...', save: 'Сохранить', actions: 'Действия', status: 'Статус', date: 'Дата', confirm: 'Подтвердить', cancel: 'Отмена', close: 'Закрыть' }
+  common: { loading: 'Загрузка...', retry: 'Повторить', save: 'Сохранить', actions: 'Действия', status: 'Статус', date: 'Дата', confirm: 'Подтвердить', cancel: 'Отмена', close: 'Закрыть' }
 }
 
 export default createI18n({
