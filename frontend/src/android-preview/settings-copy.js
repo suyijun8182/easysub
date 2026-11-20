@@ -262,5 +262,21 @@ export const settingsCopy = {
   "已导出 ICS 文件快照": {
     "en": "ICS file snapshot exported",
     "ru": "Снимок ICS экспортирован"
+  },
+  "汇率由本机联网获取，自定义币种使用手动汇率。缺少汇率的币种显示“未缓存”。": {
+    "en": "Rates are fetched online by this device; custom currencies keep their manual rates. Missing rates are marked as unavailable.",
+    "ru": "Курсы загружаются этим устройством из сети; для своих валют используются ручные курсы. Отсутствующие курсы отмечены отдельно."
+  },
+  "打开应用时超过 12 小时会自动更新，也可手动刷新。": {
+    "en": "Rates update automatically when the app opens if older than 12 hours, or refresh them now.",
+    "ru": "Курсы обновляются при запуске, если старше 12 часов; можно обновить вручную."
+  },
+  "汇率已更新": {
+    "en": "Rates updated",
+    "ru": "Курсы обновлены"
+  },
+  "更新于": {
+    "en": "Updated",
+    "ru": "Обновлено"
   }
 }

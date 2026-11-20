@@ -3,6 +3,7 @@ import { createTransport, serverUrl } from './transport.js'
 const kinds = { categories: 'categories', 'payment-methods': 'payment_methods', bundles: 'bundles', currencies: 'currencies', subscriptions: 'subscriptions' }
 const relations = { category_id: 'categories', payment_method_id: 'payment-methods', bundle_id: 'bundles' }
 const clone = value => structuredClone(value)
+const RATES_URL = 'https://open.er-api.com/v6/latest/'
 const prefs = ['base_currency', 'monthly_budget', 'notify_settings', 'category_order']
 // hooks.synced receives { server, tokens, epoch, cursor } after each complete sync; hooks.unlinked
 // fires when sync stops being usable. Android uses them to drive its background change check.
@@ -24,6 +25,15 @@ export async function createLocal(store, storage, changed, transportFactory = cr
   const save = async () => { doc.local = clone(store.state); await storage.save(doc); changed() }
   const key = (kind, id) => `${kind}:${id}`
   const notify = (name, value) => { try { hooks[name]?.(value) } catch { /* Hooks must never break sync. */ } }
+  const fetchRates = hooks.fetch || ((...args) => globalThis.fetch(...args))
+  // Online rates are fetched by the phone itself and kept outside the sync records, so a
+  // pull never wipes them. Custom currencies keep their manual rate.
+  function applyOnline(state) {
+    const online = doc.onlineRates
+    if (!online || online.base !== (doc.exchangeBase || 'CNY')) return
+    for (const [code, rate] of Object.entries(online.rates)) if (!state.currencies.some(c => c.code === code && c.is_custom)) state.rates[code] = rate
+    state.rates_updated_at = online.updated_at
+  }
   const snapshot = () => ({ server: doc.link.server, tokens: { access_token: doc.tokens.access_token, refresh_token: doc.tokens.refresh_token }, epoch: doc.sync.epoch, cursor: doc.sync.cursor })
   function identity(kind, id) {
     if (id == null) return null
@@ -111,6 +121,7 @@ export async function createLocal(store, storage, changed, transportFactory = cr
       } else if (record.kind === 'notification-config') state.config = data
     }
     if (doc.link) state.user.username = doc.link.username
+    applyOnline(state)
     store.loadState(state)
   }
   async function run() {
@@ -211,6 +222,24 @@ export async function createLocal(store, storage, changed, transportFactory = cr
       doc.sync.enabled = true; project(); await save(); await run()
     }),
     sync: () => syncQueued ||= serial(run).finally(() => { syncQueued = null }),
+    // maxAgeHours: skip the network when the cached online rates are still fresh enough.
+    refreshRates: ({ maxAgeHours } = {}) => serial(async () => {
+      const base = doc.exchangeBase || 'CNY', cached = doc.onlineRates
+      if (maxAgeHours && cached?.base === base && Date.now() - Date.parse(cached.updated_at) < maxAgeHours * 3600000) return { refreshed: false, updated: 0 }
+      let body
+      try {
+        const response = await fetchRates(RATES_URL + base, { signal: AbortSignal.timeout(15000), credentials: 'omit' })
+        if (!response.ok) throw new Error('HTTP ' + response.status)
+        body = await response.json()
+      } catch (error) { throw new Error('汇率获取失败，请检查网络后重试（' + error.message + '）') }
+      const rates = Object.fromEntries(Object.entries(body?.rates || {}).map(([code, rate]) => [code.toUpperCase(), Number(rate)]).filter(([, rate]) => Number.isFinite(rate) && rate > 0))
+      if (body?.result !== 'success' || !Object.keys(rates).length) throw new Error('汇率接口没有返回有效数据，请稍后再试')
+      doc.onlineRates = { base, updated_at: new Date().toISOString(), rates }
+      if (doc.link) project()
+      else { const state = clone(store.state); applyOnline(state); store.loadState(state) }
+      await save()
+      return { refreshed: true, updated: Object.keys(rates).length }
+    }),
     enable: enabled => serial(async () => { doc.sync.enabled = enabled; await save(); if (enabled) await run(); else notify('unlinked') }),
     logout: () => serial(async () => { doc.sync.enabled = false; doc.tokens = {}; await save(); notify('unlinked') }),
     resolve: (id, choice) => serial(async () => {

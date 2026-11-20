@@ -42,9 +42,9 @@
       <section class="card"><div v-for="item in entities" :key="item.id || item.code" class="entity-row"><span class="entity-name">{{ item.icon }} {{ item.code }} {{ section === 'payment-methods' ? paymentName(item, locale) : item.name }}<small v-if="item.note">{{ item.note }}</small></span><button v-if="section === 'categories'" class="btn ghost" @click="editEntity(item)">{{ text("编辑") }}</button><button class="btn ghost danger" @click="removeEntity(item)">{{ text("删除") }}</button></div></section>
     </template>
     <template v-else-if="section === 'rates'">
-      <p class="muted">{{ text("以下为演示缓存汇率，不代表实时市场数据。缺少缓存的币种显示“未缓存”。") }}</p>
+      <p class="muted">{{ canRefreshRates ? text("汇率由本机联网获取，自定义币种使用手动汇率。缺少汇率的币种显示“未缓存”。") : text("以下为演示缓存汇率，不代表实时市场数据。缺少缓存的币种显示“未缓存”。") }}<template v-if="canRefreshRates && rates.updated_at"> {{ text("更新于") }} {{ new Date(rates.updated_at).toLocaleString(locale) }}</template></p>
       <section class="card"><div v-for="r in rates.items" :key="r.code" class="setting-link"><span>{{ r.code }} {{ r.symbol }}</span><span>1 = {{ r.per_unit_in_base }} {{ rates.base }}</span></div></section>
-      <p class="muted">{{ t('mobile.ratesPreview') }}</p><button class="btn" disabled @click="refreshRates">{{ text("刷新汇率") }}</button><router-link class="btn ghost" to="/settings/currencies">{{ text("添加自定义币种与手动汇率") }}</router-link>
+      <p class="muted">{{ canRefreshRates ? text("打开应用时超过 12 小时会自动更新，也可手动刷新。") : t('mobile.ratesPreview') }}</p><button class="btn" :disabled="!canRefreshRates" @click="refreshRates">{{ text("刷新汇率") }}</button><router-link class="btn ghost" to="/settings/currencies">{{ text("添加自定义币种与手动汇率") }}</router-link>
     </template>
     <template v-else-if="section === 'backup'">
       <section class="card"><h2>{{ text("完整加密导出") }}</h2><p v-if="!canEncrypt" class="preview-notice">{{ text("手机通过普通 HTTP 局域网访问时，浏览器禁用加密 API。请在电脑 localhost 地址体验加密备份，不会降级导出明文密钥。") }}</p><p class="muted">{{ text("包括全部字段、通知配置、图片数据、偏好、汇率和日志。当前格式仅用于预览，网页版还不能解密此格式。") }}</p>
@@ -116,7 +116,8 @@ async function savePrefs() { await act(async () => { await auth.updateMe(prefere
 function editEntity(item) { entity.value = clone(item); savedEntity.value = JSON.stringify(entity.value); window.scrollTo({ top: 0, behavior: 'instant' }) }
 async function saveEntity() { await act(async () => { await preview.request(entity.value.id ? 'put' : 'post', '/api/' + section.value + (entity.value.id ? '/' + entity.value.id : ''), clone(entity.value)); resetEntity(); await load(); message.value = text("已保存") }) }
 async function removeEntity(item) { if (!confirm(locale.value === 'en' ? `Delete ${item.name}? Subscriptions will be kept.` : locale.value === 'ru' ? `Удалить ${item.name}? Подписки сохранятся.` : `确认删除「${item.name}」？相关订阅会保留。`)) return; await act(async () => { await preview.request('delete', '/api/' + section.value + '/' + (item.id || item.code)); await load(); message.value = locale.value === 'en' ? 'Deleted; subscriptions kept.' : locale.value === 'ru' ? 'Удалено; подписки сохранены.' : '已删除，关联已安全处理' }) }
-async function refreshRates() { await act(() => preview.request('post', '/api/currencies/rates/refresh')) }
+const canRefreshRates = !!localSync
+async function refreshRates() { await act(async () => { await localSync.refreshRates(); await load(); message.value = text("汇率已更新") }) }
 const download = downloadFile
 async function exportEncrypted() { await act(async () => { if (password.value !== passwordAgain.value) throw new Error(text("两次密码不一致")); await download(await encryptBackup(preview.backup(), password.value), 'easysub-preview-encrypted.json'); password.value = ''; passwordAgain.value = ''; message.value = text("已生成预览加密备份；正式网页尚未支持该格式") }) }
 function inspectBackup(value) { if (Array.isArray(value.users)) { fullUsers.value = value.users; selectedUser.value = 0; selectUser() } else { if (!Array.isArray(value.subscriptions)) throw new Error(text("文件缺少 subscriptions")); incoming.value = value } }

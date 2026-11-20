@@ -58,6 +58,8 @@ if (isLocal) {
   try { local = await createLocal(store, await openStorage(), () => { revision.value++ }, undefined, { synced: snapshot => backgroundCheck.synced(snapshot), unlinked: () => backgroundCheck.unlinked() }) }
   catch (error) { document.getElementById('app').textContent = '无法启动本地应用：' + error.message; throw error }
 }
+// The phone fetches rates itself; offline starts keep the cached rates.
+local?.refreshRates({ maxAgeHours: 12 }).catch(() => {})
 export const preview = {
   isLocal,
   isAndroid: isAndroid(),

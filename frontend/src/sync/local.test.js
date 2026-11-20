@@ -23,7 +23,7 @@ function fixture(extra = []) {
       records[op.id] = record; changes.push(structuredClone(record)); const result = { op_id: op.op_id, status: 'applied', record }; receipts.set(op.op_id, result); return result
     }) })
   }
-  return { storage: { load: async () => saved && structuredClone(saved), save: async value => { saved = structuredClone(value) } }, transport: () => transport, candidate: { server: 'https://example.com', username: 'alice', account_id: 1, tokens: {}, caps }, records, add, offline(value) { offline = value }, get saved() { return saved } }
+  return { storage: { load: async () => saved && structuredClone(saved), save: async value => { saved = structuredClone(value) } }, transport: () => transport, candidate: { server: 'https://example.com', username: 'alice', account_id: 1, tokens: {}, caps }, records, add, bump(row, data) { row.version++; row.seq = ++seq; row.data = data; changes.push(structuredClone(row)) }, offline(value) { offline = value }, get saved() { return saved } }
 }
 test('real local entry starts empty, merges full local entities, survives reload and uploads offline edits', async () => {
   const f = fixture(), store = createPreviewStore(), local = await createLocal(store, f.storage, () => {}, f.transport)
@@ -181,4 +181,34 @@ test('authentication loss during sync revokes the background snapshot', async ()
   await local.connect({ ...f.candidate, tokens: { access_token: 'access', refresh_token: 'refresh' } })
   deny = true; await assert.rejects(local.sync(), /刷新令牌无效/)
   assert.deepEqual(events, ['unlinked']); assert.equal(local.status.enabled, false)
+})
+
+const rateResponse = rates => async url => ({ ok: true, json: async () => ({ result: 'success', base_code: url.split('/').pop(), rates }) })
+test('phone fetches rates online, keeps manual custom rates, survives sync and restart', async () => {
+  const f = fixture(), urls = [], store = createPreviewStore()
+  const fetch = async url => { urls.push(url); return rateResponse({ CNY: 1, USD: 0.14, ABC: 99 })(url) }
+  const local = await createLocal(store, f.storage, () => {}, f.transport, { fetch })
+  await local.request('post', '/api/currencies', { code: 'ABC', name: 'Custom', symbol: 'A', rate_to_base: 3 })
+  await local.refreshRates()
+  assert.deepEqual(urls, ['https://open.er-api.com/v6/latest/CNY'])
+  assert.equal(store.state.rates.USD, 0.14); assert.equal(store.state.rates.ABC, 3)
+  f.add('currencies', { code: 'USD', name: '美元', symbol: '$', is_custom: false, rate_base: 'CNY', rate_to_base: null }, true)
+  await local.connect(f.candidate)
+  assert.equal(store.state.rates.USD, 0.14, 'a pull must not wipe online rates')
+  const table = await local.request('get', '/api/currencies/rate-table')
+  assert.equal(table.items.find(i => i.code === 'USD').per_unit_in_base, 7.14); assert.ok(table.updated_at)
+  assert.equal(await local.refreshRates({ maxAgeHours: 12 }).then(r => r.refreshed), false)
+  assert.equal(urls.length, 1)
+  const reloaded = createPreviewStore()
+  await createLocal(reloaded, f.storage, () => {}, f.transport, { fetch })
+  assert.equal(reloaded.state.rates.USD, 0.14)
+})
+test('failed rate fetch keeps cached rates and reports a readable error', async () => {
+  const f = fixture(), store = createPreviewStore()
+  const local = await createLocal(store, f.storage, () => {}, f.transport, { fetch: async () => { throw new Error('offline') } })
+  const before = structuredClone(store.state.rates)
+  await assert.rejects(local.refreshRates(), /汇率获取失败.*offline/)
+  assert.deepEqual(store.state.rates, before)
+  const bad = await createLocal(createPreviewStore(), f.storage, () => {}, f.transport, { fetch: rateResponse({}) })
+  await assert.rejects(bad.refreshRates(), /没有返回有效数据/)
 })
