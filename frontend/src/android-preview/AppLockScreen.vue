@@ -30,7 +30,7 @@ function trap(event) {
   </div>
 </template>
 <style scoped>
-.app-lock-screen { position:fixed; inset:0; z-index:20000; display:grid; place-items:center; padding:24px; background:var(--bg,#f6f7f5); color:var(--text,#16191d); }
+.app-lock-screen { position:fixed; inset:0; z-index:20000; display:grid; place-items:center; padding:calc(24px + var(--app-inset-top)) 24px calc(24px + var(--app-inset-bottom)); background:var(--bg,#f6f7f5); color:var(--text,#16191d); }
 .lock-card { width:100%; max-width:360px; }
 h1 { font-size:24px; line-height:1.3; }
 p { line-height:1.6; overflow-wrap:anywhere; }
