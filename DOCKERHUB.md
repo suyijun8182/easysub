@@ -18,8 +18,8 @@ Self-hosted subscription / renewal manager with **14 notification channels**, so
   **修复月末续费漂移**和时区导致的预览少一天。已经漂移到 28 号的订阅需要手动改回一次。
 - **One-command Linux install without Docker** — see the GitHub README.
   **新增不依赖 Docker 的 Linux 一键安装**，详见 GitHub README。
-- **Android 0.3.1-alpha** (APK on GitHub Releases): the phone now fetches exchange rates online by itself, so they no longer show as unavailable.
-  **Android 0.3.1-alpha**：手机端汇率改为直接联网获取，不再显示「未缓存」。
+- **Android 0.3.2-alpha** (APK on GitHub Releases): the top bar and sync button are no longer hidden under the status bar on some phones.
+  **Android 0.3.2-alpha**：修复部分手机上顶栏和同步按钮被状态栏遮挡。
 
 ## Quick start / 快速开始（SQLite，推荐）
 

@@ -31,7 +31,7 @@ docker run -d --name easysub -p 8842:8000 -e EASYSUB_DB=sqlite \
 - **修复月末续费日期漂移**：1 月 31 日的月付订阅续费后会依次变成 2/28、3/31，不会再停在 28 号。也修复了美洲等时区下续费预览比实际少一天的问题。
   已经漂移到 28 号的订阅，系统无法知道原来是几号，请手动把“下次续费日”改回正确日期一次，之后就不会再漂移。
 
-**Android 0.3.1-alpha**：手机端汇率改为直接联网获取，「刷新汇率」按钮可用，打开 App 时自动更新，修复常显示「未缓存」的问题。
+**Android 0.3.2-alpha**：修复部分手机上顶部标题栏和同步按钮被状态栏（时间、信号、电量）遮挡的问题。0.3.1 起手机端汇率改为直接联网获取。
 
 完整变更见 [CHANGELOG](./CHANGELOG.md)。
 
@@ -205,7 +205,7 @@ git pull && docker compose up -d --build
   - **常规循环**：从原到期日往后加一个周期，提前续费不会损失已付的时间。月末日期会保持在原来的日子，例如 31 号的订阅遇到 2 月会变成 28 号（闰年为 29 号），下个月再回到 31 号。
 - **批量操作和排序**：在订阅页点“多选”可以批量操作，点“排序”可以调整顺序，也可以直接拖拽。
 - **安全**：在设置中可以开启两步验证、创建 API Token（供脚本或 Home Assistant 使用）。找回密码需要管理员先配置 SMTP。
-- **Android 客户端**：从 [Releases](https://github.com/suyijun8182/easysub/releases) 下载 APK。在 App 的“账号与同步”中填写服务器地址和账号即可双向同步。说明见 [Android 0.3.1](docs/android-0.3.1.md)。
+- **Android 客户端**：从 [Releases](https://github.com/suyijun8182/easysub/releases) 下载 APK。在 App 的“账号与同步”中填写服务器地址和账号即可双向同步。说明见 [Android 0.3.2](docs/android-0.3.2.md)。
 - **API 文档**：启动后访问 `http://<服务器IP>:<端口>/docs`。
 
 ---
@@ -283,7 +283,7 @@ Telegram [@Aiden_SU](https://t.me/Aiden_SU) · 📧 aidensu8182@gmail.com
 
 **A self-hosted subscription and renewal manager. It reminds you over 14 channels (Telegram, WeCom, Feishu, Email, ntfy, Webhook and more), so no subscription or SIM keep-alive plan expires unnoticed.**
 
-**New in v2.1.0:** SQLite is now the default database, so no MySQL is needed (existing MySQL setups keep working) · a one-command Linux installer that needs no Docker (x86_64 / aarch64, systemd, upgrades that roll back on failure) · month-end renewals stay on their day (Jan 31 → Feb 28 → Mar 31), and the renewal preview no longer shows a day early in time zones west of UTC. **Android 0.3.1-alpha:** the phone now fetches exchange rates online by itself, so “Refresh rates” works and rates no longer show as unavailable.
+**New in v2.1.0:** SQLite is now the default database, so no MySQL is needed (existing MySQL setups keep working) · a one-command Linux installer that needs no Docker (x86_64 / aarch64, systemd, upgrades that roll back on failure) · month-end renewals stay on their day (Jan 31 → Feb 28 → Mar 31), and the renewal preview no longer shows a day early in time zones west of UTC. **Android 0.3.2-alpha:** the top bar and sync button are no longer hidden under the status bar on some phones; since 0.3.1 the phone fetches exchange rates online by itself.
 
 **Features:** multi-user with open sign-up · recurring and one-time subscriptions with bulk actions and drag reordering · 14 notification channels with quiet hours and a weekly digest · trial, cancel-by and card-expiry tracking · monthly budget · built-in library of hundreds of services · dashboard, reports and CSV export · calendar with an `.ics` feed · multi-currency with live exchange rates · personal and full-site backups plus daily encrypted auto-backups · 2FA, API tokens and encrypted secrets · Android app (local-first, optional two-way sync) · PWA · Home Assistant endpoint · Chinese, English and Russian · 6 themes.
 
@@ -308,7 +308,7 @@ NAS guides: [各厂家NAS安装教程.md](./各厂家NAS安装教程.md) · Dock
 
 **Самостоятельно размещаемый менеджер подписок и продлений. Напоминает о продлении по 14 каналам (Telegram, WeCom, Feishu, Email, ntfy, Webhook и др.), чтобы ни одна подписка и ни одна SIM-карта не истекла незаметно.**
 
-**Новое в v2.1.0:** SQLite стал базой данных по умолчанию, MySQL больше не нужен (существующие установки с MySQL продолжают работать) · установка на Linux одной командой без Docker (x86_64 / aarch64, systemd, автоматический откат при неудачном обновлении) · даты продления в конце месяца больше не сдвигаются (31.01 → 28.02 → 31.03), а предпросмотр продления больше не показывает дату на день раньше в часовых поясах западнее UTC. **Android 0.3.1-alpha:** телефон сам загружает курсы валют из сети, кнопка «Обновить курсы» работает, курсы больше не помечаются как отсутствующие.
+**Новое в v2.1.0:** SQLite стал базой данных по умолчанию, MySQL больше не нужен (существующие установки с MySQL продолжают работать) · установка на Linux одной командой без Docker (x86_64 / aarch64, systemd, автоматический откат при неудачном обновлении) · даты продления в конце месяца больше не сдвигаются (31.01 → 28.02 → 31.03), а предпросмотр продления больше не показывает дату на день раньше в часовых поясах западнее UTC. **Android 0.3.2-alpha:** верхняя панель и кнопка синхронизации больше не скрываются под строкой состояния на некоторых телефонах; с 0.3.1 телефон сам загружает курсы валют из сети.
 
 **Возможности:** несколько пользователей и открытая регистрация · регулярные и разовые подписки, массовые действия, сортировка перетаскиванием · 14 каналов уведомлений, тихие часы и еженедельная сводка · отслеживание пробного периода и срока действия карты · месячный бюджет · библиотека из сотен сервисов · дашборд, отчёты и экспорт в CSV · календарь и ссылка `.ics` · мультивалютность · резервные копии пользователя и всего сайта, ежедневные зашифрованные копии · 2FA, API-токены, шифрование секретов · приложение для Android (данные на телефоне, синхронизация по желанию) · PWA · интеграция с Home Assistant · интерфейс на китайском, английском и русском · 6 тем.
 

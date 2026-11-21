@@ -6,6 +6,15 @@
 
 ---
 
+## [Android 0.3.2-alpha]
+
+只更新 Android 客户端（versionCode 7）；服务端与网页仍为 v2.1.0。覆盖安装同签名的 0.3.x 即可保留本地资料，仍为调试签名。详见 [Android 0.3.2 说明](docs/android-0.3.2.md)。
+
+### 修复
+
+- 顶部标题栏和右上角同步按钮不再被状态栏（时间、信号、电量）遮挡。Android System WebView 140 及以上的手机会让页面延伸到状态栏下，现在顶栏、设置子页返回栏、全屏弹窗和应用锁都会让出状态栏高度；旧版 WebView 不受影响。
+- 底部导航和底部弹层改用 Capacitor 注入的安全区数值，旧版 WebView 也能正确避开手势条。
+
 ## [Android 0.3.1-alpha]
 
 只更新 Android 客户端（versionCode 6）；服务端与网页仍为 v2.1.0。覆盖安装同签名的 0.3.0 即可保留本地资料，仍为调试签名。详见 [Android 0.3.1 说明](docs/android-0.3.1.md)。
