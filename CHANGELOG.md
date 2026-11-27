@@ -6,6 +6,13 @@
 
 ---
 
+## [Unreleased]
+
+### 修复
+
+- 代理使用 fake-ip DNS（Clash / mihomo 等）时，Telegram 等通知不再被出站安全检查误拦：域名解析到 `198.18.0.0/15` 时默认放行。直接填写的 IP 地址仍按原规则拦截。
+- 通知请求被安全检查拦下时，提示会写明域名、解析到的地址，以及应加入 `OUTBOUND_PRIVATE_ALLOWLIST` 的 `host:port`，不再只显示笼统的「请求失败，请检查地址、白名单或渠道配置」。
+
 ## [Android 0.3.2-alpha]
 
 只更新 Android 客户端（versionCode 7）；服务端与网页仍为 v2.1.0。覆盖安装同签名的 0.3.x 即可保留本地资料，仍为调试签名。详见 [Android 0.3.2 说明](docs/android-0.3.2.md)。
