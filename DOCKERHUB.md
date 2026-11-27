@@ -10,7 +10,12 @@ Self-hosted subscription / renewal manager with **14 notification channels**, so
 - **Changelog / 更新日志**: https://github.com/suyijun8182/easysub/blob/main/CHANGELOG.md
 - **Live demo / 在线体验**: https://easysub.vviip.dpdns.org:8443/ （`guest` / `guest123`）
 
-## 🆕 v2.1.0
+## 🆕 v2.1.1
+
+- **Notifications work behind a fake-ip proxy DNS** (Clash / mihomo): Telegram and other channels are no longer blocked when the domain resolves into `198.18.0.0/15`. A blocked request now names the host, the address and the `OUTBOUND_PRIVATE_ALLOWLIST` entry to add.
+  **修复 fake-ip 代理下通知被误拦**；被拦截时提示会写明域名、地址和应加入白名单的 `host:port`。
+
+## v2.1.0
 
 - **SQLite is now the default — no MySQL needed.** Existing MySQL deployments keep working with no changes.
   **支持 SQLite 并设为默认**，不用再准备 MySQL；原来的 MySQL 部署升级后照常运行。

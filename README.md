@@ -24,7 +24,12 @@ docker run -d --name easysub -p 8842:8000 -e EASYSUB_DB=sqlite \
 > 🌐 **在线体验**：<https://easysub.vviip.dpdns.org:8443/>
 > 测试账号 `guest` / `guest123`，也可以自己注册，注册后直接可用。
 
-## 🆕 v2.1.0 更新
+## 🆕 v2.1.1 更新
+
+- **修复 fake-ip 代理下通知被误拦**：用 Clash / mihomo 等 fake-ip DNS 时，Telegram 等通知不再报“请求失败，请检查地址、白名单或渠道配置”，不用再手动配置 `OUTBOUND_PRIVATE_ALLOWLIST`。
+- 通知请求被安全检查拦下时，提示会写明域名、解析到的地址，以及应加入白名单的 `host:port`。
+
+### v2.1.0
 
 - **支持 SQLite，并设为新安装的默认数据库**：不用再准备 MySQL，一条命令就能跑起来。原来用 MySQL 的部署升级后照常运行，不用改任何配置。
 - **Linux 一键安装**：一个单文件程序，不用装 Docker，支持 x86_64 和 aarch64，自动注册 systemd 服务。升级失败会自动退回旧版本。
@@ -283,7 +288,7 @@ Telegram [@Aiden_SU](https://t.me/Aiden_SU) · 📧 aidensu8182@gmail.com
 
 **A self-hosted subscription and renewal manager. It reminds you over 14 channels (Telegram, WeCom, Feishu, Email, ntfy, Webhook and more), so no subscription or SIM keep-alive plan expires unnoticed.**
 
-**New in v2.1.0:** SQLite is now the default database, so no MySQL is needed (existing MySQL setups keep working) · a one-command Linux installer that needs no Docker (x86_64 / aarch64, systemd, upgrades that roll back on failure) · month-end renewals stay on their day (Jan 31 → Feb 28 → Mar 31), and the renewal preview no longer shows a day early in time zones west of UTC. **Android 0.3.2-alpha:** the top bar and sync button are no longer hidden under the status bar on some phones; since 0.3.1 the phone fetches exchange rates online by itself.
+**New in v2.1.1:** notifications such as Telegram are no longer blocked when a Clash / mihomo fake-ip DNS resolves them into 198.18.0.0/15, and a blocked request now says which host, address and allowlist entry are involved. **New in v2.1.0:** SQLite is now the default database, so no MySQL is needed (existing MySQL setups keep working) · a one-command Linux installer that needs no Docker (x86_64 / aarch64, systemd, upgrades that roll back on failure) · month-end renewals stay on their day (Jan 31 → Feb 28 → Mar 31), and the renewal preview no longer shows a day early in time zones west of UTC. **Android 0.3.2-alpha:** the top bar and sync button are no longer hidden under the status bar on some phones; since 0.3.1 the phone fetches exchange rates online by itself.
 
 **Features:** multi-user with open sign-up · recurring and one-time subscriptions with bulk actions and drag reordering · 14 notification channels with quiet hours and a weekly digest · trial, cancel-by and card-expiry tracking · monthly budget · built-in library of hundreds of services · dashboard, reports and CSV export · calendar with an `.ics` feed · multi-currency with live exchange rates · personal and full-site backups plus daily encrypted auto-backups · 2FA, API tokens and encrypted secrets · Android app (local-first, optional two-way sync) · PWA · Home Assistant endpoint · Chinese, English and Russian · 6 themes.
 
@@ -308,7 +313,7 @@ NAS guides: [各厂家NAS安装教程.md](./各厂家NAS安装教程.md) · Dock
 
 **Самостоятельно размещаемый менеджер подписок и продлений. Напоминает о продлении по 14 каналам (Telegram, WeCom, Feishu, Email, ntfy, Webhook и др.), чтобы ни одна подписка и ни одна SIM-карта не истекла незаметно.**
 
-**Новое в v2.1.0:** SQLite стал базой данных по умолчанию, MySQL больше не нужен (существующие установки с MySQL продолжают работать) · установка на Linux одной командой без Docker (x86_64 / aarch64, systemd, автоматический откат при неудачном обновлении) · даты продления в конце месяца больше не сдвигаются (31.01 → 28.02 → 31.03), а предпросмотр продления больше не показывает дату на день раньше в часовых поясах западнее UTC. **Android 0.3.2-alpha:** верхняя панель и кнопка синхронизации больше не скрываются под строкой состояния на некоторых телефонах; с 0.3.1 телефон сам загружает курсы валют из сети.
+**Новое в v2.1.1:** уведомления (например, Telegram) больше не блокируются, когда fake-ip DNS Clash / mihomo отдаёт адрес из 198.18.0.0/15, а при блокировке запроса сообщение называет хост, адрес и нужную запись белого списка. **Новое в v2.1.0:** SQLite стал базой данных по умолчанию, MySQL больше не нужен (существующие установки с MySQL продолжают работать) · установка на Linux одной командой без Docker (x86_64 / aarch64, systemd, автоматический откат при неудачном обновлении) · даты продления в конце месяца больше не сдвигаются (31.01 → 28.02 → 31.03), а предпросмотр продления больше не показывает дату на день раньше в часовых поясах западнее UTC. **Android 0.3.2-alpha:** верхняя панель и кнопка синхронизации больше не скрываются под строкой состояния на некоторых телефонах; с 0.3.1 телефон сам загружает курсы валют из сети.
 
 **Возможности:** несколько пользователей и открытая регистрация · регулярные и разовые подписки, массовые действия, сортировка перетаскиванием · 14 каналов уведомлений, тихие часы и еженедельная сводка · отслеживание пробного периода и срока действия карты · месячный бюджет · библиотека из сотен сервисов · дашборд, отчёты и экспорт в CSV · календарь и ссылка `.ics` · мультивалютность · резервные копии пользователя и всего сайта, ежедневные зашифрованные копии · 2FA, API-токены, шифрование секретов · приложение для Android (данные на телефоне, синхронизация по желанию) · PWA · интеграция с Home Assistant · интерфейс на китайском, английском и русском · 6 тем.
 
