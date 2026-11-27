@@ -10,7 +10,12 @@ Self-hosted subscription / renewal manager with **14 notification channels**, so
 - **Changelog / 更新日志**: https://github.com/suyijun8182/easysub/blob/main/CHANGELOG.md
 - **Live demo / 在线体验**: https://easysub.vviip.dpdns.org:8443/ （`guest` / `guest123`）
 
-## 🆕 v2.1.1
+## 🆕 v2.1.2
+
+- **Faster Subscriptions page**: the list loads first and the icon library only when needed; a failed icon library no longer hides your subscriptions (thanks @leon4z).
+  **「订阅管理」打开更快**，图标库按需加载，加载失败也不影响订阅列表。
+
+## v2.1.1
 
 - **Notifications work behind a fake-ip proxy DNS** (Clash / mihomo): Telegram and other channels are no longer blocked when the domain resolves into `198.18.0.0/15`. A blocked request now names the host, the address and the `OUTBOUND_PRIVATE_ALLOWLIST` entry to add.
   **修复 fake-ip 代理下通知被误拦**；被拦截时提示会写明域名、地址和应加入白名单的 `host:port`。
