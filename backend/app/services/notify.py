@@ -612,5 +612,5 @@ def dispatch(user, subject: str, text_plain: str, text_md: str | None = None,
                 _SENDERS[channel](conf, subject, text_plain)
             results.append({"channel": channel, "ok": True})
         except Exception as e:  # noqa: BLE001
-            results.append({"channel": channel, "ok": False, "error": f"{type(e).__name__}: 通知发送失败，请检查地址、白名单或渠道配置"})
+            results.append({"channel": channel, "ok": False, "error": outbound.error_summary(e)})
     return results

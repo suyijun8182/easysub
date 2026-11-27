@@ -14,6 +14,15 @@ import httpx
 from app.config import settings
 
 
+class OutboundBlocked(ValueError):
+    """Our own refusal; its message holds no secrets and is shown to the user."""
+
+
+# Clash/mihomo-style fake-ip DNS answers every domain from this range and the
+# local proxy dials the real domain, so the request still goes to that domain.
+FAKE_IP_NET = ipaddress.ip_network('198.18.0.0/15')
+
+
 def _allowed(host: str, port: int) -> bool:
     target = f"{host.lower().rstrip('.')}:{port}"
     return target in {x.strip().lower().rstrip('.') for x in settings.outbound_private_allowlist.split(',') if x.strip()}
@@ -24,20 +33,25 @@ def addresses(host: str, port: int) -> list[str]:
         resolved = [str(ipaddress.ip_address(host))]
     except ValueError:
         resolved = list(dict.fromkeys(row[4][0] for row in socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)))
+        fake = [v for v in resolved if ipaddress.ip_address(v) in FAKE_IP_NET]
+        if fake:
+            # Fake-ip DNS: its IPv6 answers are fake too; connect only to the fake IPv4.
+            return fake
     if not resolved:
-        raise ValueError("通知目标没有可用地址")
+        raise OutboundBlocked(f"{host} 没有可用地址")
     for value in resolved:
         ip = ipaddress.ip_address(value)
         ip = ip.ipv4_mapped if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped else ip
         if (not ip.is_global or ip.is_multicast) and not _allowed(host, port) and not _allowed(str(ip), port):
-            raise ValueError("目标为本机或内网地址，请由管理员配置 OUTBOUND_PRIVATE_ALLOWLIST")
+            raise OutboundBlocked(f"{host} 解析到本机、内网或保留地址 {value}（若是代理的 fake-ip，"
+                                  f"请在 OUTBOUND_PRIVATE_ALLOWLIST 加入 {host}:{port}）")
     return resolved
 
 
 def validate_url(value: str) -> httpx.URL:
     url = httpx.URL(value)
     if url.scheme not in ('http', 'https') or not url.host or url.username or url.password:
-        raise ValueError("通知地址必须为不含登录凭据的 HTTP(S) URL")
+        raise OutboundBlocked("通知地址必须为不含登录凭据的 HTTP(S) URL")
     addresses(url.host, url.port or (443 if url.scheme == 'https' else 80))
     return url
 
@@ -57,7 +71,7 @@ class CheckedTransport(httpx.HTTPTransport):
         if proxy:
             url = validate_url(proxy)
             if not _allowed(url.host, url.port or (443 if url.scheme == 'https' else 80)):
-                raise ValueError("代理必须由管理员加入 OUTBOUND_PRIVATE_ALLOWLIST")
+                raise OutboundBlocked(f"代理 {url.host}:{url.port or (443 if url.scheme == 'https' else 80)} 须加入 OUTBOUND_PRIVATE_ALLOWLIST")
             self._pool = httpcore.HTTPProxy(proxy_url=str(url), ssl_context=ssl.create_default_context(),
                 proxy_ssl_context=ssl.create_default_context() if url.scheme == "https" else None, network_backend=PinnedBackend())
         else:
@@ -68,7 +82,7 @@ class CheckedTransport(httpx.HTTPTransport):
         # A proxy controls destination DNS. Trust it only for administrator-approved
         # destination origins, even when their current DNS answers are public.
         if self.proxy and not _allowed(url.host, url.port or (443 if url.scheme == 'https' else 80)):
-            raise ValueError("使用代理时，目标也必须由管理员加入 OUTBOUND_PRIVATE_ALLOWLIST")
+            raise OutboundBlocked(f"使用代理时，目标 {url.host}:{url.port or (443 if url.scheme == 'https' else 80)} 也须加入 OUTBOUND_PRIVATE_ALLOWLIST")
         return super().handle_request(request)
 
 
@@ -109,4 +123,6 @@ def error_summary(exc: Exception) -> str:
     # Provider exceptions often embed secret-bearing URLs and response bodies.
     if isinstance(exc, httpx.HTTPStatusError):
         return f"HTTP {exc.response.status_code}：通知请求失败，请检查渠道配置"
+    if isinstance(exc, OutboundBlocked):
+        return str(exc)
     return f"{type(exc).__name__}：请求失败，请检查地址、白名单或渠道配置"

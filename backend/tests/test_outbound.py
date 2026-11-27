@@ -20,6 +20,20 @@ class OutboundTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 outbound.addresses('127.0.0.1', 8001)
 
+    def test_fake_ip_dns_answer_for_a_domain_is_allowed(self):
+        rows = [(2, 1, 6, '', ('198.18.4.176', 443)), (23, 1, 6, '', ('f2b0::490', 443, 0, 0))]
+        with patch.object(outbound.settings, 'outbound_private_allowlist', ''), patch.object(outbound.socket, 'getaddrinfo', return_value=rows):
+            self.assertEqual(outbound.addresses('api.telegram.org', 443), ['198.18.4.176'])
+        with patch.object(outbound.settings, 'outbound_private_allowlist', ''), self.assertRaises(outbound.OutboundBlocked):
+            outbound.addresses('198.18.4.176', 443)
+
+    def test_blocked_reason_is_shown_without_the_generic_text(self):
+        with patch.object(outbound.settings, 'outbound_private_allowlist', ''):
+            try:
+                outbound.addresses('127.0.0.1', 8000)
+            except outbound.OutboundBlocked as e:
+                self.assertIn('127.0.0.1:8000', outbound.error_summary(e))
+
     def test_mixed_public_private_dns_answers_are_rejected(self):
         rows = [(2, 1, 6, '', ('8.8.8.8', 443)), (2, 1, 6, '', ('127.0.0.1', 443))]
         with patch.object(outbound.socket, 'getaddrinfo', return_value=rows), self.assertRaises(ValueError):
